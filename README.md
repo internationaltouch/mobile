@@ -17,7 +17,7 @@ Home → Competitions → Event → Season → Division → Fixtures ⟷ Ladder
 
 ### ⚡ Key Features
 - **Real-time Updates**: Live fixtures and ladder data
-- **Cross-platform**: Single codebase for iOS, iPadOS, and Android
+- **Cross-platform**: Single codebase for iOS, iPadOS, Android, and macOS
 - **Offline Ready**: Local data caching with refresh capabilities
 - **Modern UI**: Material Design 3 with responsive layouts
 - **Tabbed Interface**: Easy switching between Fixtures and Ladder views
@@ -28,6 +28,7 @@ Home → Competitions → Event → Season → Division → Fixtures ⟷ Ladder
 - Flutter SDK 3.24.5 or later
 - Dart SDK 3.1.0 or later
 - Android Studio / VS Code with Flutter extensions
+- CocoaPods (for iOS and macOS builds)
 
 ### Installation
 
@@ -70,6 +71,11 @@ flutter build appbundle --release
 Build for iOS:
 ```bash
 flutter build ios --release
+```
+
+Build for macOS:
+```bash
+flutter build macos --release
 ```
 
 ## Architecture
