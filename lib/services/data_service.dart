@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../models/event.dart';
 import '../models/season.dart';
 import '../models/division.dart';
@@ -14,14 +15,15 @@ class DataService {
   static final Map<String, List<Division>> _cachedDivisions = {};
   static final Map<String, List<Team>> _cachedTeams = {};
   static final Map<String, List<Fixture>> _cachedFixtures = {};
-  
+
   // Static data for news (API doesn't expose news yet)
   static List<NewsItem> getNewsItems() {
     return [
       NewsItem(
         id: '1',
         title: 'Touch World Cup 2024 Announced',
-        summary: 'The next Touch World Cup will be held in Australia, featuring teams from over 20 nations.',
+        summary:
+            'The next Touch World Cup will be held in Australia, featuring teams from over 20 nations.',
         imageUrl: AppConfig.getCompetitionImageUrl('Touch World Cup'),
         publishedAt: DateTime.now().subtract(const Duration(days: 2)),
         content: 'Full details about the upcoming Touch World Cup...',
@@ -29,7 +31,8 @@ class DataService {
       NewsItem(
         id: '2',
         title: 'European Touch Championships Update',
-        summary: 'Registration is now open for the European Touch Championships with exciting new divisions.',
+        summary:
+            'Registration is now open for the European Touch Championships with exciting new divisions.',
         imageUrl: AppConfig.getPlaceholderImageUrl(
           width: 300,
           height: 200,
@@ -42,7 +45,8 @@ class DataService {
       NewsItem(
         id: '3',
         title: 'Asian Touch Cup Results',
-        summary: 'Congratulations to all participating teams in the recently concluded Asian Touch Cup.',
+        summary:
+            'Congratulations to all participating teams in the recently concluded Asian Touch Cup.',
         imageUrl: AppConfig.getPlaceholderImageUrl(
           width: 300,
           height: 200,
@@ -68,12 +72,14 @@ class DataService {
       for (final competition in apiCompetitions) {
         try {
           // Fetch competition details to get seasons
-          final competitionDetails = await ApiService.fetchCompetitionDetails(competition['slug']);
-          
+          final competitionDetails =
+              await ApiService.fetchCompetitionDetails(competition['slug']);
+
           final event = Event(
             id: competition['slug'],
             name: competition['title'],
-            logoUrl: AppConfig.getCompetitionLogoUrl(competition['title'].substring(0, 3).toUpperCase()),
+            logoUrl: AppConfig.getCompetitionLogoUrl(
+                competition['title'].substring(0, 3).toUpperCase()),
             seasons: (competitionDetails['seasons'] as List)
                 .map((season) => Season.fromJson(season))
                 .toList(),
@@ -83,14 +89,14 @@ class DataService {
           events.add(event);
         } catch (e) {
           // Skip competitions that fail to load details
-          print('Failed to load details for ${competition['title']}: $e');
+          debugPrint('Failed to load details for ${competition['title']}: $e');
         }
       }
 
       _cachedEvents = events;
       return events;
     } catch (e) {
-      print('Failed to fetch events from API: $e');
+      debugPrint('Failed to fetch events from API: $e');
       // Return fallback mock data if API fails
       return _getMockEvents();
     }
@@ -101,30 +107,34 @@ class DataService {
     if (_cachedEvents != null) {
       final event = _cachedEvents!.firstWhere(
         (e) => e.id == eventId || e.slug == eventId,
-        orElse: () => Event(id: '', name: '', logoUrl: '', seasons: [], description: ''),
+        orElse: () =>
+            Event(id: '', name: '', logoUrl: '', seasons: [], description: ''),
       );
-      
+
       if (event.seasons.isNotEmpty) {
         // Try to find season by title first
-        final season = event.seasons.where((s) => s.title == seasonTitle).firstOrNull;
+        final season =
+            event.seasons.where((s) => s.title == seasonTitle).firstOrNull;
         if (season != null) {
           return season.slug;
         }
-        
+
         // If not found by title, try to find by slug (for backwards compatibility)
-        final seasonBySlug = event.seasons.where((s) => s.slug == seasonTitle).firstOrNull;
+        final seasonBySlug =
+            event.seasons.where((s) => s.slug == seasonTitle).firstOrNull;
         if (seasonBySlug != null) {
           return seasonBySlug.slug;
         }
       }
     }
-    
+
     // Fallback: assume the season string is already a slug
     return seasonTitle;
   }
 
   // Fetch divisions from API
-  static Future<List<Division>> getDivisions(String eventId, String season) async {
+  static Future<List<Division>> getDivisions(
+      String eventId, String season) async {
     final cacheKey = '${eventId}_$season';
     if (_cachedDivisions.containsKey(cacheKey)) {
       return _cachedDivisions[cacheKey]!;
@@ -133,12 +143,23 @@ class DataService {
     try {
       // Find the correct season slug
       final seasonSlug = _findSeasonSlug(eventId, season);
-      final seasonDetails = await ApiService.fetchSeasonDetails(eventId, seasonSlug);
+      final seasonDetails =
+          await ApiService.fetchSeasonDetails(eventId, seasonSlug);
       final divisions = <Division>[];
 
       final colors = [
-        '#1976D2', '#388E3C', '#F57C00', '#7B1FA2', '#D32F2F', '#303F9F',
-        '#00796B', '#FF6F00', '#C2185B', '#5D4037', '#455A64', '#F57F17'
+        '#1976D2',
+        '#388E3C',
+        '#F57C00',
+        '#7B1FA2',
+        '#D32F2F',
+        '#303F9F',
+        '#00796B',
+        '#FF6F00',
+        '#C2185B',
+        '#5D4037',
+        '#455A64',
+        '#F57F17'
       ];
 
       for (int i = 0; i < (seasonDetails['divisions'] as List).length; i++) {
@@ -157,14 +178,15 @@ class DataService {
       _cachedDivisions[cacheKey] = divisions;
       return divisions;
     } catch (e) {
-      print('Failed to fetch divisions from API: $e');
+      debugPrint('Failed to fetch divisions from API: $e');
       // Return fallback mock data if API fails
       return _getMockDivisions(eventId, season);
     }
   }
 
   // Fetch teams from API
-  static Future<List<Team>> getTeams(String divisionId, {String? eventId, String? season}) async {
+  static Future<List<Team>> getTeams(String divisionId,
+      {String? eventId, String? season}) async {
     if (_cachedTeams.containsKey(divisionId)) {
       return _cachedTeams[divisionId]!;
     }
@@ -176,7 +198,8 @@ class DataService {
 
     try {
       final seasonSlug = _findSeasonSlug(eventId, season);
-      final divisionDetails = await ApiService.fetchDivisionDetails(eventId, seasonSlug, divisionId);
+      final divisionDetails = await ApiService.fetchDivisionDetails(
+          eventId, seasonSlug, divisionId);
       final teams = <Team>[];
 
       for (final teamData in divisionDetails['teams']) {
@@ -193,14 +216,15 @@ class DataService {
       _cachedTeams[divisionId] = teams;
       return teams;
     } catch (e) {
-      print('Failed to fetch teams from API: $e');
+      debugPrint('Failed to fetch teams from API: $e');
       // Return fallback mock data if API fails
       return _getMockTeams(divisionId);
     }
   }
 
   // Fetch fixtures from API
-  static Future<List<Fixture>> getFixtures(String divisionId, {String? eventId, String? season}) async {
+  static Future<List<Fixture>> getFixtures(String divisionId,
+      {String? eventId, String? season}) async {
     if (_cachedFixtures.containsKey(divisionId)) {
       return _cachedFixtures[divisionId]!;
     }
@@ -212,9 +236,11 @@ class DataService {
 
     try {
       final seasonSlug = _findSeasonSlug(eventId, season);
-      final divisionDetails = await ApiService.fetchDivisionDetails(eventId, seasonSlug, divisionId);
+      final divisionDetails = await ApiService.fetchDivisionDetails(
+          eventId, seasonSlug, divisionId);
       final fixtures = <Fixture>[];
-      final teams = await getTeams(divisionId, eventId: eventId, season: season);
+      final teams =
+          await getTeams(divisionId, eventId: eventId, season: season);
       final teamMap = {for (final team in teams) team.id: team};
 
       // Process all stages and their matches
@@ -231,14 +257,15 @@ class DataService {
             awayTeamId: match['away_team']?.toString() ?? '',
             homeTeamName: homeTeam?.name ?? 'TBD',
             awayTeamName: awayTeam?.name ?? 'TBD',
-            dateTime: match['datetime'] != null 
+            dateTime: match['datetime'] != null
                 ? DateTime.parse(match['datetime'])
                 : DateTime.now(),
             field: match['play_at']?['title'] ?? 'Field ${fixtures.length + 1}',
             divisionId: divisionId,
             homeScore: match['home_team_score'],
             awayScore: match['away_team_score'],
-            isCompleted: match['home_team_score'] != null && match['away_team_score'] != null,
+            isCompleted: match['home_team_score'] != null &&
+                match['away_team_score'] != null,
             round: match['round'],
             isBye: match['is_bye'],
           );
@@ -249,20 +276,23 @@ class DataService {
       _cachedFixtures[divisionId] = fixtures;
       return fixtures;
     } catch (e) {
-      print('Failed to fetch fixtures from API: $e');
+      debugPrint('Failed to fetch fixtures from API: $e');
       // Return fallback mock data if API fails
       return _getMockFixtures(divisionId);
     }
   }
 
   // Calculate ladder from fixtures (since API doesn't provide ladder directly)
-  static Future<List<LadderEntry>> getLadder(String divisionId, {String? eventId, String? season}) async {
+  static Future<List<LadderEntry>> getLadder(String divisionId,
+      {String? eventId, String? season}) async {
     try {
-      final fixtures = await getFixtures(divisionId, eventId: eventId, season: season);
-      final teams = await getTeams(divisionId, eventId: eventId, season: season);
-      
+      final fixtures =
+          await getFixtures(divisionId, eventId: eventId, season: season);
+      final teams =
+          await getTeams(divisionId, eventId: eventId, season: season);
+
       final ladder = <String, LadderEntry>{};
-      
+
       // Initialize ladder entries
       for (final team in teams) {
         ladder[team.id] = LadderEntry(
@@ -281,21 +311,30 @@ class DataService {
 
       // Calculate stats from completed fixtures
       for (final fixture in fixtures) {
-        if (fixture.isCompleted && fixture.homeScore != null && fixture.awayScore != null) {
+        if (fixture.isCompleted &&
+            fixture.homeScore != null &&
+            fixture.awayScore != null) {
           final homeEntry = ladder[fixture.homeTeamId];
           final awayEntry = ladder[fixture.awayTeamId];
-          
+
           if (homeEntry != null && awayEntry != null) {
             // Update played count
             ladder[fixture.homeTeamId] = LadderEntry(
               teamId: homeEntry.teamId,
               teamName: homeEntry.teamName,
               played: homeEntry.played + 1,
-              wins: homeEntry.wins + (fixture.homeScore! > fixture.awayScore! ? 1 : 0),
-              draws: homeEntry.draws + (fixture.homeScore! == fixture.awayScore! ? 1 : 0),
-              losses: homeEntry.losses + (fixture.homeScore! < fixture.awayScore! ? 1 : 0),
-              points: homeEntry.points + (fixture.homeScore! > fixture.awayScore! ? 3 : (fixture.homeScore! == fixture.awayScore! ? 1 : 0)),
-              goalDifference: homeEntry.goalDifference + (fixture.homeScore! - fixture.awayScore!),
+              wins: homeEntry.wins +
+                  (fixture.homeScore! > fixture.awayScore! ? 1 : 0),
+              draws: homeEntry.draws +
+                  (fixture.homeScore! == fixture.awayScore! ? 1 : 0),
+              losses: homeEntry.losses +
+                  (fixture.homeScore! < fixture.awayScore! ? 1 : 0),
+              points: homeEntry.points +
+                  (fixture.homeScore! > fixture.awayScore!
+                      ? 3
+                      : (fixture.homeScore! == fixture.awayScore! ? 1 : 0)),
+              goalDifference: homeEntry.goalDifference +
+                  (fixture.homeScore! - fixture.awayScore!),
               goalsFor: homeEntry.goalsFor + fixture.homeScore!,
               goalsAgainst: homeEntry.goalsAgainst + fixture.awayScore!,
             );
@@ -304,11 +343,18 @@ class DataService {
               teamId: awayEntry.teamId,
               teamName: awayEntry.teamName,
               played: awayEntry.played + 1,
-              wins: awayEntry.wins + (fixture.awayScore! > fixture.homeScore! ? 1 : 0),
-              draws: awayEntry.draws + (fixture.awayScore! == fixture.homeScore! ? 1 : 0),
-              losses: awayEntry.losses + (fixture.awayScore! < fixture.homeScore! ? 1 : 0),
-              points: awayEntry.points + (fixture.awayScore! > fixture.homeScore! ? 3 : (fixture.awayScore! == fixture.homeScore! ? 1 : 0)),
-              goalDifference: awayEntry.goalDifference + (fixture.awayScore! - fixture.homeScore!),
+              wins: awayEntry.wins +
+                  (fixture.awayScore! > fixture.homeScore! ? 1 : 0),
+              draws: awayEntry.draws +
+                  (fixture.awayScore! == fixture.homeScore! ? 1 : 0),
+              losses: awayEntry.losses +
+                  (fixture.awayScore! < fixture.homeScore! ? 1 : 0),
+              points: awayEntry.points +
+                  (fixture.awayScore! > fixture.homeScore!
+                      ? 3
+                      : (fixture.awayScore! == fixture.homeScore! ? 1 : 0)),
+              goalDifference: awayEntry.goalDifference +
+                  (fixture.awayScore! - fixture.homeScore!),
               goalsFor: awayEntry.goalsFor + fixture.awayScore!,
               goalsAgainst: awayEntry.goalsAgainst + fixture.homeScore!,
             );
@@ -327,7 +373,7 @@ class DataService {
 
       return sortedLadder;
     } catch (e) {
-      print('Failed to calculate ladder: $e');
+      debugPrint('Failed to calculate ladder: $e');
       // Return fallback mock data if calculation fails
       return _getMockLadder(divisionId);
     }

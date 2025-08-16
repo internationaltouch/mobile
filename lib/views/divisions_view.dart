@@ -24,7 +24,8 @@ class _DivisionsViewState extends State<DivisionsView> {
   @override
   void initState() {
     super.initState();
-    _divisionsFuture = DataService.getDivisions(widget.event.slug ?? widget.event.id, widget.season);
+    _divisionsFuture = DataService.getDivisions(
+        widget.event.slug ?? widget.event.id, widget.season);
   }
 
   @override
@@ -54,8 +55,8 @@ class _DivisionsViewState extends State<DivisionsView> {
             Text(
               'Select Division',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -86,18 +87,20 @@ class _DivisionsViewState extends State<DivisionsView> {
                           const SizedBox(height: 8),
                           Text(
                             'Using mock data',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () {
                               setState(() {
                                 _divisionsFuture = DataService.getDivisions(
-                                  widget.event.slug ?? widget.event.id, 
-                                  widget.season
-                                );
+                                    widget.event.slug ?? widget.event.id,
+                                    widget.season);
                               });
                             },
                             child: const Text('Retry'),
@@ -108,19 +111,19 @@ class _DivisionsViewState extends State<DivisionsView> {
                   }
 
                   final divisions = snapshot.data ?? [];
-                  
+
                   return RefreshIndicator(
                     onRefresh: () async {
                       setState(() {
                         _divisionsFuture = DataService.getDivisions(
-                          widget.event.slug ?? widget.event.id, 
-                          widget.season
-                        );
+                            widget.event.slug ?? widget.event.id,
+                            widget.season);
                       });
                     },
                     child: GridView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         childAspectRatio: 1.5,
                         crossAxisSpacing: 16.0,
@@ -130,7 +133,7 @@ class _DivisionsViewState extends State<DivisionsView> {
                       itemBuilder: (context, index) {
                         final division = divisions[index];
                         final color = _parseHexColor(division.color);
-                        
+
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -154,7 +157,7 @@ class _DivisionsViewState extends State<DivisionsView> {
                                   end: Alignment.bottomRight,
                                   colors: [
                                     color,
-                                    color.withOpacity(0.7),
+                                    color.withValues(alpha: 0.7),
                                   ],
                                 ),
                               ),
