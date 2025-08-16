@@ -4,6 +4,7 @@ class Division {
   final String eventId;
   final String season;
   final String color;
+  final String? slug; // Add slug for API compatibility
 
   Division({
     required this.id,
@@ -11,15 +12,17 @@ class Division {
     required this.eventId,
     required this.season,
     this.color = '#2196F3',
+    this.slug,
   });
 
   factory Division.fromJson(Map<String, dynamic> json) {
     return Division(
-      id: json['id'],
-      name: json['name'],
-      eventId: json['eventId'],
-      season: json['season'],
+      id: json['id'] ?? json['slug'] ?? '',
+      name: json['name'] ?? json['title'] ?? '',
+      eventId: json['eventId'] ?? '',
+      season: json['season'] ?? '',
       color: json['color'] ?? '#2196F3',
+      slug: json['slug'],
     );
   }
 
@@ -30,6 +33,7 @@ class Division {
       'eventId': eventId,
       'season': season,
       'color': color,
+      'slug': slug,
     };
   }
 }

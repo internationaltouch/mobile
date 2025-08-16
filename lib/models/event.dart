@@ -4,6 +4,7 @@ class Event {
   final String logoUrl;
   final List<String> seasons;
   final String description;
+  final String? slug; // Add slug for API compatibility
 
   Event({
     required this.id,
@@ -11,15 +12,19 @@ class Event {
     required this.logoUrl,
     required this.seasons,
     required this.description,
+    this.slug,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
-      id: json['id'],
-      name: json['name'],
-      logoUrl: json['logoUrl'],
-      seasons: List<String>.from(json['seasons']),
-      description: json['description'],
+      id: json['id'] ?? json['slug'] ?? '',
+      name: json['name'] ?? json['title'] ?? '',
+      logoUrl: json['logoUrl'] ?? '',
+      seasons: json['seasons'] != null 
+          ? (json['seasons'] as List).map((s) => s['title'] ?? s.toString()).toList().cast<String>()
+          : List<String>.from(json['seasons'] ?? []),
+      description: json['description'] ?? '',
+      slug: json['slug'],
     );
   }
 
@@ -30,6 +35,7 @@ class Event {
       'logoUrl': logoUrl,
       'seasons': seasons,
       'description': description,
+      'slug': slug,
     };
   }
 }

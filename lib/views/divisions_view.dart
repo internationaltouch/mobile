@@ -19,12 +19,12 @@ class DivisionsView extends StatefulWidget {
 }
 
 class _DivisionsViewState extends State<DivisionsView> {
-  late List<Division> divisions;
+  late Future<List<Division>> _divisionsFuture;
 
   @override
   void initState() {
     super.initState();
-    divisions = DataService.getDivisions(widget.event.id, widget.season);
+    _divisionsFuture = DataService.getDivisions(widget.event.slug ?? widget.event.id, widget.season);
   }
 
   @override
@@ -59,62 +59,125 @@ class _DivisionsViewState extends State<DivisionsView> {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.5,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                ),
-                itemCount: divisions.length,
-                itemBuilder: (context, index) {
-                  final division = divisions[index];
-                  final color = _parseHexColor(division.color);
-                  
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FixturesResultsView(
-                            event: widget.event,
-                            season: widget.season,
-                            division: division,
+              child: FutureBuilder<List<Division>>(
+                future: _divisionsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.red[300],
                           ),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      elevation: 4,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.0),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              color,
-                              color.withOpacity(0.7),
-                            ],
+                          const SizedBox(height: 16),
+                          Text(
+                            'Failed to load divisions',
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
-                        ),
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(
-                              division.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                          const SizedBox(height: 8),
+                          Text(
+                            'Using mock data',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.grey[600],
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _divisionsFuture = DataService.getDivisions(
+                                  widget.event.slug ?? widget.event.id, 
+                                  widget.season
+                                );
+                              });
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
                       ),
+                    );
+                  }
+
+                  final divisions = snapshot.data ?? [];
+                  
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        _divisionsFuture = DataService.getDivisions(
+                          widget.event.slug ?? widget.event.id, 
+                          widget.season
+                        );
+                      });
+                    },
+                    child: GridView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 1.5,
+                        crossAxisSpacing: 16.0,
+                        mainAxisSpacing: 16.0,
+                      ),
+                      itemCount: divisions.length,
+                      itemBuilder: (context, index) {
+                        final division = divisions[index];
+                        final color = _parseHexColor(division.color);
+                        
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FixturesResultsView(
+                                  event: widget.event,
+                                  season: widget.season,
+                                  division: division,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Card(
+                            elevation: 4,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12.0),
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    color,
+                                    color.withOpacity(0.7),
+                                  ],
+                                ),
+                              ),
+                              child: Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Text(
+                                    division.name,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
