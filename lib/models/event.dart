@@ -1,8 +1,10 @@
+import 'season.dart';
+
 class Event {
   final String id;
   final String name;
   final String logoUrl;
-  final List<String> seasons;
+  final List<Season> seasons;
   final String description;
   final String? slug; // Add slug for API compatibility
 
@@ -21,8 +23,8 @@ class Event {
       name: json['name'] ?? json['title'] ?? '',
       logoUrl: json['logoUrl'] ?? '',
       seasons: json['seasons'] != null 
-          ? (json['seasons'] as List).map((s) => s['title'] ?? s.toString()).toList().cast<String>()
-          : List<String>.from(json['seasons'] ?? []),
+          ? (json['seasons'] as List).map((s) => Season.fromJson(s is Map<String, dynamic> ? s : {'title': s.toString(), 'slug': s.toString()})).toList()
+          : [],
       description: json['description'] ?? '',
       slug: json['slug'],
     );
@@ -33,7 +35,7 @@ class Event {
       'id': id,
       'name': name,
       'logoUrl': logoUrl,
-      'seasons': seasons,
+      'seasons': seasons.map((s) => s.toJson()).toList(),
       'description': description,
       'slug': slug,
     };

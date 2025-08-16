@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/event.dart';
+import '../models/season.dart';
 import 'divisions_view.dart';
 
 class EventDetailView extends StatefulWidget {
@@ -12,7 +13,7 @@ class EventDetailView extends StatefulWidget {
 }
 
 class _EventDetailViewState extends State<EventDetailView> {
-  String? selectedSeason;
+  Season? selectedSeason;
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class _EventDetailViewState extends State<EventDetailView> {
         MaterialPageRoute(
           builder: (context) => DivisionsView(
             event: widget.event,
-            season: selectedSeason!,
+            season: selectedSeason!.title,
           ),
         ),
       );
@@ -112,7 +113,7 @@ class _EventDetailViewState extends State<EventDetailView> {
                       leading: CircleAvatar(
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         child: Text(
-                          season,
+                          season.title.length > 4 ? season.title.substring(0, 4) : season.title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -120,13 +121,13 @@ class _EventDetailViewState extends State<EventDetailView> {
                         ),
                       ),
                       title: Text(
-                        '$season Season',
+                        '${season.title} Season',
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       subtitle: Text(
-                        'View divisions and results for $season',
+                        'View divisions and results for ${season.title}',
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {

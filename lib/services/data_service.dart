@@ -1,17 +1,19 @@
 import '../models/event.dart';
+import '../models/season.dart';
 import '../models/division.dart';
 import '../models/team.dart';
 import '../models/fixture.dart';
 import '../models/ladder_entry.dart';
 import '../models/news_item.dart';
+import '../config/app_config.dart';
 import 'api_service.dart';
 
 class DataService {
   // Cache for API data
   static List<Event>? _cachedEvents;
-  static Map<String, List<Division>> _cachedDivisions = {};
-  static Map<String, List<Team>> _cachedTeams = {};
-  static Map<String, List<Fixture>> _cachedFixtures = {};
+  static final Map<String, List<Division>> _cachedDivisions = {};
+  static final Map<String, List<Team>> _cachedTeams = {};
+  static final Map<String, List<Fixture>> _cachedFixtures = {};
   
   // Static data for news (API doesn't expose news yet)
   static List<NewsItem> getNewsItems() {
@@ -20,7 +22,7 @@ class DataService {
         id: '1',
         title: 'Touch World Cup 2024 Announced',
         summary: 'The next Touch World Cup will be held in Australia, featuring teams from over 20 nations.',
-        imageUrl: 'https://via.placeholder.com/300x200/1976D2/FFFFFF?text=Touch+World+Cup',
+        imageUrl: AppConfig.getCompetitionImageUrl('Touch World Cup'),
         publishedAt: DateTime.now().subtract(const Duration(days: 2)),
         content: 'Full details about the upcoming Touch World Cup...',
       ),
@@ -28,14 +30,26 @@ class DataService {
         id: '2',
         title: 'European Touch Championships Update',
         summary: 'Registration is now open for the European Touch Championships with exciting new divisions.',
-        imageUrl: 'https://via.placeholder.com/300x200/388E3C/FFFFFF?text=European+Championships',
+        imageUrl: AppConfig.getPlaceholderImageUrl(
+          width: 300,
+          height: 200,
+          backgroundColor: '388E3C',
+          textColor: 'FFFFFF',
+          text: 'European Championships',
+        ),
         publishedAt: DateTime.now().subtract(const Duration(days: 5)),
       ),
       NewsItem(
         id: '3',
         title: 'Asian Touch Cup Results',
         summary: 'Congratulations to all participating teams in the recently concluded Asian Touch Cup.',
-        imageUrl: 'https://via.placeholder.com/300x200/F57C00/FFFFFF?text=Asian+Cup',
+        imageUrl: AppConfig.getPlaceholderImageUrl(
+          width: 300,
+          height: 200,
+          backgroundColor: 'F57C00',
+          textColor: 'FFFFFF',
+          text: 'Asian Cup',
+        ),
         publishedAt: DateTime.now().subtract(const Duration(days: 10)),
       ),
     ];
@@ -59,9 +73,9 @@ class DataService {
           final event = Event(
             id: competition['slug'],
             name: competition['title'],
-            logoUrl: 'https://via.placeholder.com/100x100/1976D2/FFFFFF?text=${Uri.encodeComponent(competition['title'].substring(0, 3).toUpperCase())}',
+            logoUrl: AppConfig.getCompetitionLogoUrl(competition['title'].substring(0, 3).toUpperCase()),
             seasons: (competitionDetails['seasons'] as List)
-                .map((season) => season['title'] as String)
+                .map((season) => Season.fromJson(season))
                 .toList(),
             description: 'International touch tournament',
             slug: competition['slug'],
@@ -82,6 +96,33 @@ class DataService {
     }
   }
 
+  // Helper method to find season slug from season title/string
+  static String _findSeasonSlug(String eventId, String seasonTitle) {
+    if (_cachedEvents != null) {
+      final event = _cachedEvents!.firstWhere(
+        (e) => e.id == eventId || e.slug == eventId,
+        orElse: () => Event(id: '', name: '', logoUrl: '', seasons: [], description: ''),
+      );
+      
+      if (event.seasons.isNotEmpty) {
+        // Try to find season by title first
+        final season = event.seasons.where((s) => s.title == seasonTitle).firstOrNull;
+        if (season != null) {
+          return season.slug;
+        }
+        
+        // If not found by title, try to find by slug (for backwards compatibility)
+        final seasonBySlug = event.seasons.where((s) => s.slug == seasonTitle).firstOrNull;
+        if (seasonBySlug != null) {
+          return seasonBySlug.slug;
+        }
+      }
+    }
+    
+    // Fallback: assume the season string is already a slug
+    return seasonTitle;
+  }
+
   // Fetch divisions from API
   static Future<List<Division>> getDivisions(String eventId, String season) async {
     final cacheKey = '${eventId}_$season';
@@ -90,7 +131,9 @@ class DataService {
     }
 
     try {
-      final seasonDetails = await ApiService.fetchSeasonDetails(eventId, season);
+      // Find the correct season slug
+      final seasonSlug = _findSeasonSlug(eventId, season);
+      final seasonDetails = await ApiService.fetchSeasonDetails(eventId, seasonSlug);
       final divisions = <Division>[];
 
       final colors = [
@@ -132,7 +175,8 @@ class DataService {
     }
 
     try {
-      final divisionDetails = await ApiService.fetchDivisionDetails(eventId, season, divisionId);
+      final seasonSlug = _findSeasonSlug(eventId, season);
+      final divisionDetails = await ApiService.fetchDivisionDetails(eventId, seasonSlug, divisionId);
       final teams = <Team>[];
 
       for (final teamData in divisionDetails['teams']) {
@@ -167,7 +211,8 @@ class DataService {
     }
 
     try {
-      final divisionDetails = await ApiService.fetchDivisionDetails(eventId, season, divisionId);
+      final seasonSlug = _findSeasonSlug(eventId, season);
+      final divisionDetails = await ApiService.fetchDivisionDetails(eventId, seasonSlug, divisionId);
       final fixtures = <Fixture>[];
       final teams = await getTeams(divisionId, eventId: eventId, season: season);
       final teamMap = {for (final team in teams) team.id: team};
@@ -302,15 +347,28 @@ class DataService {
       Event(
         id: '1',
         name: 'Touch World Cup',
-        logoUrl: 'https://via.placeholder.com/100x100/1976D2/FFFFFF?text=TWC',
-        seasons: ['2024', '2022', '2020'],
+        logoUrl: AppConfig.getCompetitionLogoUrl('TWC'),
+        seasons: [
+          Season(title: '2024', slug: '2024'),
+          Season(title: '2022', slug: '2022'),
+          Season(title: '2020', slug: '2020'),
+        ],
         description: 'The premier international touch tournament',
       ),
       Event(
         id: '2',
         name: 'European Touch Championships',
-        logoUrl: 'https://via.placeholder.com/100x100/388E3C/FFFFFF?text=ETC',
-        seasons: ['2024', '2023'],
+        logoUrl: AppConfig.getPlaceholderImageUrl(
+          width: 100,
+          height: 100,
+          backgroundColor: '388E3C',
+          textColor: 'FFFFFF',
+          text: 'ETC',
+        ),
+        seasons: [
+          Season(title: '2024', slug: '2024'),
+          Season(title: '2023', slug: '2023'),
+        ],
         description: 'European regional championship event',
       ),
     ];

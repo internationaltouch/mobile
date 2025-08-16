@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://www.internationaltouch.org/api/v1';
+  static const String baseUrl = AppConfig.apiBaseUrl;
   static const Map<String, String> headers = {
     'Content-Type': 'application/json',
   };
