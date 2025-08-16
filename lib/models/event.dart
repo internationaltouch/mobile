@@ -22,8 +22,12 @@ class Event {
       id: json['id'] ?? json['slug'] ?? '',
       name: json['name'] ?? json['title'] ?? '',
       logoUrl: json['logoUrl'] ?? '',
-      seasons: json['seasons'] != null 
-          ? (json['seasons'] as List).map((s) => Season.fromJson(s is Map<String, dynamic> ? s : {'title': s.toString(), 'slug': s.toString()})).toList()
+      seasons: json['seasons'] != null
+          ? (json['seasons'] as List)
+              .map((s) => Season.fromJson(s is Map<String, dynamic>
+                  ? s
+                  : {'title': s.toString(), 'slug': s.toString()}))
+              .toList()
           : [],
       description: json['description'] ?? '',
       slug: json['slug'],

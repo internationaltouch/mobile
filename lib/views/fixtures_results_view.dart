@@ -134,9 +134,12 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                                 Expanded(
                                   child: Text(
                                     '${fixture.homeTeamName} vs ${fixture.awayTeamName}',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                   ),
                                 ),
                                 if (fixture.isCompleted)
@@ -172,13 +175,17 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                               ),
                             ],
                             const SizedBox(height: 8.0),
-                            if (fixture.isCompleted && fixture.resultText.isNotEmpty)
+                            if (fixture.isCompleted &&
+                                fixture.resultText.isNotEmpty)
                               Text(
                                 'Result: ${fixture.resultText}',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Colors.green[700],
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      color: Colors.green[700],
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               )
                             else if (fixture.isBye == true)
                               Text(
@@ -287,7 +294,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                       rows: ladder.asMap().entries.map((entry) {
                         final index = entry.key;
                         final ladderEntry = entry.value;
-                        
+
                         return DataRow(
                           cells: [
                             DataCell(
@@ -312,7 +319,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                             DataCell(
                               Text(
                                 ladderEntry.teamName,
-                                style: const TextStyle(fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
                               ),
                             ),
                             DataCell(Text('${ladderEntry.played}')),
@@ -322,7 +330,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                             DataCell(
                               Text(
                                 '${ladderEntry.points}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                             DataCell(
@@ -366,8 +375,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
           Text(
             'Using mock data',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
+                  color: Colors.grey[600],
+                ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(

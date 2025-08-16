@@ -140,9 +140,12 @@ class _HomeViewState extends State<HomeView> {
                           children: [
                             Text(
                               newsItem.title,
-                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                             const SizedBox(height: 8.0),
                             Text(
@@ -152,9 +155,12 @@ class _HomeViewState extends State<HomeView> {
                             const SizedBox(height: 8.0),
                             Text(
                               _formatDate(newsItem.publishedAt),
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           ],
                         ),

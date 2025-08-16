@@ -8,7 +8,7 @@ void main() {
 
     // Verify that the app loads with the correct title.
     expect(find.text('FIT Mobile App'), findsOneWidget);
-    
+
     // Verify that bottom navigation is present
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Competitions'), findsOneWidget);

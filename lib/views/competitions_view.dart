@@ -30,8 +30,8 @@ class _CompetitionsViewState extends State<CompetitionsView> {
             Text(
               'Competitions & Results',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -62,9 +62,12 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                           const SizedBox(height: 8),
                           Text(
                             'Using mock data',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
@@ -81,7 +84,7 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                   }
 
                   final events = snapshot.data ?? [];
-                  
+
                   return RefreshIndicator(
                     onRefresh: () async {
                       DataService.clearCache();
@@ -91,7 +94,8 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                     },
                     child: GridView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         childAspectRatio: 0.8,
                         crossAxisSpacing: 16.0,
@@ -105,7 +109,8 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => EventDetailView(event: event),
+                                builder: (context) =>
+                                    EventDetailView(event: event),
                               ),
                             );
                           },
@@ -121,19 +126,26 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                                     child: Image.network(
                                       event.logoUrl,
                                       fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) {
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
                                         return Container(
                                           decoration: BoxDecoration(
                                             color: Colors.blue[100],
-                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
                                           ),
                                           child: Center(
                                             child: Text(
-                                              event.name.substring(0, 3).toUpperCase(),
-                                              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                                color: Colors.blue[800],
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                              event.name
+                                                  .substring(0, 3)
+                                                  .toUpperCase(),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headlineLarge
+                                                  ?.copyWith(
+                                                    color: Colors.blue[800],
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                             ),
                                           ),
                                         );
@@ -149,9 +161,12 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                                       children: [
                                         Text(
                                           event.name,
-                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                           textAlign: TextAlign.center,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
@@ -159,9 +174,12 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                                         const SizedBox(height: 4),
                                         Text(
                                           event.description,
-                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                            color: Colors.grey[600],
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: Colors.grey[600],
+                                              ),
                                           textAlign: TextAlign.center,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,

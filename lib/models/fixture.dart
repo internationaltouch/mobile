@@ -44,8 +44,10 @@ class Fixture {
 
     return Fixture(
       id: json['id']?.toString() ?? '',
-      homeTeamId: json['homeTeamId']?.toString() ?? json['home_team']?.toString() ?? '',
-      awayTeamId: json['awayTeamId']?.toString() ?? json['away_team']?.toString() ?? '',
+      homeTeamId:
+          json['homeTeamId']?.toString() ?? json['home_team']?.toString() ?? '',
+      awayTeamId:
+          json['awayTeamId']?.toString() ?? json['away_team']?.toString() ?? '',
       homeTeamName: json['homeTeamName'] ?? '',
       awayTeamName: json['awayTeamName'] ?? '',
       dateTime: parsedDateTime,
@@ -53,7 +55,8 @@ class Fixture {
       divisionId: json['divisionId'] ?? '',
       homeScore: json['homeScore'] ?? json['home_team_score'],
       awayScore: json['awayScore'] ?? json['away_team_score'],
-      isCompleted: json['isCompleted'] ?? (json['home_team_score'] != null && json['away_team_score'] != null),
+      isCompleted: json['isCompleted'] ??
+          (json['home_team_score'] != null && json['away_team_score'] != null),
       round: json['round'],
       isBye: json['is_bye'],
     );

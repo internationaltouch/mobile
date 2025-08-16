@@ -28,7 +28,8 @@ class ApiService {
   }
 
   // Fetch competition details (seasons)
-  static Future<Map<String, dynamic>> fetchCompetitionDetails(String slug) async {
+  static Future<Map<String, dynamic>> fetchCompetitionDetails(
+      String slug) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/competitions/$slug/?format=json'),
@@ -38,7 +39,8 @@ class ApiService {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw Exception('Failed to load competition details: ${response.statusCode}');
+        throw Exception(
+            'Failed to load competition details: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to fetch competition details: $e');
@@ -46,17 +48,20 @@ class ApiService {
   }
 
   // Fetch season details (divisions)
-  static Future<Map<String, dynamic>> fetchSeasonDetails(String competitionSlug, String seasonSlug) async {
+  static Future<Map<String, dynamic>> fetchSeasonDetails(
+      String competitionSlug, String seasonSlug) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/competitions/$competitionSlug/seasons/$seasonSlug/?format=json'),
+        Uri.parse(
+            '$baseUrl/competitions/$competitionSlug/seasons/$seasonSlug/?format=json'),
         headers: headers,
       );
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw Exception('Failed to load season details: ${response.statusCode}');
+        throw Exception(
+            'Failed to load season details: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to fetch season details: $e');
@@ -68,14 +73,16 @@ class ApiService {
       String competitionSlug, String seasonSlug, String divisionSlug) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/competitions/$competitionSlug/seasons/$seasonSlug/divisions/$divisionSlug/?format=json'),
+        Uri.parse(
+            '$baseUrl/competitions/$competitionSlug/seasons/$seasonSlug/divisions/$divisionSlug/?format=json'),
         headers: headers,
       );
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw Exception('Failed to load division details: ${response.statusCode}');
+        throw Exception(
+            'Failed to load division details: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to fetch division details: $e');

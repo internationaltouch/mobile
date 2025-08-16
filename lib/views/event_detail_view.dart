@@ -70,10 +70,11 @@ class _EventDetailViewState extends State<EventDetailView> {
                     child: Center(
                       child: Text(
                         widget.event.name.substring(0, 3).toUpperCase(),
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: Colors.blue[800],
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                  color: Colors.blue[800],
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                     ),
                   );
@@ -84,8 +85,8 @@ class _EventDetailViewState extends State<EventDetailView> {
             Text(
               widget.event.name,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
@@ -98,8 +99,8 @@ class _EventDetailViewState extends State<EventDetailView> {
             Text(
               'Select Season',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -113,7 +114,9 @@ class _EventDetailViewState extends State<EventDetailView> {
                       leading: CircleAvatar(
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         child: Text(
-                          season.title.length > 4 ? season.title.substring(0, 4) : season.title,
+                          season.title.length > 4
+                              ? season.title.substring(0, 4)
+                              : season.title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
