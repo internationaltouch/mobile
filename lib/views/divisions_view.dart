@@ -157,7 +157,12 @@ class _DivisionsViewState extends State<DivisionsView> {
                                   end: Alignment.bottomRight,
                                   colors: [
                                     color,
-                                    color.withValues(alpha: 0.7),
+                                    Color.fromARGB(
+                                      (255 * 0.7).round(),
+                                      color.r.round(),
+                                      color.g.round(),
+                                      color.b.round(),
+                                    ),
                                   ],
                                 ),
                               ),
