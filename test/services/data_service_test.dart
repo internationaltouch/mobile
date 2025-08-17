@@ -2,9 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fit_mobile_app/services/data_service.dart';
 import 'package:fit_mobile_app/models/event.dart';
 import 'package:fit_mobile_app/models/news_item.dart';
-import 'package:fit_mobile_app/models/division.dart';
-import 'package:fit_mobile_app/models/fixture.dart';
-import 'package:fit_mobile_app/models/ladder_entry.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
@@ -19,55 +16,214 @@ void main() {
 
     setUp(() {
       mockClient = MockClient();
+      DataService.setHttpClient(mockClient);
+      DataService.clearCache(); // Clear cache before each test
     });
 
-    test('getEvents handles API failures gracefully', () async {
-      // Test that the method doesn't crash when API fails
-      final events = await DataService.getEvents();
-
-      // Should return empty list or handle gracefully
-      expect(events, isA<List<Event>>());
+    tearDown(() {
+      DataService.resetHttpClient();
+      DataService.clearCache(); // Clear cache after each test
+      reset(mockClient);
     });
 
-    test('getNewsItems handles RSS failures gracefully', () async {
-      // Test that the method doesn't crash when RSS fails
-      final newsItems = await DataService.getNewsItems();
+    group('getNewsItems', () {
+      test('successfully parses RSS feed', () async {
+        // Mock RSS response
+        const rssXml = '''<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>International Touch News</title>
+    <item>
+      <title>Test News Item</title>
+      <link>https://example.com/news/test-item.html</link>
+      <description>This is a test news item description.</description>
+      <pubDate>Mon, 01 Jan 2024 12:00:00 +0000</pubDate>
+      <content:encoded><![CDATA[<p>This is the full content of the news item.</p>]]></content:encoded>
+    </item>
+  </channel>
+</rss>''';
 
-      // Should return empty list or handle gracefully
-      expect(newsItems, isA<List<NewsItem>>());
+        when(mockClient.get(
+          Uri.parse('https://www.internationaltouch.org/news/feeds/rss/'),
+          headers: anyNamed('headers'),
+        )).thenAnswer((_) async => http.Response(rssXml, 200));
+
+        final newsItems = await DataService.getNewsItems();
+
+        expect(newsItems, hasLength(1));
+        expect(newsItems.first.title, equals('Test News Item'));
+        expect(newsItems.first.summary, equals('This is a test news item description.'));
+        expect(newsItems.first.content, contains('This is the full content'));
+        expect(newsItems.first.link, equals('https://example.com/news/test-item.html'));
+      });
+
+      test('handles RSS feed failure gracefully', () async {
+        when(mockClient.get(
+          Uri.parse('https://www.internationaltouch.org/news/feeds/rss/'),
+          headers: anyNamed('headers'),
+        )).thenAnswer((_) async => http.Response('Not Found', 404));
+
+        expect(
+          () => DataService.getNewsItems(),
+          throwsA(isA<Exception>()),
+        );
+      });
+
+      test('handles network timeout', () async {
+        when(mockClient.get(
+          Uri.parse('https://www.internationaltouch.org/news/feeds/rss/'),
+          headers: anyNamed('headers'),
+        )).thenThrow(Exception('Connection timeout'));
+
+        expect(
+          () => DataService.getNewsItems(),
+          throwsA(isA<Exception>()),
+        );
+      });
+
+      test('handles malformed XML', () async {
+        when(mockClient.get(
+          Uri.parse('https://www.internationaltouch.org/news/feeds/rss/'),
+          headers: anyNamed('headers'),
+        )).thenAnswer((_) async => http.Response('Invalid XML content', 200));
+
+        expect(
+          () => DataService.getNewsItems(),
+          throwsA(isA<Exception>()),
+        );
+      });
     });
 
-    test('getDivisions handles missing parameters', () async {
-      try {
-        await DataService.getDivisions('', '');
-        fail('Should throw exception for empty parameters');
-      } catch (e) {
-        expect(e, isA<Exception>());
-      }
+    group('updateNewsItemImage', () {
+      test('successfully extracts Open Graph image', () async {
+        const htmlContent = '''
+<!DOCTYPE html>
+<html>
+<head>
+  <meta property="og:image" content="https://example.com/image.jpg" />
+</head>
+<body>Test content</body>
+</html>''';
+
+        final newsItem = NewsItem(
+          id: 'test',
+          title: 'Test Item',
+          summary: 'Test summary',
+          imageUrl: 'placeholder.jpg',
+          publishedAt: DateTime.now(),
+          link: 'https://example.com/article',
+        );
+
+        when(mockClient.get(Uri.parse('https://example.com/article')))
+            .thenAnswer((_) async => http.Response(htmlContent, 200));
+
+        await DataService.updateNewsItemImage(newsItem);
+
+        expect(newsItem.imageUrl, equals('https://example.com/image.jpg'));
+      });
+
+      test('handles missing Open Graph image', () async {
+        const htmlContent = '''
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Article</title>
+</head>
+<body>Test content without og:image</body>
+</html>''';
+
+        final originalImageUrl = 'placeholder.jpg';
+        final newsItem = NewsItem(
+          id: 'test',
+          title: 'Test Item',
+          summary: 'Test summary',
+          imageUrl: originalImageUrl,
+          publishedAt: DateTime.now(),
+          link: 'https://example.com/article',
+        );
+
+        when(mockClient.get(Uri.parse('https://example.com/article')))
+            .thenAnswer((_) async => http.Response(htmlContent, 200));
+
+        await DataService.updateNewsItemImage(newsItem);
+
+        // Should remain unchanged when no og:image found
+        expect(newsItem.imageUrl, equals(originalImageUrl));
+      });
+
+      test('handles HTTP errors when fetching image', () async {
+        final originalImageUrl = 'placeholder.jpg';
+        final newsItem = NewsItem(
+          id: 'test',
+          title: 'Test Item',
+          summary: 'Test summary',
+          imageUrl: originalImageUrl,
+          publishedAt: DateTime.now(),
+          link: 'https://example.com/article',
+        );
+
+        when(mockClient.get(Uri.parse('https://example.com/article')))
+            .thenAnswer((_) async => http.Response('Not Found', 404));
+
+        await DataService.updateNewsItemImage(newsItem);
+
+        // Should remain unchanged on HTTP error
+        expect(newsItem.imageUrl, equals(originalImageUrl));
+      });
     });
 
-    test('getFixtures handles missing parameters', () async {
-      try {
-        await DataService.getFixtures('');
-        fail('Should throw exception for empty parameters');
-      } catch (e) {
-        expect(e, isA<Exception>());
-      }
+    group('testConnectivity', () {
+      test('returns true when connection successful', () async {
+        when(mockClient.get(
+          Uri.parse('https://www.google.com'),
+          headers: anyNamed('headers'),
+        )).thenAnswer((_) async => http.Response('OK', 200));
+
+        final result = await DataService.testConnectivity();
+
+        expect(result, isTrue);
+      });
+
+      test('returns false when connection fails', () async {
+        when(mockClient.get(
+          Uri.parse('https://www.google.com'),
+          headers: anyNamed('headers'),
+        )).thenThrow(Exception('Network error'));
+
+        final result = await DataService.testConnectivity();
+
+        expect(result, isFalse);
+      });
     });
 
-    test('getLadder handles missing parameters', () async {
-      try {
-        await DataService.getLadder('');
-        fail('Should throw exception for empty parameters');
-      } catch (e) {
-        expect(e, isA<Exception>());
-      }
+    group('getEvents', () {
+      test('handles API failures gracefully', () async {
+        final events = await DataService.getEvents();
+        expect(events, isA<List<Event>>());
+      });
     });
 
-    test('DataService methods return correct types', () async {
-      // Test return types without making real API calls
-      expect(() => DataService.getEvents(), returnsNormally);
-      expect(() => DataService.getNewsItems(), returnsNormally);
+    group('parameter validation', () {
+      test('getDivisions throws exception for empty parameters', () async {
+        expect(
+          () => DataService.getDivisions('', ''),
+          throwsA(isA<Exception>()),
+        );
+      });
+
+      test('getFixtures throws exception for empty parameters', () async {
+        expect(
+          () => DataService.getFixtures(''),
+          throwsA(isA<Exception>()),
+        );
+      });
+
+      test('getLadder throws exception for empty parameters', () async {
+        expect(
+          () => DataService.getLadder(''),
+          throwsA(isA<Exception>()),
+        );
+      });
     });
   });
 }

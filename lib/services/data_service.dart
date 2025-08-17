@@ -20,11 +20,26 @@ class DataService {
   static final Map<String, List<Division>> _cachedDivisions = {};
   static final Map<String, List<Team>> _cachedTeams = {};
   static final Map<String, List<Fixture>> _cachedFixtures = {};
+  
+  // HTTP client for dependency injection in tests
+  static http.Client? _httpClient;
+  static http.Client get httpClient => _httpClient ?? http.Client();
+  
+  // Method to set HTTP client for testing
+  static void setHttpClient(http.Client client) {
+    _httpClient = client;
+  }
+  
+  // Method to reset HTTP client (for tests)
+  static void resetHttpClient() {
+    _httpClient = null;
+  }
+  
 
   // Helper method to extract Open Graph image from HTML page
   static Future<String?> _extractOpenGraphImage(String url) async {
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await httpClient.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final html = response.body;
 
@@ -68,7 +83,7 @@ class DataService {
   // Test network connectivity
   static Future<bool> testConnectivity() async {
     try {
-      final response = await http.get(
+      final response = await httpClient.get(
         Uri.parse('https://www.google.com'),
         headers: {'User-Agent': 'FIT-Mobile-App/1.0'},
       ).timeout(const Duration(seconds: 10));
@@ -99,7 +114,7 @@ class DataService {
       const rssUrl = 'https://www.internationaltouch.org/news/feeds/rss/';
 
       // Add timeout and headers for better Android compatibility
-      final response = await http.get(
+      final response = await httpClient.get(
         Uri.parse(rssUrl),
         headers: {
           'User-Agent': 'FIT-Mobile-App/1.0',
