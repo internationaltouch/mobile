@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'dart:convert';
+import 'dart:async';
 import '../models/event.dart';
 import '../models/season.dart';
 import '../models/division.dart';
@@ -65,6 +66,20 @@ class DataService {
     return null;
   }
 
+  // Test network connectivity
+  static Future<bool> testConnectivity() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://www.google.com'),
+        headers: {'User-Agent': 'FIT-Mobile-App/1.0'},
+      ).timeout(const Duration(seconds: 10));
+      
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Update a news item's image URL asynchronously
   static Future<void> updateNewsItemImage(NewsItem newsItem) async {
     if (newsItem.link == null) return;
@@ -83,7 +98,15 @@ class DataService {
 
     try {
       const rssUrl = 'https://www.internationaltouch.org/news/feeds/rss/';
-      final response = await http.get(Uri.parse(rssUrl));
+      
+      // Add timeout and headers for better Android compatibility
+      final response = await http.get(
+        Uri.parse(rssUrl),
+        headers: {
+          'User-Agent': 'FIT-Mobile-App/1.0',
+          'Accept': 'application/rss+xml, application/xml, text/xml',
+        },
+      ).timeout(const Duration(seconds: 30));
       
       if (response.statusCode == 200) {
         final document = XmlDocument.parse(response.body);

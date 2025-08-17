@@ -21,6 +21,10 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
+    _testConnectivityAndLoadNews();
+  }
+
+  Future<void> _testConnectivityAndLoadNews() async {
     _newsFuture = DataService.getNewsItems();
   }
 
@@ -108,15 +112,6 @@ class _HomeViewState extends State<HomeView> {
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Error: ${snapshot.error}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.red[600],
-                fontFamily: 'monospace',
-              ),
-              textAlign: TextAlign.center,
-            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
@@ -142,14 +137,17 @@ class _HomeViewState extends State<HomeView> {
     final hasMoreItems = _allNewsItems.length > _visibleItemsCount;
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
       itemCount: visibleNewsItems.length + (hasMoreItems ? 1 : 0),
       itemBuilder: (context, index) {
         if (index < visibleNewsItems.length) {
           final newsItem = visibleNewsItems[index];
           return GestureDetector(
             onTap: () => _openNewsDetail(newsItem),
-            child: NewsCard(newsItem: newsItem),
+            child: NewsCard(
+              newsItem: newsItem,
+              shouldLoadImageImmediately: index < 3, // Load images for first 3 items immediately
+            ),
           );
         } else {
           // Show "Show more" button
@@ -203,8 +201,13 @@ class _HomeViewState extends State<HomeView> {
 
 class NewsCard extends StatefulWidget {
   final NewsItem newsItem;
+  final bool shouldLoadImageImmediately;
 
-  const NewsCard({super.key, required this.newsItem});
+  const NewsCard({
+    super.key, 
+    required this.newsItem,
+    this.shouldLoadImageImmediately = false,
+  });
 
   @override
   State<NewsCard> createState() => _NewsCardState();
@@ -219,29 +222,41 @@ class _NewsCardState extends State<NewsCard> {
   void initState() {
     super.initState();
     _originalImageUrl = widget.newsItem.imageUrl;
+    
+    // Load images immediately for the first few items to ensure they're visible on page load
+    if (widget.shouldLoadImageImmediately) {
+      _hasBeenVisible = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadImage();
+      });
+    }
   }
 
   Future<void> _loadImage() async {
-    if (widget.newsItem.link != null && !_imageLoading) {
+    // Don't load if already loading, already loaded, or no link available
+    if (_imageLoading || 
+        _hasBeenVisible || 
+        widget.newsItem.link == null ||
+        widget.newsItem.imageUrl != _originalImageUrl) {
+      return;
+    }
+
+    setState(() {
+      _imageLoading = true;
+      _hasBeenVisible = true; // Mark as loaded to prevent future loads
+    });
+    
+    await DataService.updateNewsItemImage(widget.newsItem);
+    
+    if (mounted) {
       setState(() {
-        _imageLoading = true;
+        _imageLoading = false;
       });
-      
-      await DataService.updateNewsItemImage(widget.newsItem);
-      
-      if (mounted) {
-        setState(() {
-          _imageLoading = false;
-        });
-      }
     }
   }
 
   void _onVisible() {
-    if (!_hasBeenVisible) {
-      _hasBeenVisible = true;
-      _loadImage();
-    }
+    _loadImage();
   }
 
   bool get _showSpinner {

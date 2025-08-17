@@ -65,15 +65,6 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                             style: Theme.of(context).textTheme.bodyMedium,
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Error: ${snapshot.error}',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.red[600],
-                              fontFamily: 'monospace',
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () {
