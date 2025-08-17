@@ -101,14 +101,15 @@ class _NewsDetailViewState extends State<NewsDetailView> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       ),
                     ),
                   ),
               ],
             ),
-            
+
             // Article content
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -119,20 +120,20 @@ class _NewsDetailViewState extends State<NewsDetailView> {
                   Text(
                     widget.newsItem.title,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Date
                   Text(
                     _formatDate(widget.newsItem.publishedAt),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                          color: Colors.grey[600],
+                        ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Content
                   if (widget.newsItem.content != null)
                     Html(

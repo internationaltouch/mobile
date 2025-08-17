@@ -146,7 +146,8 @@ class _HomeViewState extends State<HomeView> {
             onTap: () => _openNewsDetail(newsItem),
             child: NewsCard(
               newsItem: newsItem,
-              shouldLoadImageImmediately: index < 3, // Load images for first 3 items immediately
+              shouldLoadImageImmediately:
+                  index < 3, // Load images for first 3 items immediately
             ),
           );
         } else {
@@ -157,9 +158,11 @@ class _HomeViewState extends State<HomeView> {
               child: ElevatedButton(
                 onPressed: _showMoreItems,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: Text('Show more (${_allNewsItems.length - _visibleItemsCount} remaining)'),
+                child: Text(
+                    'Show more (${_allNewsItems.length - _visibleItemsCount} remaining)'),
               ),
             ),
           );
@@ -170,7 +173,8 @@ class _HomeViewState extends State<HomeView> {
 
   void _showMoreItems() {
     setState(() {
-      _visibleItemsCount = (_visibleItemsCount + 5).clamp(0, _allNewsItems.length);
+      _visibleItemsCount =
+          (_visibleItemsCount + 5).clamp(0, _allNewsItems.length);
     });
   }
 
@@ -189,7 +193,7 @@ class NewsCard extends StatefulWidget {
   final bool shouldLoadImageImmediately;
 
   const NewsCard({
-    super.key, 
+    super.key,
     required this.newsItem,
     this.shouldLoadImageImmediately = false,
   });
@@ -207,7 +211,7 @@ class _NewsCardState extends State<NewsCard> {
   void initState() {
     super.initState();
     _originalImageUrl = widget.newsItem.imageUrl;
-    
+
     // Load images immediately for the first few items to ensure they're visible on page load
     if (widget.shouldLoadImageImmediately) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -226,9 +230,9 @@ class _NewsCardState extends State<NewsCard> {
       _imageLoading = true;
       _hasBeenVisible = true; // Mark as loaded to prevent future loads
     });
-    
+
     await DataService.updateNewsItemImage(widget.newsItem);
-    
+
     if (mounted) {
       setState(() {
         _imageLoading = false;
@@ -238,8 +242,8 @@ class _NewsCardState extends State<NewsCard> {
 
   Future<void> _loadImage() async {
     // Don't load if already loading, already loaded, or no link available
-    if (_imageLoading || 
-        _hasBeenVisible || 
+    if (_imageLoading ||
+        _hasBeenVisible ||
         widget.newsItem.link == null ||
         widget.newsItem.imageUrl != _originalImageUrl) {
       return;
@@ -249,9 +253,9 @@ class _NewsCardState extends State<NewsCard> {
       _imageLoading = true;
       _hasBeenVisible = true; // Mark as loaded to prevent future loads
     });
-    
+
     await DataService.updateNewsItemImage(widget.newsItem);
-    
+
     if (mounted) {
       setState(() {
         _imageLoading = false;
@@ -336,7 +340,8 @@ class _NewsCardState extends State<NewsCard> {
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         ),
                       ),
@@ -351,10 +356,7 @@ class _NewsCardState extends State<NewsCard> {
                 children: [
                   Text(
                     widget.newsItem.title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall
-                        ?.copyWith(
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                   ),
@@ -366,10 +368,7 @@ class _NewsCardState extends State<NewsCard> {
                   const SizedBox(height: 8.0),
                   Text(
                     _formatDate(widget.newsItem.publishedAt),
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey[600],
                         ),
                   ),

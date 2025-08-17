@@ -24,7 +24,7 @@ void main() {
     test('getEvents handles API failures gracefully', () async {
       // Test that the method doesn't crash when API fails
       final events = await DataService.getEvents();
-      
+
       // Should return empty list or handle gracefully
       expect(events, isA<List<Event>>());
     });
@@ -32,7 +32,7 @@ void main() {
     test('getNewsItems handles RSS failures gracefully', () async {
       // Test that the method doesn't crash when RSS fails
       final newsItems = await DataService.getNewsItems();
-      
+
       // Should return empty list or handle gracefully
       expect(newsItems, isA<List<NewsItem>>());
     });

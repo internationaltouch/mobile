@@ -27,33 +27,33 @@ class DataService {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final html = response.body;
-        
+
         // Look for og:image meta tag using regex
         final ogImageMatch = RegExp(
           r'<meta\s+property="og:image"\s+content="([^"]+)"',
           caseSensitive: false,
         ).firstMatch(html);
-        
+
         if (ogImageMatch != null) {
           return ogImageMatch.group(1);
         }
-        
+
         // Fallback: look for meta name="og:image"
         final ogImageNameMatch = RegExp(
           r'<meta\s+name="og:image"\s+content="([^"]+)"',
           caseSensitive: false,
         ).firstMatch(html);
-        
+
         if (ogImageNameMatch != null) {
           return ogImageNameMatch.group(1);
         }
-        
+
         // Additional fallback: try different attribute order
         final ogImageFlexMatch = RegExp(
           r'<meta\s+content="([^"]+)"\s+property="og:image"',
           caseSensitive: false,
         ).firstMatch(html);
-        
+
         if (ogImageFlexMatch != null) {
           return ogImageFlexMatch.group(1);
         }
@@ -61,7 +61,7 @@ class DataService {
     } catch (e) {
       debugPrint('Failed to extract Open Graph image from $url: $e');
     }
-    
+
     return null;
   }
 
@@ -72,7 +72,7 @@ class DataService {
         Uri.parse('https://www.google.com'),
         headers: {'User-Agent': 'FIT-Mobile-App/1.0'},
       ).timeout(const Duration(seconds: 10));
-      
+
       return response.statusCode == 200;
     } catch (e) {
       return false;
@@ -82,7 +82,7 @@ class DataService {
   // Update a news item's image URL asynchronously
   static Future<void> updateNewsItemImage(NewsItem newsItem) async {
     if (newsItem.link == null) return;
-    
+
     final imageUrl = await _extractOpenGraphImage(newsItem.link!);
     if (imageUrl != null) {
       newsItem.imageUrl = imageUrl;
@@ -97,7 +97,7 @@ class DataService {
 
     try {
       const rssUrl = 'https://www.internationaltouch.org/news/feeds/rss/';
-      
+
       // Add timeout and headers for better Android compatibility
       final response = await http.get(
         Uri.parse(rssUrl),
@@ -106,32 +106,36 @@ class DataService {
           'Accept': 'application/rss+xml, application/xml, text/xml',
         },
       ).timeout(const Duration(seconds: 30));
-      
+
       if (response.statusCode == 200) {
         final document = XmlDocument.parse(response.body);
         final items = document.findAllElements('item');
         final newsItems = <NewsItem>[];
-        
+
         for (final item in items) {
           final title = item.findElements('title').first.innerText;
           final link = item.findElements('link').first.innerText;
           final description = item.findElements('description').first.innerText;
           final pubDateText = item.findElements('pubDate').first.innerText;
-          
+
           // Extract content:encoded if available
           String? fullContent;
           try {
             // Try to find content:encoded element
-            final contentEncodedElements = item.findAllElements('*').where((element) => 
-              element.name.local == 'encoded' && 
-              (element.name.namespaceUri?.contains('content') == true || element.name.prefix == 'content')
-            );
-            
+            final contentEncodedElements = item.findAllElements('*').where(
+                (element) =>
+                    element.name.local == 'encoded' &&
+                    (element.name.namespaceUri?.contains('content') == true ||
+                        element.name.prefix == 'content'));
+
             if (contentEncodedElements.isNotEmpty) {
               fullContent = contentEncodedElements.first.innerText;
             } else {
               // Fallback: try to find content element with type="html"
-              final contentElement = item.findElements('content').where((e) => e.getAttribute('type') == 'html').firstOrNull;
+              final contentElement = item
+                  .findElements('content')
+                  .where((e) => e.getAttribute('type') == 'html')
+                  .firstOrNull;
               if (contentElement != null) {
                 fullContent = contentElement.innerText;
               }
@@ -139,37 +143,40 @@ class DataService {
           } catch (e) {
             debugPrint('Failed to extract content:encoded: $e');
           }
-          
+
           // Parse RSS date format (e.g., "Mon, 01 Jan 2024 12:00:00 +0000")
           DateTime publishedAt;
           try {
-            publishedAt = DateTime.parse(pubDateText.replaceAll(RegExp(r'[A-Za-z]{3}, '), '').replaceAll(RegExp(r' \+\d{4}'), ''));
+            publishedAt = DateTime.parse(pubDateText
+                .replaceAll(RegExp(r'[A-Za-z]{3}, '), '')
+                .replaceAll(RegExp(r' \+\d{4}'), ''));
           } catch (e) {
             publishedAt = DateTime.now();
           }
-          
+
           // Clean HTML from description for summary
           final cleanDescription = description
               .replaceAll(RegExp(r'<[^>]*>'), '')
               .replaceAll(RegExp(r'\s+'), ' ')
               .trim();
-          
+
           // Decode HTML entities from full content if available
           String? decodedContent;
           if (fullContent != null) {
             try {
               final document = html_parser.parse(fullContent);
-              decodedContent = document.documentElement?.innerHtml ?? fullContent;
+              decodedContent =
+                  document.documentElement?.innerHtml ?? fullContent;
             } catch (e) {
               decodedContent = fullContent;
             }
           }
-          
+
           // Create news item with placeholder image initially
           final newsItem = NewsItem(
             id: link.split('/').last.replaceAll('.html', ''),
             title: title,
-            summary: cleanDescription.length > 150 
+            summary: cleanDescription.length > 150
                 ? '${cleanDescription.substring(0, 150)}...'
                 : cleanDescription,
             imageUrl: AppConfig.getPlaceholderImageUrl(
@@ -183,10 +190,10 @@ class DataService {
             content: decodedContent ?? cleanDescription,
             link: link,
           );
-          
+
           newsItems.add(newsItem);
         }
-        
+
         _cachedNews = newsItems;
         return newsItems;
       } else {
@@ -329,7 +336,8 @@ class DataService {
     }
 
     if (eventId == null || season == null) {
-      throw Exception('eventId and season are required to fetch teams from API');
+      throw Exception(
+          'eventId and season are required to fetch teams from API');
     }
 
     try {
@@ -365,7 +373,8 @@ class DataService {
     }
 
     if (eventId == null || season == null) {
-      throw Exception('eventId and season are required to fetch fixtures from API');
+      throw Exception(
+          'eventId and season are required to fetch fixtures from API');
     }
 
     try {
@@ -519,5 +528,4 @@ class DataService {
     _cachedTeams.clear();
     _cachedFixtures.clear();
   }
-
 }
