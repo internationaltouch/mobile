@@ -97,8 +97,7 @@ class DataService {
       return events;
     } catch (e) {
       debugPrint('Failed to fetch events from API: $e');
-      // Return fallback mock data if API fails
-      return _getMockEvents();
+      rethrow;
     }
   }
 
@@ -179,8 +178,7 @@ class DataService {
       return divisions;
     } catch (e) {
       debugPrint('Failed to fetch divisions from API: $e');
-      // Return fallback mock data if API fails
-      return _getMockDivisions(eventId, season);
+      rethrow;
     }
   }
 
@@ -192,8 +190,7 @@ class DataService {
     }
 
     if (eventId == null || season == null) {
-      // Fallback to mock data if we don't have the required parameters
-      return _getMockTeams(divisionId);
+      throw Exception('eventId and season are required to fetch teams from API');
     }
 
     try {
@@ -217,8 +214,7 @@ class DataService {
       return teams;
     } catch (e) {
       debugPrint('Failed to fetch teams from API: $e');
-      // Return fallback mock data if API fails
-      return _getMockTeams(divisionId);
+      rethrow;
     }
   }
 
@@ -230,8 +226,7 @@ class DataService {
     }
 
     if (eventId == null || season == null) {
-      // Fallback to mock data if we don't have the required parameters
-      return _getMockFixtures(divisionId);
+      throw Exception('eventId and season are required to fetch fixtures from API');
     }
 
     try {
@@ -277,8 +272,7 @@ class DataService {
       return fixtures;
     } catch (e) {
       debugPrint('Failed to fetch fixtures from API: $e');
-      // Return fallback mock data if API fails
-      return _getMockFixtures(divisionId);
+      rethrow;
     }
   }
 
@@ -374,8 +368,7 @@ class DataService {
       return sortedLadder;
     } catch (e) {
       debugPrint('Failed to calculate ladder: $e');
-      // Return fallback mock data if calculation fails
-      return _getMockLadder(divisionId);
+      rethrow;
     }
   }
 
@@ -387,98 +380,4 @@ class DataService {
     _cachedFixtures.clear();
   }
 
-  // Fallback mock data methods
-  static List<Event> _getMockEvents() {
-    return [
-      Event(
-        id: '1',
-        name: 'Touch World Cup',
-        logoUrl: AppConfig.getCompetitionLogoUrl('TWC'),
-        seasons: [
-          Season(title: '2024', slug: '2024'),
-          Season(title: '2022', slug: '2022'),
-          Season(title: '2020', slug: '2020'),
-        ],
-        description: 'The premier international touch tournament',
-      ),
-      Event(
-        id: '2',
-        name: 'European Touch Championships',
-        logoUrl: AppConfig.getPlaceholderImageUrl(
-          width: 100,
-          height: 100,
-          backgroundColor: '388E3C',
-          textColor: 'FFFFFF',
-          text: 'ETC',
-        ),
-        seasons: [
-          Season(title: '2024', slug: '2024'),
-          Season(title: '2023', slug: '2023'),
-        ],
-        description: 'European regional championship event',
-      ),
-    ];
-  }
-
-  static List<Division> _getMockDivisions(String eventId, String season) {
-    return [
-      Division(
-        id: '1',
-        name: "Men's Open",
-        eventId: eventId,
-        season: season,
-        color: '#1976D2',
-      ),
-      Division(
-        id: '2',
-        name: "Women's Open",
-        eventId: eventId,
-        season: season,
-        color: '#388E3C',
-      ),
-    ];
-  }
-
-  static List<Team> _getMockTeams(String divisionId) {
-    return [
-      Team(id: '1', name: 'ThunderCats', divisionId: divisionId),
-      Team(id: '2', name: 'StormBreakers', divisionId: divisionId),
-    ];
-  }
-
-  static List<Fixture> _getMockFixtures(String divisionId) {
-    final baseDate = DateTime.now();
-    return [
-      Fixture(
-        id: '1',
-        homeTeamId: '1',
-        awayTeamId: '2',
-        homeTeamName: 'ThunderCats',
-        awayTeamName: 'StormBreakers',
-        dateTime: baseDate.add(const Duration(hours: 2)),
-        field: 'Field 1',
-        divisionId: divisionId,
-        homeScore: 12,
-        awayScore: 8,
-        isCompleted: true,
-      ),
-    ];
-  }
-
-  static List<LadderEntry> _getMockLadder(String divisionId) {
-    return [
-      LadderEntry(
-        teamId: '1',
-        teamName: 'ThunderCats',
-        played: 1,
-        wins: 1,
-        draws: 0,
-        losses: 0,
-        points: 3,
-        goalDifference: 4,
-        goalsFor: 12,
-        goalsAgainst: 8,
-      ),
-    ];
-  }
 }
