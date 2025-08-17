@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
+import 'package:html/parser.dart' as html_parser;
 import 'dart:convert';
 import '../models/event.dart';
 import '../models/season.dart';
@@ -64,6 +65,16 @@ class DataService {
     return null;
   }
 
+  // Update a news item's image URL asynchronously
+  static Future<void> updateNewsItemImage(NewsItem newsItem) async {
+    if (newsItem.link == null) return;
+    
+    final imageUrl = await _extractOpenGraphImage(newsItem.link!);
+    if (imageUrl != null) {
+      newsItem.imageUrl = imageUrl;
+    }
+  }
+
   // Fetch news from RSS feed
   static Future<List<NewsItem>> getNewsItems() async {
     if (_cachedNews != null) {
@@ -85,6 +96,28 @@ class DataService {
           final description = item.findElements('description').first.innerText;
           final pubDateText = item.findElements('pubDate').first.innerText;
           
+          // Extract content:encoded if available
+          String? fullContent;
+          try {
+            // Try to find content:encoded element
+            final contentEncodedElements = item.findAllElements('*').where((element) => 
+              element.name.local == 'encoded' && 
+              (element.name.namespaceUri?.contains('content') == true || element.name.prefix == 'content')
+            );
+            
+            if (contentEncodedElements.isNotEmpty) {
+              fullContent = contentEncodedElements.first.innerText;
+            } else {
+              // Fallback: try to find content element with type="html"
+              final contentElement = item.findElements('content').where((e) => e.getAttribute('type') == 'html').firstOrNull;
+              if (contentElement != null) {
+                fullContent = contentElement.innerText;
+              }
+            }
+          } catch (e) {
+            debugPrint('Failed to extract content:encoded: $e');
+          }
+          
           // Parse RSS date format (e.g., "Mon, 01 Jan 2024 12:00:00 +0000")
           DateTime publishedAt;
           try {
@@ -93,22 +126,31 @@ class DataService {
             publishedAt = DateTime.now();
           }
           
-          // Extract Open Graph image from HTML page
-          String? imageUrl = await _extractOpenGraphImage(link);
-          
           // Clean HTML from description for summary
           final cleanDescription = description
               .replaceAll(RegExp(r'<[^>]*>'), '')
               .replaceAll(RegExp(r'\s+'), ' ')
               .trim();
           
+          // Decode HTML entities from full content if available
+          String? decodedContent;
+          if (fullContent != null) {
+            try {
+              final document = html_parser.parse(fullContent);
+              decodedContent = document.documentElement?.innerHtml ?? fullContent;
+            } catch (e) {
+              decodedContent = fullContent;
+            }
+          }
+          
+          // Create news item with placeholder image initially
           final newsItem = NewsItem(
             id: link.split('/').last.replaceAll('.html', ''),
             title: title,
             summary: cleanDescription.length > 150 
                 ? '${cleanDescription.substring(0, 150)}...'
                 : cleanDescription,
-            imageUrl: imageUrl ?? AppConfig.getPlaceholderImageUrl(
+            imageUrl: AppConfig.getPlaceholderImageUrl(
               width: 300,
               height: 200,
               backgroundColor: '1976D2',
@@ -116,7 +158,8 @@ class DataService {
               text: 'News',
             ),
             publishedAt: publishedAt,
-            content: cleanDescription,
+            content: decodedContent ?? cleanDescription,
+            link: link,
           );
           
           newsItems.add(newsItem);

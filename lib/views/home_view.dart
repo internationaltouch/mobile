@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import '../models/news_item.dart';
 import '../services/data_service.dart';
 import 'competitions_view.dart';
+import 'news_detail_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -13,6 +15,8 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   int _selectedIndex = 0;
   late Future<List<NewsItem>> _newsFuture;
+  List<NewsItem> _allNewsItems = [];
+  int _visibleItemsCount = 10;
 
   @override
   void initState() {
@@ -104,6 +108,15 @@ class _HomeViewState extends State<HomeView> {
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Error: ${snapshot.error}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.red[600],
+                fontFamily: 'monospace',
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
@@ -124,77 +137,51 @@ class _HomeViewState extends State<HomeView> {
       );
     }
 
-    final newsItems = snapshot.data!;
+    _allNewsItems = snapshot.data!;
+    final visibleNewsItems = _allNewsItems.take(_visibleItemsCount).toList();
+    final hasMoreItems = _allNewsItems.length > _visibleItemsCount;
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      itemCount: newsItems.length,
+      itemCount: visibleNewsItems.length + (hasMoreItems ? 1 : 0),
       itemBuilder: (context, index) {
-        final newsItem = newsItems[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12.0),
+        if (index < visibleNewsItems.length) {
+          final newsItem = visibleNewsItems[index];
+          return GestureDetector(
+            onTap: () => _openNewsDetail(newsItem),
+            child: NewsCard(newsItem: newsItem),
+          );
+        } else {
+          // Show "Show more" button
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+              child: ElevatedButton(
+                onPressed: _showMoreItems,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: Image.network(
-                  newsItem.imageUrl,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 200,
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: Icon(
-                          Icons.image_not_supported,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                child: Text('Show more (${_allNewsItems.length - _visibleItemsCount} remaining)'),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      newsItem.title,
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      newsItem.summary,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      _formatDate(newsItem.publishedAt),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
+            ),
+          );
+        }
       },
+    );
+  }
+
+  void _showMoreItems() {
+    setState(() {
+      _visibleItemsCount = (_visibleItemsCount + 5).clamp(0, _allNewsItems.length);
+    });
+  }
+
+  void _openNewsDetail(NewsItem newsItem) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NewsDetailView(newsItem: newsItem),
+      ),
     );
   }
 
@@ -211,5 +198,168 @@ class _HomeViewState extends State<HomeView> {
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }
+  }
+}
+
+class NewsCard extends StatefulWidget {
+  final NewsItem newsItem;
+
+  const NewsCard({super.key, required this.newsItem});
+
+  @override
+  State<NewsCard> createState() => _NewsCardState();
+}
+
+class _NewsCardState extends State<NewsCard> {
+  bool _imageLoading = false;
+  bool _hasBeenVisible = false;
+  String? _originalImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _originalImageUrl = widget.newsItem.imageUrl;
+  }
+
+  Future<void> _loadImage() async {
+    if (widget.newsItem.link != null && !_imageLoading) {
+      setState(() {
+        _imageLoading = true;
+      });
+      
+      await DataService.updateNewsItemImage(widget.newsItem);
+      
+      if (mounted) {
+        setState(() {
+          _imageLoading = false;
+        });
+      }
+    }
+  }
+
+  void _onVisible() {
+    if (!_hasBeenVisible) {
+      _hasBeenVisible = true;
+      _loadImage();
+    }
+  }
+
+  bool get _showSpinner {
+    return _imageLoading && widget.newsItem.imageUrl == _originalImageUrl;
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return VisibilityDetector(
+      key: Key('news_card_${widget.newsItem.id}'),
+      onVisibilityChanged: (visibilityInfo) {
+        if (visibilityInfo.visibleFraction > 0.1) {
+          _onVisible();
+        }
+      },
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12.0),
+              ),
+              child: Stack(
+                children: [
+                  Image.network(
+                    widget.newsItem.imageUrl,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.grey[300],
+                        child: const Center(
+                          child: Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  if (_showSpinner && widget.newsItem.link != null)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.newsItem.title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    widget.newsItem.summary,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    _formatDate(widget.newsItem.publishedAt),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -61,13 +61,18 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Using mock data',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                            'Please check your internet connection and try again.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Error: ${snapshot.error}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.red[600],
+                              fontFamily: 'monospace',
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(

@@ -2,9 +2,10 @@ class NewsItem {
   final String id;
   final String title;
   final String summary;
-  final String imageUrl;
+  String imageUrl;
   final DateTime publishedAt;
   final String? content;
+  final String? link;
 
   NewsItem({
     required this.id,
@@ -13,6 +14,7 @@ class NewsItem {
     required this.imageUrl,
     required this.publishedAt,
     this.content,
+    this.link,
   });
 
   factory NewsItem.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class NewsItem {
       imageUrl: json['imageUrl'],
       publishedAt: DateTime.parse(json['publishedAt']),
       content: json['content'],
+      link: json['link'],
     );
   }
 
@@ -34,6 +37,7 @@ class NewsItem {
       'imageUrl': imageUrl,
       'publishedAt': publishedAt.toIso8601String(),
       'content': content,
+      'link': link,
     };
   }
 }
