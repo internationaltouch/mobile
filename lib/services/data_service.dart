@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 import 'package:html/parser.dart' as html_parser;
-import 'dart:convert';
 import 'dart:async';
 import '../models/event.dart';
 import '../models/season.dart';

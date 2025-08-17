@@ -138,14 +138,14 @@ class _NewsDetailViewState extends State<NewsDetailView> {
                     Html(
                       data: widget.newsItem.content!,
                       style: {
-                        "body": Style(
+                        'body': Style(
                           margin: Margins.zero,
                           padding: HtmlPaddings.zero,
                         ),
-                        "p": Style(
+                        'p': Style(
                           margin: Margins.only(bottom: 16),
                         ),
-                        "img": Style(
+                        'img': Style(
                           width: Width(double.infinity),
                           height: Height.auto(),
                         ),
