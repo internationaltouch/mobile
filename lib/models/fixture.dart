@@ -4,6 +4,8 @@ class Fixture {
   final String awayTeamId;
   final String homeTeamName;
   final String awayTeamName;
+  final String? homeTeamAbbreviation; // Club abbreviation for home team
+  final String? awayTeamAbbreviation; // Club abbreviation for away team
   final DateTime dateTime;
   final String field;
   final String divisionId;
@@ -19,6 +21,8 @@ class Fixture {
     required this.awayTeamId,
     required this.homeTeamName,
     required this.awayTeamName,
+    this.homeTeamAbbreviation,
+    this.awayTeamAbbreviation,
     required this.dateTime,
     required this.field,
     required this.divisionId,
@@ -50,6 +54,8 @@ class Fixture {
           json['awayTeamId']?.toString() ?? json['away_team']?.toString() ?? '',
       homeTeamName: json['homeTeamName'] ?? '',
       awayTeamName: json['awayTeamName'] ?? '',
+      homeTeamAbbreviation: _extractTeamAbbreviation(json, 'home_team'),
+      awayTeamAbbreviation: _extractTeamAbbreviation(json, 'away_team'),
       dateTime: parsedDateTime,
       field: json['field'] ?? json['play_at']?['title'] ?? '',
       divisionId: json['divisionId'] ?? '',
@@ -62,6 +68,19 @@ class Fixture {
     );
   }
 
+  static String? _extractTeamAbbreviation(Map<String, dynamic> json, String teamKey) {
+    // Try to extract abbreviation from team data structure
+    final teamData = json[teamKey];
+    if (teamData is Map<String, dynamic>) {
+      // Check if team data has club information
+      final club = teamData['club'];
+      if (club is Map<String, dynamic>) {
+        return club['abbreviation'] as String?;
+      }
+    }
+    return null;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -69,6 +88,8 @@ class Fixture {
       'awayTeamId': awayTeamId,
       'homeTeamName': homeTeamName,
       'awayTeamName': awayTeamName,
+      'homeTeamAbbreviation': homeTeamAbbreviation,
+      'awayTeamAbbreviation': awayTeamAbbreviation,
       'dateTime': dateTime.toIso8601String(),
       'field': field,
       'divisionId': divisionId,
@@ -85,5 +106,19 @@ class Fixture {
       return '$homeScore - $awayScore';
     }
     return '';
+  }
+
+  String? get homeTeamFlagUrl {
+    if (homeTeamAbbreviation != null) {
+      return 'https://www.internationaltouch.org/static/images/flag-${homeTeamAbbreviation}x2.png';
+    }
+    return null;
+  }
+
+  String? get awayTeamFlagUrl {
+    if (awayTeamAbbreviation != null) {
+      return 'https://www.internationaltouch.org/static/images/flag-${awayTeamAbbreviation}x2.png';
+    }
+    return null;
   }
 }

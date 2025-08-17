@@ -4,6 +4,7 @@ import '../models/division.dart';
 import '../models/fixture.dart';
 import '../models/ladder_entry.dart';
 import '../services/data_service.dart';
+import '../widgets/match_score_card.dart';
 
 class FixturesResultsView extends StatefulWidget {
   final Event event;
@@ -118,128 +119,17 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
                   itemCount: fixtures.length,
                   itemBuilder: (context, index) {
                     final fixture = fixtures[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12.0),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    '${fixture.homeTeamName} vs ${fixture.awayTeamName}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                  ),
-                                ),
-                                if (fixture.isCompleted)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                      vertical: 4.0,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green,
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                    child: const Text(
-                                      'FINAL',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            if (fixture.round != null) ...[
-                              const SizedBox(height: 4.0),
-                              Text(
-                                fixture.round!,
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 8.0),
-                            if (fixture.isCompleted &&
-                                fixture.resultText.isNotEmpty)
-                              Text(
-                                'Result: ${fixture.resultText}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(
-                                      color: Colors.green[700],
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              )
-                            else if (fixture.isBye == true)
-                              Text(
-                                'BYE',
-                                style: TextStyle(
-                                  color: Colors.grey[700],
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              )
-                            else
-                              Text(
-                                'Scheduled',
-                                style: TextStyle(
-                                  color: Colors.orange[700],
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            const SizedBox(height: 8.0),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.access_time,
-                                  size: 16,
-                                  color: Colors.grey[600],
-                                ),
-                                const SizedBox(width: 4.0),
-                                Text(
-                                  _formatDateTime(fixture.dateTime),
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(width: 16.0),
-                                Icon(
-                                  Icons.location_on,
-                                  size: 16,
-                                  color: Colors.grey[600],
-                                ),
-                                const SizedBox(width: 4.0),
-                                Expanded(
-                                  child: Text(
-                                    fixture.field,
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                    return MatchScoreCard(
+                      fixture: fixture,
+                      // You can add location data here when available
+                      // homeTeamLocation: 'Dharug',
+                      // awayTeamLocation: 'Wurundjeri',
+                      venue: fixture.field.isNotEmpty ? fixture.field : null,
+                      // venueLocation: 'Sydney', // Add when available
                     );
                   },
                 ),
@@ -401,24 +291,4 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
     }
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = dateTime.difference(now);
-
-    if (difference.inDays == 0) {
-      return 'Today ${_formatTime(dateTime)}';
-    } else if (difference.inDays == 1) {
-      return 'Tomorrow ${_formatTime(dateTime)}';
-    } else if (difference.inDays > 0) {
-      return '${dateTime.day}/${dateTime.month} ${_formatTime(dateTime)}';
-    } else {
-      return '${dateTime.day}/${dateTime.month} ${_formatTime(dateTime)}';
-    }
-  }
-
-  String _formatTime(DateTime dateTime) {
-    final hour = dateTime.hour.toString().padLeft(2, '0');
-    final minute = dateTime.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
 }
