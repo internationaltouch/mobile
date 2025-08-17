@@ -443,6 +443,8 @@ class DataService {
             awayTeamId: match['away_team']?.toString() ?? '',
             homeTeamName: homeTeam?.name ?? 'TBD',
             awayTeamName: awayTeam?.name ?? 'TBD',
+            homeTeamAbbreviation: homeTeam?.abbreviation,
+            awayTeamAbbreviation: awayTeam?.abbreviation,
             dateTime: match['datetime'] != null
                 ? DateTime.parse(match['datetime'])
                 : DateTime.now(),

@@ -46,16 +46,19 @@ class Fixture {
       parsedDateTime = DateTime.now();
     }
 
+    final homeAbbreviation = _extractTeamAbbreviation(json, 'home_team');
+    final awayAbbreviation = _extractTeamAbbreviation(json, 'away_team');
+
     return Fixture(
       id: json['id']?.toString() ?? '',
       homeTeamId:
           json['homeTeamId']?.toString() ?? json['home_team']?.toString() ?? '',
       awayTeamId:
           json['awayTeamId']?.toString() ?? json['away_team']?.toString() ?? '',
-      homeTeamName: json['homeTeamName'] ?? '',
-      awayTeamName: json['awayTeamName'] ?? '',
-      homeTeamAbbreviation: _extractTeamAbbreviation(json, 'home_team'),
-      awayTeamAbbreviation: _extractTeamAbbreviation(json, 'away_team'),
+      homeTeamName: json['homeTeamName'] ?? json['home_team']?['name'] ?? '',
+      awayTeamName: json['awayTeamName'] ?? json['away_team']?['name'] ?? '',
+      homeTeamAbbreviation: homeAbbreviation,
+      awayTeamAbbreviation: awayAbbreviation,
       dateTime: parsedDateTime,
       field: json['field'] ?? json['play_at']?['title'] ?? '',
       divisionId: json['divisionId'] ?? '',
@@ -69,15 +72,42 @@ class Fixture {
   }
 
   static String? _extractTeamAbbreviation(Map<String, dynamic> json, String teamKey) {
-    // Try to extract abbreviation from team data structure
+    // Try multiple possible data structures for team abbreviation
+    
+    // 1. Try from nested team object with club data
     final teamData = json[teamKey];
     if (teamData is Map<String, dynamic>) {
-      // Check if team data has club information
       final club = teamData['club'];
       if (club is Map<String, dynamic>) {
-        return club['abbreviation'] as String?;
+        final abbreviation = club['abbreviation'] as String?;
+        if (abbreviation != null && abbreviation.isNotEmpty) {
+          return abbreviation;
+        }
       }
     }
+    
+    // 2. Try from direct team data if it's a map
+    if (teamData is Map<String, dynamic>) {
+      final abbreviation = teamData['abbreviation'] as String?;
+      if (abbreviation != null && abbreviation.isNotEmpty) {
+        return abbreviation;
+      }
+    }
+    
+    // 3. Try alternative key patterns for different API responses
+    final alternativeKeys = [
+      '${teamKey}_abbreviation',
+      '${teamKey}Abbreviation',
+      teamKey.replaceAll('_team', 'TeamAbbreviation'),
+    ];
+    
+    for (final key in alternativeKeys) {
+      final abbreviation = json[key] as String?;
+      if (abbreviation != null && abbreviation.isNotEmpty) {
+        return abbreviation;
+      }
+    }
+    
     return null;
   }
 
