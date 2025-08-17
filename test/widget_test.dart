@@ -6,6 +6,10 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const FITMobileApp());
 
+    // Allow time for initial data loading attempts
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
     // Verify that the app loads with the correct title.
     expect(find.text('FIT Mobile App'), findsOneWidget);
 
@@ -16,6 +20,10 @@ void main() {
 
   testWidgets('Navigation to competitions works', (WidgetTester tester) async {
     await tester.pumpWidget(const FITMobileApp());
+
+    // Allow time for initial data loading attempts
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     // Tap the 'Competitions' tab
     await tester.tap(find.text('Competitions'));
