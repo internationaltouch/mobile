@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../models/season.dart';
+import '../services/data_service.dart';
 import 'divisions_view.dart';
 
 class EventDetailView extends StatefulWidget {
@@ -14,17 +15,39 @@ class EventDetailView extends StatefulWidget {
 
 class _EventDetailViewState extends State<EventDetailView> {
   Season? selectedSeason;
+  late Future<Event> _eventFuture;
 
   @override
   void initState() {
     super.initState();
-    // Auto-select if only one season
-    if (widget.event.seasons.length == 1) {
-      selectedSeason = widget.event.seasons.first;
+    // Load seasons if not already loaded
+    _eventFuture = _loadEventSeasons();
+  }
+
+  Future<Event> _loadEventSeasons() async {
+    if (widget.event.seasonsLoaded) {
+      // Auto-select if only one season and already loaded
+      if (widget.event.seasons.length == 1) {
+        selectedSeason = widget.event.seasons.first;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _navigateToDivisions();
+        });
+      }
+      return widget.event;
+    }
+
+    // Load seasons lazily
+    final updatedEvent = await DataService.loadEventSeasons(widget.event);
+    
+    // Auto-select if only one season after loading
+    if (updatedEvent.seasons.length == 1) {
+      selectedSeason = updatedEvent.seasons.first;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _navigateToDivisions();
       });
     }
+    
+    return updatedEvent;
   }
 
   void _navigateToDivisions() {
@@ -104,40 +127,97 @@ class _EventDetailViewState extends State<EventDetailView> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView.builder(
-                itemCount: widget.event.seasons.length,
-                itemBuilder: (context, index) {
-                  final season = widget.event.seasons[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12.0),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        child: Text(
-                          season.title.length > 4
-                              ? season.title.substring(0, 4)
-                              : season.title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+              child: FutureBuilder<Event>(
+                future: _eventFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.red[300],
                           ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Failed to load seasons',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Please try again later.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _eventFuture = _loadEventSeasons();
+                              });
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final event = snapshot.data!;
+                  
+                  if (event.seasons.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No seasons available for this competition.',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: event.seasons.length,
+                    itemBuilder: (context, index) {
+                      final season = event.seasons[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12.0),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            child: Text(
+                              season.title.length > 4
+                                  ? season.title.substring(0, 4)
+                                  : season.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            '${season.title} Season',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'View divisions and results for ${season.title}',
+                          ),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                          onTap: () {
+                            selectedSeason = season;
+                            _navigateToDivisions();
+                          },
                         ),
-                      ),
-                      title: Text(
-                        '${season.title} Season',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'View divisions and results for ${season.title}',
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        selectedSeason = season;
-                        _navigateToDivisions();
-                      },
-                    ),
+                      );
+                    },
                   );
                 },
               ),

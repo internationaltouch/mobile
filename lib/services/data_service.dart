@@ -232,25 +232,21 @@ class DataService {
 
       for (final competition in apiCompetitions) {
         try {
-          // Fetch competition details to get seasons
-          final competitionDetails =
-              await ApiService.fetchCompetitionDetails(competition['slug']);
-
+          // Create event without seasons for fast loading
           final event = Event(
             id: competition['slug'],
             name: competition['title'],
             logoUrl: AppConfig.getCompetitionLogoUrl(
                 competition['title'].substring(0, 3).toUpperCase()),
-            seasons: (competitionDetails['seasons'] as List)
-                .map((season) => Season.fromJson(season))
-                .toList(),
+            seasons: [], // Empty initially - will be loaded when needed
             description: 'International touch tournament',
             slug: competition['slug'],
+            seasonsLoaded: false, // Mark as not loaded
           );
           events.add(event);
         } catch (e) {
           // Skip competitions that fail to load details
-          debugPrint('Failed to load details for ${competition['title']}: $e');
+          debugPrint('Failed to add competition ${competition['title']}: $e');
         }
       }
 
@@ -259,6 +255,38 @@ class DataService {
     } catch (e) {
       debugPrint('Failed to fetch events from API: $e');
       rethrow;
+    }
+  }
+
+  // Load seasons for a specific event (lazy loading)
+  static Future<Event> loadEventSeasons(Event event) async {
+    if (event.seasonsLoaded || event.slug == null) {
+      return event; // Already loaded or no slug available
+    }
+
+    try {
+      final competitionDetails = await ApiService.fetchCompetitionDetails(event.slug!);
+      final seasons = (competitionDetails['seasons'] as List)
+          .map((season) => Season.fromJson(season))
+          .toList();
+
+      final updatedEvent = event.copyWith(
+        seasons: seasons,
+        seasonsLoaded: true,
+      );
+
+      // Update cache
+      if (_cachedEvents != null) {
+        final index = _cachedEvents!.indexWhere((e) => e.id == event.id);
+        if (index != -1) {
+          _cachedEvents![index] = updatedEvent;
+        }
+      }
+
+      return updatedEvent;
+    } catch (e) {
+      debugPrint('Failed to load seasons for ${event.name}: $e');
+      return event; // Return original event if loading fails
     }
   }
 

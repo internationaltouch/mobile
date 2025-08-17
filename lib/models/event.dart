@@ -7,6 +7,7 @@ class Event {
   final List<Season> seasons;
   final String description;
   final String? slug; // Add slug for API compatibility
+  final bool seasonsLoaded; // Track if seasons have been loaded
 
   Event({
     required this.id,
@@ -15,6 +16,7 @@ class Event {
     required this.seasons,
     required this.description,
     this.slug,
+    this.seasonsLoaded = false,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class Event {
           : [],
       description: json['description'] ?? '',
       slug: json['slug'],
+      seasonsLoaded: json['seasons'] != null,
     );
   }
 
@@ -42,6 +45,28 @@ class Event {
       'seasons': seasons.map((s) => s.toJson()).toList(),
       'description': description,
       'slug': slug,
+      'seasonsLoaded': seasonsLoaded,
     };
+  }
+
+  // Create a copy with updated seasons
+  Event copyWith({
+    String? id,
+    String? name,
+    String? logoUrl,
+    List<Season>? seasons,
+    String? description,
+    String? slug,
+    bool? seasonsLoaded,
+  }) {
+    return Event(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      logoUrl: logoUrl ?? this.logoUrl,
+      seasons: seasons ?? this.seasons,
+      description: description ?? this.description,
+      slug: slug ?? this.slug,
+      seasonsLoaded: seasonsLoaded ?? this.seasonsLoaded,
+    );
   }
 }

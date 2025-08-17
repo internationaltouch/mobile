@@ -132,7 +132,7 @@ void main() {
 <body>Test content without og:image</body>
 </html>''';
 
-        final originalImageUrl = 'placeholder.jpg';
+        const originalImageUrl = 'placeholder.jpg';
         final newsItem = NewsItem(
           id: 'test',
           title: 'Test Item',
@@ -152,7 +152,7 @@ void main() {
       });
 
       test('handles HTTP errors when fetching image', () async {
-        final originalImageUrl = 'placeholder.jpg';
+        const originalImageUrl = 'placeholder.jpg';
         final newsItem = NewsItem(
           id: 'test',
           title: 'Test Item',
