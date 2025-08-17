@@ -12,12 +12,12 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   int _selectedIndex = 0;
-  late List<NewsItem> newsItems;
+  late Future<List<NewsItem>> _newsFuture;
 
   @override
   void initState() {
     super.initState();
-    newsItems = DataService.getNewsItems();
+    _newsFuture = DataService.getNewsItems();
   }
 
   @override
@@ -58,121 +58,143 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildNewsPage() {
-    return RefreshIndicator(
-      onRefresh: () async {
-        // Simulate refresh
-        await Future.delayed(const Duration(seconds: 1));
-        setState(() {
-          newsItems = DataService.getNewsItems();
-        });
+    return FutureBuilder<List<NewsItem>>(
+      future: _newsFuture,
+      builder: (context, snapshot) {
+        return RefreshIndicator(
+          onRefresh: () async {
+            // Clear cache and refresh
+            DataService.clearCache();
+            setState(() {
+              _newsFuture = DataService.getNewsItems();
+            });
+            await _newsFuture;
+          },
+          child: _buildNewsContent(snapshot),
+        );
       },
-      child: Column(
-        children: [
-          // Mock data indicator
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12.0),
-            margin: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.orange[50],
-              border: Border.all(color: Colors.orange[300]!),
-              borderRadius: BorderRadius.circular(8.0),
+    );
+  }
+
+  Widget _buildNewsContent(AsyncSnapshot<List<NewsItem>> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (snapshot.hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red[300],
             ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  color: Colors.orange[700],
-                  size: 20,
-                ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Text(
-                    'News is currently showing mock data. Real news feed is not yet available from the API.',
-                    style: TextStyle(
-                      color: Colors.orange[700],
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load news',
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              itemCount: newsItems.length,
-              itemBuilder: (context, index) {
-                final newsItem = newsItems[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(12.0),
-                        ),
-                        child: Image.network(
-                          newsItem.imageUrl,
-                          height: 200,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 200,
-                              color: Colors.grey[300],
-                              child: const Center(
-                                child: Icon(
-                                  Icons.image_not_supported,
-                                  size: 50,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              newsItem.title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 8.0),
-                            Text(
-                              newsItem.summary,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            const SizedBox(height: 8.0),
-                            Text(
-                              _formatDate(newsItem.publishedAt),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: Colors.grey[600],
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+            const SizedBox(height: 8),
+            Text(
+              'Please check your internet connection and try again.',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _newsFuture = DataService.getNewsItems();
+                });
               },
+              child: const Text('Retry'),
             ),
+          ],
+        ),
+      );
+    }
+
+    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      return const Center(
+        child: Text('No news items available'),
+      );
+    }
+
+    final newsItems = snapshot.data!;
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      itemCount: newsItems.length,
+      itemBuilder: (context, index) {
+        final newsItem = newsItems[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12.0),
+                ),
+                child: Image.network(
+                  newsItem.imageUrl,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          size: 50,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      newsItem.title,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      newsItem.summary,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      _formatDate(newsItem.publishedAt),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

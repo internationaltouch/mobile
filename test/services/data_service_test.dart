@@ -11,8 +11,8 @@ void main() {
       expect(events.first.name, isNotEmpty);
     });
 
-    test('getNewsItems returns a list of news items', () {
-      final newsItems = DataService.getNewsItems();
+    test('getNewsItems returns a list of news items', () async {
+      final newsItems = await DataService.getNewsItems();
 
       expect(newsItems, isNotEmpty);
       expect(newsItems.length, greaterThan(0));

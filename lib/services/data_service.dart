@@ -1,4 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart';
+import 'dart:convert';
 import '../models/event.dart';
 import '../models/season.dart';
 import '../models/division.dart';
@@ -12,51 +15,122 @@ import 'api_service.dart';
 class DataService {
   // Cache for API data
   static List<Event>? _cachedEvents;
+  static List<NewsItem>? _cachedNews;
   static final Map<String, List<Division>> _cachedDivisions = {};
   static final Map<String, List<Team>> _cachedTeams = {};
   static final Map<String, List<Fixture>> _cachedFixtures = {};
 
-  // Static data for news (API doesn't expose news yet)
-  static List<NewsItem> getNewsItems() {
-    return [
-      NewsItem(
-        id: '1',
-        title: 'Touch World Cup 2024 Announced',
-        summary:
-            'The next Touch World Cup will be held in Australia, featuring teams from over 20 nations.',
-        imageUrl: AppConfig.getCompetitionImageUrl('Touch World Cup'),
-        publishedAt: DateTime.now().subtract(const Duration(days: 2)),
-        content: 'Full details about the upcoming Touch World Cup...',
-      ),
-      NewsItem(
-        id: '2',
-        title: 'European Touch Championships Update',
-        summary:
-            'Registration is now open for the European Touch Championships with exciting new divisions.',
-        imageUrl: AppConfig.getPlaceholderImageUrl(
-          width: 300,
-          height: 200,
-          backgroundColor: '388E3C',
-          textColor: 'FFFFFF',
-          text: 'European Championships',
-        ),
-        publishedAt: DateTime.now().subtract(const Duration(days: 5)),
-      ),
-      NewsItem(
-        id: '3',
-        title: 'Asian Touch Cup Results',
-        summary:
-            'Congratulations to all participating teams in the recently concluded Asian Touch Cup.',
-        imageUrl: AppConfig.getPlaceholderImageUrl(
-          width: 300,
-          height: 200,
-          backgroundColor: 'F57C00',
-          textColor: 'FFFFFF',
-          text: 'Asian Cup',
-        ),
-        publishedAt: DateTime.now().subtract(const Duration(days: 10)),
-      ),
-    ];
+  // Helper method to extract Open Graph image from HTML page
+  static Future<String?> _extractOpenGraphImage(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final html = response.body;
+        
+        // Look for og:image meta tag using regex
+        final ogImageMatch = RegExp(
+          r'<meta\s+property="og:image"\s+content="([^"]+)"',
+          caseSensitive: false,
+        ).firstMatch(html);
+        
+        if (ogImageMatch != null) {
+          return ogImageMatch.group(1);
+        }
+        
+        // Fallback: look for meta name="og:image"
+        final ogImageNameMatch = RegExp(
+          r'<meta\s+name="og:image"\s+content="([^"]+)"',
+          caseSensitive: false,
+        ).firstMatch(html);
+        
+        if (ogImageNameMatch != null) {
+          return ogImageNameMatch.group(1);
+        }
+        
+        // Additional fallback: try different attribute order
+        final ogImageFlexMatch = RegExp(
+          r'<meta\s+content="([^"]+)"\s+property="og:image"',
+          caseSensitive: false,
+        ).firstMatch(html);
+        
+        if (ogImageFlexMatch != null) {
+          return ogImageFlexMatch.group(1);
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to extract Open Graph image from $url: $e');
+    }
+    
+    return null;
+  }
+
+  // Fetch news from RSS feed
+  static Future<List<NewsItem>> getNewsItems() async {
+    if (_cachedNews != null) {
+      return _cachedNews!;
+    }
+
+    try {
+      const rssUrl = 'https://www.internationaltouch.org/news/feeds/rss/';
+      final response = await http.get(Uri.parse(rssUrl));
+      
+      if (response.statusCode == 200) {
+        final document = XmlDocument.parse(response.body);
+        final items = document.findAllElements('item');
+        final newsItems = <NewsItem>[];
+        
+        for (final item in items) {
+          final title = item.findElements('title').first.innerText;
+          final link = item.findElements('link').first.innerText;
+          final description = item.findElements('description').first.innerText;
+          final pubDateText = item.findElements('pubDate').first.innerText;
+          
+          // Parse RSS date format (e.g., "Mon, 01 Jan 2024 12:00:00 +0000")
+          DateTime publishedAt;
+          try {
+            publishedAt = DateTime.parse(pubDateText.replaceAll(RegExp(r'[A-Za-z]{3}, '), '').replaceAll(RegExp(r' \+\d{4}'), ''));
+          } catch (e) {
+            publishedAt = DateTime.now();
+          }
+          
+          // Extract Open Graph image from HTML page
+          String? imageUrl = await _extractOpenGraphImage(link);
+          
+          // Clean HTML from description for summary
+          final cleanDescription = description
+              .replaceAll(RegExp(r'<[^>]*>'), '')
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .trim();
+          
+          final newsItem = NewsItem(
+            id: link.split('/').last.replaceAll('.html', ''),
+            title: title,
+            summary: cleanDescription.length > 150 
+                ? '${cleanDescription.substring(0, 150)}...'
+                : cleanDescription,
+            imageUrl: imageUrl ?? AppConfig.getPlaceholderImageUrl(
+              width: 300,
+              height: 200,
+              backgroundColor: '1976D2',
+              textColor: 'FFFFFF',
+              text: 'News',
+            ),
+            publishedAt: publishedAt,
+            content: cleanDescription,
+          );
+          
+          newsItems.add(newsItem);
+        }
+        
+        _cachedNews = newsItems;
+        return newsItems;
+      } else {
+        throw Exception('Failed to load RSS feed: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Failed to fetch news from RSS: $e');
+      rethrow;
+    }
   }
 
   // Fetch events from API
@@ -375,6 +449,7 @@ class DataService {
   // Clear cache to force refresh
   static void clearCache() {
     _cachedEvents = null;
+    _cachedNews = null;
     _cachedDivisions.clear();
     _cachedTeams.clear();
     _cachedFixtures.clear();
