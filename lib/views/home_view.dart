@@ -225,9 +225,28 @@ class _NewsCardState extends State<NewsCard> {
     
     // Load images immediately for the first few items to ensure they're visible on page load
     if (widget.shouldLoadImageImmediately) {
-      _hasBeenVisible = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _loadImage();
+        _loadImageImmediately();
+      });
+    }
+  }
+
+  Future<void> _loadImageImmediately() async {
+    // Force load for immediate items, bypassing visibility checks
+    if (_imageLoading || widget.newsItem.link == null) {
+      return;
+    }
+
+    setState(() {
+      _imageLoading = true;
+      _hasBeenVisible = true; // Mark as loaded to prevent future loads
+    });
+    
+    await DataService.updateNewsItemImage(widget.newsItem);
+    
+    if (mounted) {
+      setState(() {
+        _imageLoading = false;
       });
     }
   }
