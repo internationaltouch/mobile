@@ -177,13 +177,17 @@ class DataService {
             debugPrint('Failed to extract content:encoded: $e');
           }
 
-          // Parse RSS date format (e.g., "Mon, 01 Jan 2024 12:00:00 +0000")
+          // Parse RSS date format (RFC 2822: "Wed, 18 Dec 2024 10:30:00 +0000")
           DateTime publishedAt;
           try {
-            publishedAt = DateTime.parse(pubDateText
-                .replaceAll(RegExp(r'[A-Za-z]{3}, '), '')
-                .replaceAll(RegExp(r' \+\d{4}'), ''));
+            debugPrint('📰 [RSS] 📅 Original pubDate: $pubDateText');
+            
+            // Try different parsing approaches for RSS dates
+            publishedAt = _parseRSSDate(pubDateText);
+            debugPrint('📰 [RSS] ✅ Successfully parsed date: $publishedAt');
           } catch (e) {
+            debugPrint('📰 [RSS] ❌ Failed to parse date "$pubDateText": $e');
+            debugPrint('📰 [RSS] 🔄 Using current time as fallback');
             publishedAt = DateTime.now();
           }
 
@@ -206,8 +210,43 @@ class DataService {
           }
 
           // Create news item with placeholder image initially
+          debugPrint('📰 [RSS] 📝 Processing news item: ${title.length > 50 ? '${title.substring(0, 50)}...' : title}');
+          
+          // Generate a more unique ID from the link
+          String itemId;
+          try {
+            // Try to extract a meaningful ID from the URL
+            final uri = Uri.parse(link);
+            final pathSegments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
+            
+            if (pathSegments.isNotEmpty) {
+              // Use the last meaningful path segment
+              itemId = pathSegments.last.replaceAll(RegExp(r'\.(html?|php)$'), '');
+              // If it's too generic, include more path
+              if (itemId.length < 3 || ['index', 'news', 'article'].contains(itemId.toLowerCase())) {
+                itemId = pathSegments.length > 1 
+                    ? '${pathSegments[pathSegments.length - 2]}_$itemId'
+                    : itemId;
+              }
+            } else {
+              // Fallback: use hash of the full URL
+              itemId = link.hashCode.abs().toString();
+            }
+            
+            // Ensure ID is not empty and is reasonable length
+            if (itemId.isEmpty || itemId.length < 2) {
+              itemId = 'news_${DateTime.now().millisecondsSinceEpoch}';
+            }
+            
+            debugPrint('📰 [RSS] 🏷️ Generated ID "$itemId" from link: $link');
+          } catch (e) {
+            // Ultimate fallback: use timestamp + title hash
+            itemId = 'news_${DateTime.now().millisecondsSinceEpoch}_${title.hashCode.abs()}';
+            debugPrint('📰 [RSS] ⚠️ Failed to parse URL "$link", using fallback ID: $itemId');
+          }
+          
           final newsItem = NewsItem(
-            id: link.split('/').last.replaceAll('.html', ''),
+            id: itemId,
             title: title,
             summary: cleanDescription.length > 150
                 ? '${cleanDescription.substring(0, 150)}...'
@@ -751,5 +790,77 @@ class DataService {
   static Future<void> clearDatabaseCache() async {
     await DatabaseService.clearAllCache();
     clearCache(); // Also clear in-memory cache
+  }
+
+  // Helper method to parse various RSS date formats
+  static DateTime _parseRSSDate(String dateText) {
+    // Common RSS date formats:
+    // RFC 2822: "Wed, 18 Dec 2024 10:30:00 +0000"
+    // ISO 8601: "2024-12-18T10:30:00Z"
+    // Alternative: "18 Dec 2024 10:30:00"
+    
+    debugPrint('📰 [RSS] 🔍 Attempting to parse: "$dateText"');
+    
+    // First try parsing as-is (might be ISO format)
+    try {
+      final parsed = DateTime.parse(dateText);
+      debugPrint('📰 [RSS] ✅ Parsed as ISO format');
+      return parsed;
+    } catch (e) {
+      debugPrint('📰 [RSS] ❌ Not ISO format: $e');
+    }
+    
+    // Try RFC 2822 format: remove day name and timezone
+    try {
+      // Remove day name prefix (e.g., "Wed, ")
+      String cleaned = dateText.replaceAll(RegExp(r'^[A-Za-z]{3}, '), '');
+      
+      // Remove timezone suffix (e.g., " +0000", " GMT", " UTC")
+      cleaned = cleaned.replaceAll(RegExp(r' [+-]\d{4}$'), '');
+      cleaned = cleaned.replaceAll(RegExp(r' (GMT|UTC)$'), '');
+      
+      debugPrint('📰 [RSS] 🧹 Cleaned RFC date: "$cleaned"');
+      
+      // Try parsing the cleaned version
+      final parsed = DateTime.parse(cleaned);
+      debugPrint('📰 [RSS] ✅ Parsed as RFC 2822 format');
+      return parsed;
+    } catch (e) {
+      debugPrint('📰 [RSS] ❌ RFC 2822 parsing failed: $e');
+    }
+    
+    // Last resort: try to extract date components manually
+    try {
+      // Match pattern like "18 Dec 2024 10:30:00"
+      final datePattern = RegExp(r'(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})');
+      final match = datePattern.firstMatch(dateText);
+      
+      if (match != null) {
+        final day = int.parse(match.group(1)!);
+        final monthStr = match.group(2)!;
+        final year = int.parse(match.group(3)!);
+        final hour = int.parse(match.group(4)!);
+        final minute = int.parse(match.group(5)!);
+        final second = int.parse(match.group(6)!);
+        
+        // Map month names to numbers
+        final monthMap = {
+          'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+          'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+        };
+        
+        final month = monthMap[monthStr];
+        if (month != null) {
+          final parsed = DateTime(year, month, day, hour, minute, second);
+          debugPrint('📰 [RSS] ✅ Parsed manually: $parsed');
+          return parsed;
+        }
+      }
+    } catch (e) {
+      debugPrint('📰 [RSS] ❌ Manual parsing failed: $e');
+    }
+    
+    // If all parsing attempts fail, throw error
+    throw FormatException('Unable to parse RSS date: $dateText');
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/fixture.dart';
+import '../theme/fit_colors.dart';
 import 'video_player_dialog.dart';
 
 class MatchScoreCard extends StatelessWidget {
@@ -33,7 +34,7 @@ class MatchScoreCard extends StatelessWidget {
               child: Text(
                 _formatMatchDate(fixture.dateTime),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
+                      color: FITColors.darkGrey,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 1.2,
                     ),
@@ -80,7 +81,7 @@ class MatchScoreCard extends StatelessWidget {
                           homeTeamLocation!,
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.grey[600],
+                                    color: FITColors.darkGrey,
                                     fontSize: 11,
                                   ),
                           textAlign: TextAlign.center,
@@ -117,7 +118,7 @@ class MatchScoreCard extends StatelessWidget {
                                                     fixture.awayScore!
                                                 ? FontWeight.w600
                                                 : FontWeight.normal,
-                                    color: Colors.black87,
+                                    color: FITColors.primaryBlack,
                                     fontSize: 36,
                                   ),
                             ),
@@ -129,7 +130,7 @@ class MatchScoreCard extends StatelessWidget {
                                   .textTheme
                                   .bodySmall
                                   ?.copyWith(
-                                    color: Colors.grey[600],
+                                    color: FITColors.darkGrey,
                                     fontWeight: FontWeight.w500,
                                     letterSpacing: 0.8,
                                     fontSize: 10,
@@ -152,7 +153,7 @@ class MatchScoreCard extends StatelessWidget {
                                                     fixture.awayScore!
                                                 ? FontWeight.w600
                                                 : FontWeight.normal,
-                                    color: Colors.black87,
+                                    color: FITColors.primaryBlack,
                                     fontSize: 36,
                                   ),
                             ),
@@ -164,7 +165,7 @@ class MatchScoreCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: FITColors.lightGrey,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -173,7 +174,7 @@ class MatchScoreCard extends StatelessWidget {
                                 .textTheme
                                 .titleMedium
                                 ?.copyWith(
-                                  color: Colors.grey[700],
+                                  color: FITColors.darkGrey,
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
@@ -196,7 +197,7 @@ class MatchScoreCard extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.orange[100],
+                                color: FITColors.accentYellow.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -205,7 +206,7 @@ class MatchScoreCard extends StatelessWidget {
                                     .textTheme
                                     .bodySmall
                                     ?.copyWith(
-                                      color: Colors.orange[700],
+                                      color: FITColors.primaryBlack,
                                       fontWeight: FontWeight.w600,
                                     ),
                               ),
@@ -253,7 +254,7 @@ class MatchScoreCard extends StatelessWidget {
                           awayTeamLocation!,
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.grey[600],
+                                    color: FITColors.darkGrey,
                                     fontSize: 11,
                                   ),
                           textAlign: TextAlign.center,
@@ -280,7 +281,7 @@ class MatchScoreCard extends StatelessWidget {
                 Text(
                   venueLocation!,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
+                        color: FITColors.darkGrey,
                         fontSize: 11,
                       ),
                   textAlign: TextAlign.center,
@@ -295,14 +296,14 @@ class MatchScoreCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: FITColors.primaryBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue[200]!),
+                  border: Border.all(color: FITColors.primaryBlue.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   fixture.round!,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.blue[700],
+                        color: FITColors.primaryBlue,
                         fontWeight: FontWeight.w600,
                         fontSize: 11,
                       ),
@@ -317,13 +318,13 @@ class MatchScoreCard extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () =>
                       _showVideoDialog(context, fixture.videos.first),
-                  icon: const Icon(Icons.play_arrow, color: Colors.white),
+                  icon: const Icon(Icons.play_arrow, color: FITColors.white),
                   label: const Text(
                     'Watch',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: FITColors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[600],
+                    backgroundColor: FITColors.errorRed,
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),

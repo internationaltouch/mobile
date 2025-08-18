@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../models/news_item.dart';
 import '../services/data_service.dart';
+import '../theme/fit_colors.dart';
 import 'competitions_view.dart';
 import 'news_detail_view.dart';
 import 'shortcuts_view.dart';
@@ -105,10 +106,10 @@ class _HomeViewState extends State<HomeView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.red[300],
+              color: FITColors.errorRed,
             ),
             const SizedBox(height: 16),
             Text(
@@ -323,12 +324,12 @@ class _NewsCardState extends State<NewsCard> {
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         height: 200,
-                        color: Colors.grey[300],
+                        color: FITColors.lightGrey,
                         child: const Center(
                           child: Icon(
                             Icons.image_not_supported,
                             size: 50,
-                            color: Colors.grey,
+                            color: FITColors.mediumGrey,
                           ),
                         ),
                       );
@@ -341,7 +342,7 @@ class _NewsCardState extends State<NewsCard> {
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: Colors.black54,
+                          color: FITColors.primaryBlack.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const SizedBox(
@@ -350,7 +351,7 @@ class _NewsCardState extends State<NewsCard> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                                AlwaysStoppedAnimation<Color>(FITColors.white),
                           ),
                         ),
                       ),
@@ -378,7 +379,7 @@ class _NewsCardState extends State<NewsCard> {
                   Text(
                     _formatDate(widget.newsItem.publishedAt),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                          color: FITColors.darkGrey,
                         ),
                   ),
                 ],

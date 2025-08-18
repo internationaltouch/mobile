@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'views/home_view.dart';
+import 'theme/fit_theme.dart';
 
 void main() {
   runApp(const FITMobileApp());
@@ -12,10 +13,7 @@ class FITMobileApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FIT',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+      theme: FITTheme.lightTheme,
       home: const HomeView(),
       debugShowCheckedModeBanner: false,
     );

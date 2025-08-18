@@ -535,7 +535,14 @@ class DatabaseService {
     final db = await database;
     final batch = db.batch();
 
-    for (final newsItem in newsItems) {
+    // Clear existing news items first to avoid conflicts
+    debugPrint('🗺️ [SQLite] 🧹 Clearing existing news items...');
+    batch.delete('news_items');
+
+    for (int i = 0; i < newsItems.length; i++) {
+      final newsItem = newsItems[i];
+      debugPrint('🗺️ [SQLite] 📝 Inserting news item ${i + 1}/${newsItems.length}: ID="${newsItem.id}", Title="${newsItem.title.length > 50 ? '${newsItem.title.substring(0, 50)}...' : newsItem.title}"');
+      
       batch.insert(
         'news_items',
         {
