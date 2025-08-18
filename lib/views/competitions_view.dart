@@ -46,15 +46,18 @@ class _CompetitionsViewState extends State<CompetitionsView> {
 
   // MODE 1: INCLUDE - Only show competitions with these slugs (leave empty [] to show ALL)
   static const List<String> _includeCompetitionSlugs = [
-    'world-cup',
-    'atlantic-youth-touch-cup',
-    'other-events',
+    // 'world-cup',
+    // 'atlantic-youth-touch-cup',
+    // 'other-events',
   ];
 
   // MODE 2: EXCLUDE - Hide competitions with these slugs (leave empty [] to exclude nothing)
   static const List<String> _excludeCompetitionSlugs = [
-    // 'old-tournament-2019',
-    // 'cancelled-event',
+    'home-nations',
+    'mainland-cup',
+    'asian-cup',
+    'test-matches',
+    'pacific-games',
     // Add specific slugs here to HIDE these competitions
   ];
 
