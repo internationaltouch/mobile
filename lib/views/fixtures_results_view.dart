@@ -6,6 +6,7 @@ import '../models/ladder_entry.dart';
 import '../models/team.dart';
 import '../services/data_service.dart';
 import '../widgets/match_score_card.dart';
+import 'main_navigation_view.dart';
 
 class FixturesResultsView extends StatefulWidget {
   final Event event;

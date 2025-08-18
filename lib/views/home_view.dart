@@ -8,14 +8,17 @@ import 'news_detail_view.dart';
 import 'shortcuts_view.dart';
 
 class HomeView extends StatefulWidget {
-  const HomeView({super.key});
+  final int initialSelectedIndex;
+  final bool showOnlyNews;
+  
+  const HomeView({super.key, this.initialSelectedIndex = 0, this.showOnlyNews = false});
 
   @override
   State<HomeView> createState() => _HomeViewState();
 }
 
 class _HomeViewState extends State<HomeView> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   late Future<List<NewsItem>> _newsFuture;
   List<NewsItem> _allNewsItems = [];
   int _visibleItemsCount = 10;
@@ -23,6 +26,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.initialSelectedIndex;
     _testConnectivityAndLoadNews();
   }
 
@@ -32,6 +36,14 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.showOnlyNews) {
+      // When used within MainNavigationView, only show news content
+      return Scaffold(
+        body: _buildNewsPage(),
+      );
+    }
+    
+    // Original behavior for backward compatibility
     return Scaffold(
       body: _selectedIndex == 0 ? _buildNewsPage() : const CompetitionsView(),
       bottomNavigationBar: BottomNavigationBar(

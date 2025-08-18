@@ -3,6 +3,7 @@ import '../models/event.dart';
 import '../models/season.dart';
 import '../services/data_service.dart';
 import 'divisions_view.dart';
+import 'main_navigation_view.dart';
 
 class EventDetailView extends StatefulWidget {
   final Event event;
@@ -52,7 +53,7 @@ class _EventDetailViewState extends State<EventDetailView> {
 
   void _navigateToDivisions() {
     if (selectedSeason != null) {
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => DivisionsView(

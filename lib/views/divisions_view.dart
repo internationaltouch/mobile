@@ -3,6 +3,7 @@ import '../models/event.dart';
 import '../models/division.dart';
 import '../services/data_service.dart';
 import 'fixtures_results_view.dart';
+import 'main_navigation_view.dart';
 
 class DivisionsView extends StatefulWidget {
   final Event event;

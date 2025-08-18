@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'views/home_view.dart';
+import 'views/main_navigation_view.dart';
 import 'theme/fit_theme.dart';
 
 void main() {
@@ -14,7 +14,14 @@ class FITMobileApp extends StatelessWidget {
     return MaterialApp(
       title: 'FIT',
       theme: FITTheme.lightTheme,
-      home: const HomeView(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          final initialIndex = args?['selectedIndex'] ?? 0;
+          return MainNavigationView(initialSelectedIndex: initialIndex);
+        },
+      },
       debugShowCheckedModeBanner: false,
     );
   }
