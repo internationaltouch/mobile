@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../services/data_service.dart';
 import 'event_detail_view.dart';
+import 'shortcuts_view.dart';
 
 /*
  * COMPETITION CONFIGURATION GUIDE
@@ -182,6 +183,26 @@ class _CompetitionsViewState extends State<CompetitionsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Image.asset(
+          'assets/images/LOGO_FIT-HZ.png',
+          height: 32,
+          fit: BoxFit.contain,
+        ),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.star),
+            tooltip: 'Shortcuts',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const ShortcutsView(),
+              );
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: FutureBuilder<List<Event>>(

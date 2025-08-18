@@ -33,26 +33,6 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Image.asset(
-          'assets/images/LOGO_FIT-HZ.png',
-          height: 32,
-          fit: BoxFit.contain,
-        ),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.star),
-            tooltip: 'Shortcuts',
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => const ShortcutsView(),
-              );
-            },
-          ),
-        ],
-      ),
       body: _selectedIndex == 0 ? _buildNewsPage() : const CompetitionsView(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -63,8 +43,8 @@ class _HomeViewState extends State<HomeView> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+            icon: Icon(Icons.newspaper),
+            label: 'News',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.sports),
@@ -147,17 +127,31 @@ class _HomeViewState extends State<HomeView> {
     final hasMoreItems = _allNewsItems.length > _visibleItemsCount;
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
-      itemCount: visibleNewsItems.length + (hasMoreItems ? 1 : 0),
+      padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+      itemCount: visibleNewsItems.length + (hasMoreItems ? 1 : 0) + 1, // +1 for logo
       itemBuilder: (context, index) {
-        if (index < visibleNewsItems.length) {
-          final newsItem = visibleNewsItems[index];
+        if (index == 0) {
+          // Show logo before first news item
+          return Padding(
+            padding: const EdgeInsets.only(top: 24.0, bottom: 12.0),
+            child: Center(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.6, // 60% of screen width
+                child: Image.asset(
+                  'assets/images/LOGO_FIT-HZ.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          );
+        } else if (index <= visibleNewsItems.length) {
+          final newsItem = visibleNewsItems[index - 1]; // -1 because logo takes index 0
           return GestureDetector(
             onTap: () => _openNewsDetail(newsItem),
             child: NewsCard(
               newsItem: newsItem,
               shouldLoadImageImmediately:
-                  index < 3, // Load images for first 3 items immediately
+                  index <= 3, // Load images for first 3 items immediately
             ),
           );
         } else {
