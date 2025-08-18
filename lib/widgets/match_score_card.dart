@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/fixture.dart';
+import 'video_player_dialog.dart';
 
 class MatchScoreCard extends StatelessWidget {
   final Fixture fixture;
@@ -39,7 +41,7 @@ class MatchScoreCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // Main match section
             Row(
               children: [
@@ -74,23 +76,26 @@ class MatchScoreCard extends StatelessWidget {
                       if (homeTeamLocation != null)
                         Text(
                           homeTeamLocation!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[600],
-                                fontSize: 11,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey[600],
+                                    fontSize: 11,
+                                  ),
                           textAlign: TextAlign.center,
                         ),
                     ],
                   ),
                 ),
-                
+
                 // Score section
                 Expanded(
                   flex: 3,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (fixture.isCompleted && fixture.homeScore != null && fixture.awayScore != null) ...[
+                      if (fixture.isCompleted &&
+                          fixture.homeScore != null &&
+                          fixture.awayScore != null) ...[
                         // Completed match scores with winner emphasis
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -99,50 +104,52 @@ class MatchScoreCard extends StatelessWidget {
                             // Home score
                             Text(
                               '${fixture.homeScore}',
-                              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    fontWeight: fixture.homeScore! > fixture.awayScore! 
-                                        ? FontWeight.bold 
-                                        : fixture.homeScore! == fixture.awayScore!
-                                            ? FontWeight.w600
-                                            : FontWeight.normal,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displayMedium
+                                  ?.copyWith(
+                                    fontWeight:
+                                        fixture.homeScore! > fixture.awayScore!
+                                            ? FontWeight.bold
+                                            : fixture.homeScore! ==
+                                                    fixture.awayScore!
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
                                     color: Colors.black87,
                                     fontSize: 36,
                                   ),
                             ),
                             const SizedBox(width: 16),
                             // Full time text between scores
-                            Column(
-                              children: [
-                                Text(
-                                  'FULL',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
-                                        letterSpacing: 0.8,
-                                        fontSize: 10,
-                                      ),
-                                ),
-                                Text(
-                                  'TIME',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
-                                        letterSpacing: 0.8,
-                                        fontSize: 10,
-                                      ),
-                                ),
-                              ],
+                            Text(
+                              'FULL\nTIME',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.8,
+                                    fontSize: 10,
+                                    height: 1.1,
+                                  ),
+                              textAlign: TextAlign.center,
                             ),
                             const SizedBox(width: 16),
                             // Away score
                             Text(
                               '${fixture.awayScore}',
-                              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    fontWeight: fixture.awayScore! > fixture.homeScore! 
-                                        ? FontWeight.bold 
-                                        : fixture.homeScore! == fixture.awayScore!
-                                            ? FontWeight.w600
-                                            : FontWeight.normal,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displayMedium
+                                  ?.copyWith(
+                                    fontWeight:
+                                        fixture.awayScore! > fixture.homeScore!
+                                            ? FontWeight.bold
+                                            : fixture.homeScore! ==
+                                                    fixture.awayScore!
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
                                     color: Colors.black87,
                                     fontSize: 36,
                                   ),
@@ -152,14 +159,18 @@ class MatchScoreCard extends StatelessWidget {
                       ] else if (fixture.isBye == true) ...[
                         // Bye match
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.grey[100],
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             'BYE',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
                                   color: Colors.grey[700],
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -171,20 +182,27 @@ class MatchScoreCard extends StatelessWidget {
                           children: [
                             Text(
                               _formatMatchTime(fixture.dateTime),
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
                             const SizedBox(height: 4),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
                                 color: Colors.orange[100],
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 'SCHEDULED',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
                                       color: Colors.orange[700],
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -196,7 +214,7 @@ class MatchScoreCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Away team
                 Expanded(
                   flex: 2,
@@ -228,10 +246,11 @@ class MatchScoreCard extends StatelessWidget {
                       if (awayTeamLocation != null)
                         Text(
                           awayTeamLocation!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[600],
-                                fontSize: 11,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey[600],
+                                    fontSize: 11,
+                                  ),
                           textAlign: TextAlign.center,
                         ),
                     ],
@@ -239,9 +258,9 @@ class MatchScoreCard extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Venue section
             if (venue != null || fixture.field.isNotEmpty) ...[
               Text(
@@ -263,12 +282,13 @@ class MatchScoreCard extends StatelessWidget {
                 ),
               ],
             ],
-            
+
             // Round information
             if (fixture.round != null) ...[
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.blue[50],
                   borderRadius: BorderRadius.circular(12),
@@ -284,15 +304,37 @@ class MatchScoreCard extends StatelessWidget {
                 ),
               ),
             ],
+
+            // Video player section
+            if (fixture.videos.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: () => _showVideoDialog(context, fixture.videos.first),
+                  icon: const Icon(Icons.play_arrow, color: Colors.white),
+                  label: const Text(
+                    'Watch',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTeamLogo(String teamName, String? abbreviation, String? flagUrl) {
+  Widget _buildTeamLogo(
+      String teamName, String? abbreviation, String? flagUrl) {
     // Use actual abbreviation from API data if available, otherwise generate fallback
-    final displayAbbreviation = abbreviation ?? _generateFallbackAbbreviation(teamName);
+    final displayAbbreviation =
+        abbreviation ?? _generateFallbackAbbreviation(teamName);
 
     // Try to load flag image if URL is available
     if (flagUrl != null && flagUrl.isNotEmpty) {
@@ -360,13 +402,14 @@ class MatchScoreCard extends StatelessWidget {
       return 'NZL';
     } else {
       // Default: use first letters of up to 3 words, max 3 characters
-      final words = teamName.split(' ').where((word) => word.isNotEmpty).toList();
+      final words =
+          teamName.split(' ').where((word) => word.isNotEmpty).toList();
       if (words.length >= 3) {
         return words.take(3).map((word) => word[0].toUpperCase()).join();
       } else if (words.length >= 2) {
         return words.take(2).map((word) => word[0].toUpperCase()).join();
       } else if (words.isNotEmpty) {
-        return words.first.length >= 3 
+        return words.first.length >= 3
             ? words.first.substring(0, 3).toUpperCase()
             : words.first.toUpperCase();
       } else {
@@ -378,26 +421,51 @@ class MatchScoreCard extends StatelessWidget {
   String _formatMatchDate(DateTime dateTime) {
     // Convert UTC datetime to local timezone
     final localDateTime = dateTime.toLocal();
-    
-    final weekdays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-    final months = [
-      'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+
+    final weekdays = [
+      'MONDAY',
+      'TUESDAY',
+      'WEDNESDAY',
+      'THURSDAY',
+      'FRIDAY',
+      'SATURDAY',
+      'SUNDAY'
     ];
-    
+    final months = [
+      'JANUARY',
+      'FEBRUARY',
+      'MARCH',
+      'APRIL',
+      'MAY',
+      'JUNE',
+      'JULY',
+      'AUGUST',
+      'SEPTEMBER',
+      'OCTOBER',
+      'NOVEMBER',
+      'DECEMBER'
+    ];
+
     final weekday = weekdays[localDateTime.weekday - 1];
     final day = localDateTime.day;
     final month = months[localDateTime.month - 1];
-    
+
     return '$weekday ${day}TH $month';
   }
 
   String _formatMatchTime(DateTime dateTime) {
     // Convert UTC datetime to local timezone
     final localDateTime = dateTime.toLocal();
-    
+
     final hour = localDateTime.hour.toString().padLeft(2, '0');
     final minute = localDateTime.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+
+  void _showVideoDialog(BuildContext context, String videoUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => VideoPlayerDialog(videoUrl: videoUrl),
+    );
   }
 }

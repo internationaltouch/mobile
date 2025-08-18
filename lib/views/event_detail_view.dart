@@ -38,7 +38,7 @@ class _EventDetailViewState extends State<EventDetailView> {
 
     // Load seasons lazily
     final updatedEvent = await DataService.loadEventSeasons(widget.event);
-    
+
     // Auto-select if only one season after loading
     if (updatedEvent.seasons.length == 1) {
       selectedSeason = updatedEvent.seasons.first;
@@ -46,7 +46,7 @@ class _EventDetailViewState extends State<EventDetailView> {
         _navigateToDivisions();
       });
     }
-    
+
     return updatedEvent;
   }
 
@@ -159,7 +159,7 @@ class _EventDetailViewState extends State<EventDetailView> {
                   }
 
                   final event = snapshot.data!;
-                  
+
                   if (event.seasons.isEmpty) {
                     return const Center(
                       child: Text(
@@ -177,7 +177,8 @@ class _EventDetailViewState extends State<EventDetailView> {
                         margin: const EdgeInsets.only(bottom: 12.0),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                             child: Text(
                               season.title.length > 4
                                   ? season.title.substring(0, 4)

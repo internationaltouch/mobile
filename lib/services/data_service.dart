@@ -20,21 +20,20 @@ class DataService {
   static final Map<String, List<Division>> _cachedDivisions = {};
   static final Map<String, List<Team>> _cachedTeams = {};
   static final Map<String, List<Fixture>> _cachedFixtures = {};
-  
+
   // HTTP client for dependency injection in tests
   static http.Client? _httpClient;
   static http.Client get httpClient => _httpClient ?? http.Client();
-  
+
   // Method to set HTTP client for testing
   static void setHttpClient(http.Client client) {
     _httpClient = client;
   }
-  
+
   // Method to reset HTTP client (for tests)
   static void resetHttpClient() {
     _httpClient = null;
   }
-  
 
   // Helper method to extract Open Graph image from HTML page
   static Future<String?> _extractOpenGraphImage(String url) async {
@@ -265,7 +264,8 @@ class DataService {
     }
 
     try {
-      final competitionDetails = await ApiService.fetchCompetitionDetails(event.slug!);
+      final competitionDetails =
+          await ApiService.fetchCompetitionDetails(event.slug!);
       final seasons = (competitionDetails['seasons'] as List)
           .map((season) => Season.fromJson(season))
           .toList();
@@ -456,7 +456,13 @@ class DataService {
                 match['away_team_score'] != null,
             round: match['round'],
             isBye: match['is_bye'],
+            videos: (match['videos'] as List<dynamic>?)?.cast<String>() ?? [],
           );
+          
+          // Debug: Print video information when videos are found
+          if ((match['videos'] as List<dynamic>?)?.isNotEmpty == true) {
+            debugPrint('Found videos for match ${match['id']}: ${match['videos']}');
+          }
           fixtures.add(fixture);
         }
       }

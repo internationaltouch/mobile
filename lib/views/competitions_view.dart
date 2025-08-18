@@ -43,14 +43,14 @@ class _CompetitionsViewState extends State<CompetitionsView> {
   late Future<List<Event>> _eventsFuture;
 
   // Configuration: Competition filtering (choose ONE mode)
-  
+
   // MODE 1: INCLUDE - Only show competitions with these slugs (leave empty [] to show ALL)
   static const List<String> _includeCompetitionSlugs = [
     'world-cup',
     'atlantic-youth-touch-cup',
     'other-events',
   ];
-  
+
   // MODE 2: EXCLUDE - Hide competitions with these slugs (leave empty [] to exclude nothing)
   static const List<String> _excludeCompetitionSlugs = [
     // 'old-tournament-2019',
@@ -75,23 +75,27 @@ class _CompetitionsViewState extends State<CompetitionsView> {
 
   Future<List<Event>> _loadFilteredEvents() async {
     final allEvents = await DataService.getEvents();
-    
+
     // Validate configuration: only one filtering mode should be used
-    if (_includeCompetitionSlugs.isNotEmpty && _excludeCompetitionSlugs.isNotEmpty) {
-      throw Exception('Configuration Error: Cannot use both include and exclude filtering simultaneously. '
+    if (_includeCompetitionSlugs.isNotEmpty &&
+        _excludeCompetitionSlugs.isNotEmpty) {
+      throw Exception(
+          'Configuration Error: Cannot use both include and exclude filtering simultaneously. '
           'Use either _includeCompetitionSlugs OR _excludeCompetitionSlugs, not both.');
     }
-    
+
     // Apply filtering based on the active mode
     if (_includeCompetitionSlugs.isNotEmpty) {
       // INCLUDE mode: Only show competitions with specified slugs
       return allEvents.where((event) {
-        return event.slug != null && _includeCompetitionSlugs.contains(event.slug);
+        return event.slug != null &&
+            _includeCompetitionSlugs.contains(event.slug);
       }).toList();
     } else if (_excludeCompetitionSlugs.isNotEmpty) {
       // EXCLUDE mode: Hide competitions with specified slugs
       return allEvents.where((event) {
-        return event.slug == null || !_excludeCompetitionSlugs.contains(event.slug);
+        return event.slug == null ||
+            !_excludeCompetitionSlugs.contains(event.slug);
       }).toList();
     } else {
       // No filtering: show all competitions
@@ -116,12 +120,13 @@ class _CompetitionsViewState extends State<CompetitionsView> {
           child: Image.asset(
             _competitionImages[slug]!,
             fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => _buildFallbackIcon(event),
+            errorBuilder: (context, error, stackTrace) =>
+                _buildFallbackIcon(event),
           ),
         ),
       );
     }
-    
+
     // Try network image as fallback
     if (event.logoUrl.isNotEmpty) {
       return Container(
@@ -137,12 +142,13 @@ class _CompetitionsViewState extends State<CompetitionsView> {
           child: Image.network(
             event.logoUrl,
             fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => _buildFallbackIcon(event),
+            errorBuilder: (context, error, stackTrace) =>
+                _buildFallbackIcon(event),
           ),
         ),
       );
     }
-    
+
     return _buildFallbackIcon(event);
   }
 
@@ -157,7 +163,9 @@ class _CompetitionsViewState extends State<CompetitionsView> {
       ),
       child: Center(
         child: Text(
-          event.name.length >= 3 ? event.name.substring(0, 3).toUpperCase() : event.name.toUpperCase(),
+          event.name.length >= 3
+              ? event.name.substring(0, 3).toUpperCase()
+              : event.name.toUpperCase(),
           style: TextStyle(
             color: Colors.blue[800],
             fontWeight: FontWeight.bold,
@@ -235,7 +243,8 @@ class _CompetitionsViewState extends State<CompetitionsView> {
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12.0),
                     child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
                       leading: _getCompetitionIcon(event),
                       title: Text(
                         event.name,

@@ -14,6 +14,7 @@ class Fixture {
   final bool isCompleted;
   final String? round; // Add round information from API
   final bool? isBye; // Add bye information from API
+  final List<String> videos; // Add video URLs from API
 
   Fixture({
     required this.id,
@@ -31,6 +32,7 @@ class Fixture {
     this.isCompleted = false,
     this.round,
     this.isBye,
+    this.videos = const [],
   });
 
   factory Fixture.fromJson(Map<String, dynamic> json) {
@@ -68,12 +70,14 @@ class Fixture {
           (json['home_team_score'] != null && json['away_team_score'] != null),
       round: json['round'],
       isBye: json['is_bye'],
+      videos: (json['videos'] as List<dynamic>?)?.cast<String>() ?? [],
     );
   }
 
-  static String? _extractTeamAbbreviation(Map<String, dynamic> json, String teamKey) {
+  static String? _extractTeamAbbreviation(
+      Map<String, dynamic> json, String teamKey) {
     // Try multiple possible data structures for team abbreviation
-    
+
     // 1. Try from nested team object with club data
     final teamData = json[teamKey];
     if (teamData is Map<String, dynamic>) {
@@ -85,7 +89,7 @@ class Fixture {
         }
       }
     }
-    
+
     // 2. Try from direct team data if it's a map
     if (teamData is Map<String, dynamic>) {
       final abbreviation = teamData['abbreviation'] as String?;
@@ -93,21 +97,21 @@ class Fixture {
         return abbreviation;
       }
     }
-    
+
     // 3. Try alternative key patterns for different API responses
     final alternativeKeys = [
       '${teamKey}_abbreviation',
       '${teamKey}Abbreviation',
       teamKey.replaceAll('_team', 'TeamAbbreviation'),
     ];
-    
+
     for (final key in alternativeKeys) {
       final abbreviation = json[key] as String?;
       if (abbreviation != null && abbreviation.isNotEmpty) {
         return abbreviation;
       }
     }
-    
+
     return null;
   }
 
@@ -128,6 +132,7 @@ class Fixture {
       'isCompleted': isCompleted,
       'round': round,
       'isBye': isBye,
+      'videos': videos,
     };
   }
 

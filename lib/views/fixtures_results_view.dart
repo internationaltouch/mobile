@@ -290,5 +290,4 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
         return Colors.blue;
     }
   }
-
 }

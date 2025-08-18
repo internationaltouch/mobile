@@ -52,9 +52,11 @@ void main() {
 
         expect(newsItems, hasLength(1));
         expect(newsItems.first.title, equals('Test News Item'));
-        expect(newsItems.first.summary, equals('This is a test news item description.'));
+        expect(newsItems.first.summary,
+            equals('This is a test news item description.'));
         expect(newsItems.first.content, contains('This is the full content'));
-        expect(newsItems.first.link, equals('https://example.com/news/test-item.html'));
+        expect(newsItems.first.link,
+            equals('https://example.com/news/test-item.html'));
       });
 
       test('handles RSS feed failure gracefully', () async {
