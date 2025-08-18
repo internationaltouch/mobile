@@ -160,7 +160,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                           value: null,
                           child: Text('All Teams'),
                         ),
-                        ...teams.map((team) => DropdownMenuItem<String>(
+                        ...(teams..sort((a, b) => a.name.compareTo(b.name)))
+                            .map((team) => DropdownMenuItem<String>(
                               value: team.id,
                               child: Text(team.name),
                             )),

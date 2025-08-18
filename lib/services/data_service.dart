@@ -105,17 +105,27 @@ class DataService {
 
   // Fetch news from RSS feed
   static Future<List<NewsItem>> getNewsItems() async {
+    debugPrint('📰 [RSS] Starting getNewsItems()');
+    
     // Check if cache is valid
+    debugPrint('📰 [RSS] Checking cache validity for news...');
     if (await DatabaseService.isCacheValid(
         'news', const Duration(minutes: 30))) {
+      debugPrint('📰 [RSS] Cache is valid, attempting to load from SQLite...');
       final cachedNews = await DatabaseService.getCachedNewsItems();
       if (cachedNews.isNotEmpty) {
+        debugPrint('📰 [RSS] ✅ Loaded ${cachedNews.length} news items from SQLite cache');
         return cachedNews;
+      } else {
+        debugPrint('📰 [RSS] ⚠️ Cache was valid but no cached news found in SQLite');
       }
+    } else {
+      debugPrint('📰 [RSS] Cache is expired or invalid, will fetch from RSS feed');
     }
 
     try {
       const rssUrl = 'https://www.internationaltouch.org/news/feeds/rss/';
+      debugPrint('📰 [RSS] 🌐 Fetching RSS feed from: $rssUrl');
 
       // Add timeout and headers for better Android compatibility
       final response = await httpClient.get(
@@ -125,10 +135,14 @@ class DataService {
           'Accept': 'application/rss+xml, application/xml, text/xml',
         },
       ).timeout(const Duration(seconds: 30));
+      
+      debugPrint('📰 [RSS] 📡 HTTP Response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
+        debugPrint('📰 [RSS] ✅ Successfully received RSS feed data (${response.body.length} bytes)');
         final document = XmlDocument.parse(response.body);
         final items = document.findAllElements('item');
+        debugPrint('📰 [RSS] 📄 Found ${items.length} news items in RSS feed');
         final newsItems = <NewsItem>[];
 
         for (final item in items) {
@@ -213,8 +227,10 @@ class DataService {
           newsItems.add(newsItem);
         }
 
+        debugPrint('📰 [RSS] 📝 Processed ${newsItems.length} news items, saving to SQLite...');
         // Cache the news items in database
         await DatabaseService.cacheNewsItems(newsItems);
+        debugPrint('📰 [RSS] ✅ Successfully cached ${newsItems.length} news items in SQLite');
         return newsItems;
       } else {
         throw Exception('Failed to load RSS feed: ${response.statusCode}');
@@ -222,10 +238,15 @@ class DataService {
     } catch (e) {
       debugPrint('Failed to fetch news from RSS: $e');
 
+      debugPrint('📰 [RSS] ❌ Error fetching RSS feed: $e');
       // Try to return cached data as fallback
+      debugPrint('📰 [RSS] 🔄 Attempting to load stale cache as fallback...');
       final cachedNews = await DatabaseService.getCachedNewsItems();
       if (cachedNews.isNotEmpty) {
+        debugPrint('📰 [RSS] ⚠️ Using ${cachedNews.length} stale cached news items as fallback');
         return cachedNews;
+      } else {
+        debugPrint('📰 [RSS] 💥 No cached news available, rethrowing error');
       }
 
       rethrow;
@@ -250,13 +271,13 @@ class DataService {
 
       for (final competition in apiCompetitions) {
         try {
-          // Create event without seasons for fast loading
+          // Create event without seasons for fast UI loading
           final event = Event(
             id: competition['slug'],
             name: competition['title'],
             logoUrl: AppConfig.getCompetitionLogoUrl(
                 competition['title'].substring(0, 3).toUpperCase()),
-            seasons: [], // Empty initially - will be loaded when needed
+            seasons: [], // Empty initially for fast loading
             description: 'International touch tournament',
             slug: competition['slug'],
             seasonsLoaded: false, // Mark as not loaded
@@ -264,13 +285,18 @@ class DataService {
           events.add(event);
         } catch (e) {
           // Skip competitions that fail to load details
-          debugPrint('Failed to add competition ${competition['title']}: $e');
+          debugPrint('🏆 [Events] ⚠️ Failed to add competition ${competition['title']}: $e');
         }
       }
-
-      // Cache the events
+      
+      // Cache the events first (without seasons) for fast UI
       await DatabaseService.cacheEvents(events);
       _cachedEvents = events;
+      
+      // Load seasons in background without blocking UI
+      debugPrint('🏆 [Events] 🔄 Starting background seasons loading...');
+      _loadSeasonsInBackground(apiCompetitions);
+      
       return events;
     } catch (e) {
       debugPrint('Failed to fetch events from API: $e');
@@ -283,6 +309,88 @@ class DataService {
       }
 
       rethrow;
+    }
+  }
+
+  // Load seasons and divisions for all competitions in background
+  static void _loadSeasonsInBackground(List<dynamic> apiCompetitions) {
+    // Run in background without awaiting
+    () async {
+      debugPrint('🏆 [Events] 🔄 Background: Loading seasons and divisions for ${apiCompetitions.length} competitions...');
+      final updatedEvents = <Event>[];
+      
+      for (final competition in apiCompetitions) {
+        try {
+          debugPrint('🏆 [Events] 🔄 Background: Loading seasons for ${competition['title']}');
+          final competitionDetails = await ApiService.fetchCompetitionDetails(competition['slug']);
+          final seasons = (competitionDetails['seasons'] as List)
+              .map((season) => Season.fromJson(season))
+              .toList();
+          
+          final event = Event(
+            id: competition['slug'],
+            name: competition['title'],
+            logoUrl: AppConfig.getCompetitionLogoUrl(
+                competition['title'].substring(0, 3).toUpperCase()),
+            seasons: seasons,
+            description: 'International touch tournament',
+            slug: competition['slug'],
+            seasonsLoaded: true,
+          );
+          
+          updatedEvents.add(event);
+          debugPrint('🏆 [Events] ✅ Background: Loaded ${seasons.length} seasons for ${competition['title']}');
+          
+          // Now load divisions for each season in this competition
+          await _loadDivisionsForCompetition(competition['slug'], seasons);
+          
+        } catch (e) {
+          debugPrint('🏆 [Events] ⚠️ Background: Failed to load seasons for ${competition['title']}: $e');
+        }
+      }
+      
+      if (updatedEvents.isNotEmpty) {
+        debugPrint('🏆 [Events] 💾 Background: Caching ${updatedEvents.length} events with seasons...');
+        await DatabaseService.cacheEvents(updatedEvents);
+        _cachedEvents = updatedEvents; // Update in-memory cache
+        debugPrint('🏆 [Events] ✅ Background: Events with seasons cached successfully');
+      }
+    }();
+  }
+
+  // Load divisions for all seasons in a competition
+  static Future<void> _loadDivisionsForCompetition(String competitionSlug, List<Season> seasons) async {
+    for (final season in seasons) {
+      try {
+        debugPrint('🏆 [Divisions] 🔄 Background: Loading divisions for $competitionSlug/${season.slug}');
+        final seasonDetails = await ApiService.fetchSeasonDetails(competitionSlug, season.slug);
+        final divisions = <Division>[];
+        
+        final colors = [
+          '#1976D2', '#388E3C', '#F57C00', '#7B1FA2', '#D32F2F', '#303F9F',
+          '#00796B', '#FF6F00', '#C2185B', '#5D4037', '#455A64', '#F57F17'
+        ];
+        
+        for (int i = 0; i < (seasonDetails['divisions'] as List).length; i++) {
+          final divisionData = seasonDetails['divisions'][i];
+          final division = Division(
+            id: divisionData['slug'],
+            name: divisionData['title'],
+            eventId: competitionSlug,
+            season: season.slug,
+            color: colors[i % colors.length],
+            slug: divisionData['slug'],
+          );
+          divisions.add(division);
+        }
+        
+        // Cache divisions for this competition/season
+        await DatabaseService.cacheDivisions(competitionSlug, season.slug, divisions);
+        debugPrint('🏆 [Divisions] ✅ Background: Cached ${divisions.length} divisions for $competitionSlug/${season.slug}');
+        
+      } catch (e) {
+        debugPrint('🏆 [Divisions] ⚠️ Background: Failed to load divisions for $competitionSlug/${season.slug}: $e');
+      }
     }
   }
 
@@ -353,9 +461,23 @@ class DataService {
   static Future<List<Division>> getDivisions(
       String eventId, String season) async {
     final cacheKey = '${eventId}_$season';
+    
+    // Check in-memory cache first
     if (_cachedDivisions.containsKey(cacheKey)) {
+      debugPrint('🏆 [Divisions] ♾️ Using in-memory cache for $eventId/$season');
       return _cachedDivisions[cacheKey]!;
     }
+    
+    // Check database cache
+    final seasonSlug = _findSeasonSlug(eventId, season);
+    final cachedDivisions = await DatabaseService.getCachedDivisions(eventId, seasonSlug);
+    if (cachedDivisions.isNotEmpty) {
+      debugPrint('🏆 [Divisions] ✅ Loaded ${cachedDivisions.length} divisions from SQLite cache for $eventId/$season');
+      _cachedDivisions[cacheKey] = cachedDivisions;
+      return cachedDivisions;
+    }
+    
+    debugPrint('🏆 [Divisions] 🌐 No cache found, fetching from API for $eventId/$season');
 
     try {
       // Find the correct season slug

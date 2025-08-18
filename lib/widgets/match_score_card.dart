@@ -60,16 +60,19 @@ class MatchScoreCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      // Team name
-                      Text(
-                        fixture.homeTeamName,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      // Team name with fixed height to maintain alignment
+                      SizedBox(
+                        height: 28, // Fixed height for up to 2 lines of text
+                        child: Text(
+                          fixture.homeTeamName,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.visible,
+                        ),
                       ),
                       // Team location
                       if (homeTeamLocation != null)
@@ -230,16 +233,19 @@ class MatchScoreCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      // Team name
-                      Text(
-                        fixture.awayTeamName,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      // Team name with fixed height to maintain alignment
+                      SizedBox(
+                        height: 28, // Fixed height for up to 2 lines of text
+                        child: Text(
+                          fixture.awayTeamName,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.visible,
+                        ),
                       ),
                       // Team location
                       if (awayTeamLocation != null)

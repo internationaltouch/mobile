@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/event.dart';
@@ -11,28 +13,65 @@ import '../models/news_item.dart';
 class DatabaseService {
   static Database? _database;
   static const String _dbName = 'fit_mobile_app.db';
-  static const int _dbVersion = 4;
+  static const int _dbVersion = 1;
 
   static Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB();
-    return _database!;
+    if (_database != null) {
+      debugPrint('🗄️ [SQLite] ♾️ Using existing database instance');
+      return _database!;
+    }
+    debugPrint('🗄️ [SQLite] 🔧 Initializing database...');
+    try {
+      _database = await _initDB();
+      debugPrint('🗄️ [SQLite] ✅ Database initialized successfully');
+      return _database!;
+    } catch (e) {
+      debugPrint('🗄️ [SQLite] ❌ Database initialization failed: $e');
+      rethrow;
+    }
   }
 
   static Future<Database> _initDB() async {
+    debugPrint('🗄️ [SQLite] 📁 Getting database path...');
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, _dbName);
+    debugPrint('🗄️ [SQLite] 📁 Database path: $path');
+    
+    // Delete existing database file to force fresh start
+    final dbFile = File(path);
+    if (await dbFile.exists()) {
+      debugPrint('🗄️ [SQLite] 🗑️ Deleting existing database file for fresh start...');
+      await dbFile.delete();
+      debugPrint('🗄️ [SQLite] ✅ Existing database deleted');
+    }
+    
+    debugPrint('🗄️ [SQLite] 📊 Database version: $_dbVersion');
+    debugPrint('🗄️ [SQLite] 📛 Opening database...');
 
-    return await openDatabase(
-      path,
-      version: _dbVersion,
-      onCreate: _createDB,
-      onUpgrade: _upgradeDB,
-    );
+    try {
+      final db = await openDatabase(
+        path,
+        version: _dbVersion,
+        onCreate: _createDB,
+        onUpgrade: (db, oldVersion, newVersion) async {
+          debugPrint('🗄️ [SQLite] ⬆️ Database upgrade from $oldVersion to $newVersion (should not happen with file deletion)');
+          await _dropAllTables(db);
+          await _createDB(db, newVersion);
+        },
+      );
+      debugPrint('🗄️ [SQLite] ✅ Database opened successfully');
+      return db;
+    } catch (e) {
+      debugPrint('🗄️ [SQLite] ❌ Failed to open database: $e');
+      rethrow;
+    }
   }
 
   static Future<void> _createDB(Database db, int version) async {
+    debugPrint('🗄️ [SQLite] 🏠 Creating database tables (version $version)...');
+    
     // Events table (Competition level)
+    debugPrint('🗄️ [SQLite] 🏢 Creating events table...');
     await db.execute('''
       CREATE TABLE events (
         slug TEXT PRIMARY KEY,
@@ -156,113 +195,50 @@ class DatabaseService {
         expiry_duration INTEGER NOT NULL
       )
     ''');
+    
+    debugPrint('🗄️ [SQLite] ✅ All database tables created successfully');
   }
 
-  static Future<void> _upgradeDB(
-      Database db, int oldVersion, int newVersion) async {
-    // Handle database upgrades when schema changes
-    if (oldVersion < 2) {
-      // Add api_order column to events table
-      await db
-          .execute('ALTER TABLE events ADD COLUMN api_order INTEGER DEFAULT 0');
-    }
-
-    if (oldVersion < 3) {
-      // Remove seasons column from events table and normalize the schema
-      // First create a backup of the old events table
-      await db.execute('ALTER TABLE events RENAME TO events_old');
-
-      // Create new events table using slug as primary key
-      await db.execute('''
-        CREATE TABLE events (
-          slug TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          description TEXT,
-          logo_url TEXT,
-          api_order INTEGER NOT NULL,
-          created_at INTEGER NOT NULL,
-          updated_at INTEGER NOT NULL
-        )
-      ''');
-
-      // Copy data from old table using slug as primary key
-      await db.execute('''
-        INSERT INTO events (slug, name, description, logo_url, api_order, created_at, updated_at)
-        SELECT COALESCE(slug, id), name, description, logo_url, 
-               COALESCE(api_order, 0), created_at, updated_at
-        FROM events_old
-      ''');
-
-      // Update seasons table structure with composite keys
-      await db.execute('DROP TABLE IF EXISTS seasons');
-      await db.execute('''
-        CREATE TABLE seasons (
-          competition_slug TEXT NOT NULL,
-          season_slug TEXT NOT NULL,
-          title TEXT NOT NULL,
-          api_order INTEGER NOT NULL,
-          created_at INTEGER NOT NULL,
-          PRIMARY KEY (competition_slug, season_slug),
-          FOREIGN KEY (competition_slug) REFERENCES events (slug)
-        )
-      ''');
-
-      // Update divisions table structure with composite keys
-      await db.execute('DROP TABLE IF EXISTS divisions');
-      await db.execute('''
-        CREATE TABLE divisions (
-          competition_slug TEXT NOT NULL,
-          season_slug TEXT NOT NULL,
-          division_slug TEXT NOT NULL,
-          name TEXT NOT NULL,
-          api_order INTEGER NOT NULL,
-          created_at INTEGER NOT NULL,
-          PRIMARY KEY (competition_slug, season_slug, division_slug),
-          FOREIGN KEY (competition_slug, season_slug) REFERENCES seasons (competition_slug, season_slug)
-        )
-      ''');
-
-      // Drop the old events table
-      await db.execute('DROP TABLE events_old');
-
-      // Clear cache to force fresh data loading
-      await clearAllCache();
-    }
-
-    if (oldVersion < 4) {
-      // Restructure all tables to use proper slug-based composite keys
-      // Drop all tables and recreate with new schema
-      await db.execute('DROP TABLE IF EXISTS ladder_entries');
-      await db.execute('DROP TABLE IF EXISTS fixtures');
-      await db.execute('DROP TABLE IF EXISTS teams');
-      await db.execute('DROP TABLE IF EXISTS divisions');
-      await db.execute('DROP TABLE IF EXISTS seasons');
-      await db.execute('DROP TABLE IF EXISTS events');
-
-      // Recreate all tables with new schema
-      await _createDB(db, 4);
-
-      // Clear cache to force fresh data loading
-      await clearAllCache();
-    }
+  // Helper method to drop all tables
+  static Future<void> _dropAllTables(Database db) async {
+    debugPrint('🗄️ [SQLite] 🗑️ Dropping all existing tables...');
+    await db.execute('DROP TABLE IF EXISTS cache_metadata');
+    await db.execute('DROP TABLE IF EXISTS news_items');
+    await db.execute('DROP TABLE IF EXISTS ladder_entries');
+    await db.execute('DROP TABLE IF EXISTS fixtures');
+    await db.execute('DROP TABLE IF EXISTS teams');
+    await db.execute('DROP TABLE IF EXISTS divisions');
+    await db.execute('DROP TABLE IF EXISTS seasons');
+    await db.execute('DROP TABLE IF EXISTS events');
+    debugPrint('🗄️ [SQLite] ✅ All tables dropped successfully');
   }
 
   // Cache management
   static Future<bool> isCacheValid(String key, Duration maxAge) async {
+    debugPrint('🕰️ [Cache] 🔍 Checking cache validity for key: $key');
+    debugPrint('🕰️ [Cache] 📞 Getting database instance...');
     final db = await database;
+    debugPrint('🕰️ [Cache] ✅ Database instance obtained, querying cache_metadata...');
     final result = await db.query(
       'cache_metadata',
       where: 'key = ?',
       whereArgs: [key],
     );
+    debugPrint('🕰️ [Cache] 📋 Query completed, found ${result.length} results');
 
-    if (result.isEmpty) return false;
+    if (result.isEmpty) {
+      debugPrint('🕰️ [Cache] ❌ No cache metadata found for key: $key');
+      return false;
+    }
 
     final lastUpdated = result.first['last_updated'] as int;
     final expiryDuration = result.first['expiry_duration'] as int;
     final now = DateTime.now().millisecondsSinceEpoch;
-
-    return (now - lastUpdated) < expiryDuration;
+    final ageMs = now - lastUpdated;
+    final isValid = ageMs < expiryDuration;
+    
+    debugPrint('🕰️ [Cache] 📅 Cache for $key: age=${ageMs}ms, ttl=${expiryDuration}ms, valid=$isValid');
+    return isValid;
   }
 
   static Future<void> updateCacheMetadata(String key, Duration maxAge) async {
@@ -302,6 +278,7 @@ class DatabaseService {
       );
 
       // Cache the seasons for this event with composite keys
+      debugPrint('🗺️ [SQLite] 🏆 Caching ${event.seasons.length} seasons for event: ${event.name}');
       for (int j = 0; j < event.seasons.length; j++) {
         final season = event.seasons[j];
         batch.insert(
@@ -315,6 +292,7 @@ class DatabaseService {
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
+        debugPrint('🗺️ [SQLite] 🏆 → Cached season: ${season.title} (${season.slug})');
       }
     }
 
@@ -553,6 +531,7 @@ class DatabaseService {
 
   // News
   static Future<void> cacheNewsItems(List<NewsItem> newsItems) async {
+    debugPrint('🗺️ [SQLite] 💾 Caching ${newsItems.length} news items to database...');
     final db = await database;
     final batch = db.batch();
 
@@ -572,33 +551,57 @@ class DatabaseService {
       );
     }
 
-    await batch.commit();
-    await updateCacheMetadata('news', const Duration(minutes: 30));
+    try {
+      await batch.commit();
+      debugPrint('🗺️ [SQLite] ✅ Successfully inserted ${newsItems.length} news items into database');
+      await updateCacheMetadata('news', const Duration(minutes: 30));
+      debugPrint('🗺️ [SQLite] ✅ Cache metadata updated for news (30min TTL)');
+    } catch (e) {
+      debugPrint('🗺️ [SQLite] ❌ Error caching news items: $e');
+      rethrow;
+    }
   }
 
   static Future<List<NewsItem>> getCachedNewsItems() async {
-    final db = await database;
-    final maps = await db.query(
-      'news_items',
-      orderBy: 'published_at DESC',
-    );
+    debugPrint('🗺️ [SQLite] 🔍 Querying cached news items from database...');
+    try {
+      final db = await database;
+      final maps = await db.query(
+        'news_items',
+        orderBy: 'published_at DESC',
+      );
+      
+      debugPrint('🗺️ [SQLite] 📄 Found ${maps.length} cached news items in database');
 
-    return maps
-        .map((map) => NewsItem(
-              id: map['id'] as String,
-              title: map['title'] as String,
-              summary: map['summary'] as String,
-              imageUrl: map['image_url'] as String? ?? '',
-              link: map['link'] as String?,
-              publishedAt: DateTime.fromMillisecondsSinceEpoch(
-                  map['published_at'] as int),
-            ))
-        .toList();
+      final newsItems = maps
+          .map((map) => NewsItem(
+                id: map['id'] as String,
+                title: map['title'] as String,
+                summary: map['summary'] as String,
+                imageUrl: map['image_url'] as String? ?? '',
+                link: map['link'] as String?,
+                publishedAt: DateTime.fromMillisecondsSinceEpoch(
+                    map['published_at'] as int),
+              ))
+          .toList();
+      
+      debugPrint('🗺️ [SQLite] ✅ Successfully loaded ${newsItems.length} news items from cache');
+      return newsItems;
+    } catch (e) {
+      debugPrint('🗺️ [SQLite] ❌ Error loading cached news items: $e');
+      return [];
+    }
   }
 
   // Clear all cache
   static Future<void> clearAllCache() async {
     final db = await database;
+    await _clearAllCacheWithDb(db);
+  }
+
+  // Helper method to clear cache with existing database instance
+  static Future<void> _clearAllCacheWithDb(Database db) async {
+    debugPrint('🗄️ [SQLite] 🧤 Clearing all cache data...');
     await db.delete('cache_metadata');
     await db.delete('events');
     await db.delete('seasons');
@@ -607,6 +610,7 @@ class DatabaseService {
     await db.delete('fixtures');
     await db.delete('ladder_entries');
     await db.delete('news_items');
+    debugPrint('🗄️ [SQLite] ✅ All cache data cleared');
   }
 
   // Close database
