@@ -459,10 +459,6 @@ class DataService {
             videos: (match['videos'] as List<dynamic>?)?.cast<String>() ?? [],
           );
           
-          // Debug: Print video information when videos are found
-          if ((match['videos'] as List<dynamic>?)?.isNotEmpty == true) {
-            debugPrint('Found videos for match ${match['id']}: ${match['videos']}');
-          }
           fixtures.add(fixture);
         }
       }
