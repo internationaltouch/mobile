@@ -17,7 +17,6 @@ import 'database_service.dart';
 class DataService {
   // Cache for API data
   static List<Event>? _cachedEvents;
-  static List<NewsItem>? _cachedNews;
   static final Map<String, List<Division>> _cachedDivisions = {};
   static final Map<String, List<Team>> _cachedTeams = {};
   static final Map<String, List<Fixture>> _cachedFixtures = {};
@@ -107,10 +106,10 @@ class DataService {
   // Fetch news from RSS feed
   static Future<List<NewsItem>> getNewsItems() async {
     // Check if cache is valid
-    if (await DatabaseService.isCacheValid('news', const Duration(minutes: 30))) {
+    if (await DatabaseService.isCacheValid(
+        'news', const Duration(minutes: 30))) {
       final cachedNews = await DatabaseService.getCachedNewsItems();
       if (cachedNews.isNotEmpty) {
-        _cachedNews = cachedNews;
         return cachedNews;
       }
     }
@@ -216,21 +215,19 @@ class DataService {
 
         // Cache the news items in database
         await DatabaseService.cacheNewsItems(newsItems);
-        _cachedNews = newsItems;
         return newsItems;
       } else {
         throw Exception('Failed to load RSS feed: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('Failed to fetch news from RSS: $e');
-      
+
       // Try to return cached data as fallback
       final cachedNews = await DatabaseService.getCachedNewsItems();
       if (cachedNews.isNotEmpty) {
-        _cachedNews = cachedNews;
         return cachedNews;
       }
-      
+
       rethrow;
     }
   }
@@ -238,7 +235,8 @@ class DataService {
   // Fetch events from API
   static Future<List<Event>> getEvents() async {
     // Check if cache is valid
-    if (await DatabaseService.isCacheValid('events', const Duration(hours: 1))) {
+    if (await DatabaseService.isCacheValid(
+        'events', const Duration(hours: 1))) {
       final cachedEvents = await DatabaseService.getCachedEvents();
       if (cachedEvents.isNotEmpty) {
         _cachedEvents = cachedEvents;
@@ -276,14 +274,14 @@ class DataService {
       return events;
     } catch (e) {
       debugPrint('Failed to fetch events from API: $e');
-      
+
       // Try to return cached data as fallback
       final cachedEvents = await DatabaseService.getCachedEvents();
       if (cachedEvents.isNotEmpty) {
         _cachedEvents = cachedEvents;
         return cachedEvents;
       }
-      
+
       rethrow;
     }
   }
@@ -442,22 +440,26 @@ class DataService {
   // Fetch fixtures from API
   static Future<List<Fixture>> getFixtures(String divisionId,
       {String? eventId, String? season}) async {
+    if (eventId == null || season == null) {
+      throw Exception(
+          'eventId and season are required to fetch fixtures from API');
+    }
+
+    final seasonSlug = _findSeasonSlug(eventId, season);
+    final cacheKey = 'fixtures_${eventId}_${seasonSlug}_$divisionId';
+
     // Check if cache is valid (fixtures update frequently, so shorter cache)
-    if (await DatabaseService.isCacheValid('fixtures_$divisionId', const Duration(minutes: 15))) {
-      final cachedFixtures = await DatabaseService.getCachedFixtures(divisionId);
+    if (await DatabaseService.isCacheValid(
+        cacheKey, const Duration(minutes: 15))) {
+      final cachedFixtures = await DatabaseService.getCachedFixtures(
+          eventId, seasonSlug, divisionId);
       if (cachedFixtures.isNotEmpty) {
         _cachedFixtures[divisionId] = cachedFixtures;
         return cachedFixtures;
       }
     }
 
-    if (eventId == null || season == null) {
-      throw Exception(
-          'eventId and season are required to fetch fixtures from API');
-    }
-
     try {
-      final seasonSlug = _findSeasonSlug(eventId, season);
       final divisionDetails = await ApiService.fetchDivisionDetails(
           eventId, seasonSlug, divisionId);
       final fixtures = <Fixture>[];
@@ -494,25 +496,27 @@ class DataService {
             isBye: match['is_bye'],
             videos: (match['videos'] as List<dynamic>?)?.cast<String>() ?? [],
           );
-          
+
           fixtures.add(fixture);
         }
       }
 
-      // Cache the fixtures in database
-      await DatabaseService.cacheFixtures(divisionId, fixtures);
+      // Cache the fixtures in database with new schema
+      await DatabaseService.cacheFixtures(
+          eventId, seasonSlug, divisionId, fixtures);
       _cachedFixtures[divisionId] = fixtures;
       return fixtures;
     } catch (e) {
       debugPrint('Failed to fetch fixtures from API: $e');
-      
+
       // Try to return cached data as fallback
-      final cachedFixtures = await DatabaseService.getCachedFixtures(divisionId);
+      final cachedFixtures = await DatabaseService.getCachedFixtures(
+          eventId, seasonSlug, divisionId);
       if (cachedFixtures.isNotEmpty) {
         _cachedFixtures[divisionId] = cachedFixtures;
         return cachedFixtures;
       }
-      
+
       rethrow;
     }
   }
@@ -616,9 +620,14 @@ class DataService {
   // Clear cache to force refresh
   static void clearCache() {
     _cachedEvents = null;
-    _cachedNews = null;
     _cachedDivisions.clear();
     _cachedTeams.clear();
     _cachedFixtures.clear();
+  }
+
+  // Clear database cache (for testing or cache invalidation)
+  static Future<void> clearDatabaseCache() async {
+    await DatabaseService.clearAllCache();
+    clearCache(); // Also clear in-memory cache
   }
 }

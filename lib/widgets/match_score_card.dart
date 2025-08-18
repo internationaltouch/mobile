@@ -309,7 +309,8 @@ class MatchScoreCard extends StatelessWidget {
               const SizedBox(height: 12),
               Center(
                 child: ElevatedButton.icon(
-                  onPressed: () => _showVideoDialog(context, fixture.videos.first),
+                  onPressed: () =>
+                      _showVideoDialog(context, fixture.videos.first),
                   icon: const Icon(Icons.play_arrow, color: Colors.white),
                   label: const Text(
                     'Watch',

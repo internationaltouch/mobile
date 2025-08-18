@@ -43,7 +43,7 @@ class _ShortcutsViewState extends State<ShortcutsView> {
   void _navigateToShortcut(ShortcutItem shortcut) {
     // Handle navigation based on shortcut route
     Navigator.of(context).pop(); // Close the shortcuts dialog first
-    
+
     // For now, just show a snackbar
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -108,7 +108,7 @@ class _ShortcutsViewState extends State<ShortcutsView> {
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.star,
                     color: Colors.white,
                   ),
@@ -133,7 +133,7 @@ class _ShortcutsViewState extends State<ShortcutsView> {
                 ],
               ),
             ),
-            
+
             // Shortcuts list
             Expanded(
               child: _shortcuts.isEmpty
@@ -182,7 +182,7 @@ class _ShortcutsViewState extends State<ShortcutsView> {
                       },
                     ),
             ),
-            
+
             // Action buttons
             Container(
               padding: const EdgeInsets.all(16),

@@ -152,7 +152,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                       decoration: const InputDecoration(
                         labelText: 'Filter by Team',
                         border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       items: [
                         const DropdownMenuItem<String>(
@@ -160,9 +161,9 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                           child: Text('All Teams'),
                         ),
                         ...teams.map((team) => DropdownMenuItem<String>(
-                          value: team.id,
-                          child: Text(team.name),
-                        )),
+                              value: team.id,
+                              child: Text(team.name),
+                            )),
                       ],
                       onChanged: _onTeamSelected,
                     );
@@ -180,10 +181,11 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                 child: _filteredFixtures.isEmpty
                     ? Center(
                         child: Text(
-                          _selectedTeamId == null 
+                          _selectedTeamId == null
                               ? 'No fixtures available'
                               : 'No fixtures for selected team',
-                          style: const TextStyle(fontSize: 16, color: Colors.grey),
+                          style:
+                              const TextStyle(fontSize: 16, color: Colors.grey),
                         ),
                       )
                     : ListView.builder(
@@ -193,7 +195,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                           final fixture = _filteredFixtures[index];
                           return MatchScoreCard(
                             fixture: fixture,
-                            venue: fixture.field.isNotEmpty ? fixture.field : null,
+                            venue:
+                                fixture.field.isNotEmpty ? fixture.field : null,
                           );
                         },
                       ),

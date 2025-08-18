@@ -26,13 +26,13 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
   void _extractVideoId() {
     // Extract YouTube video ID from various URL formats
     final uri = Uri.parse(widget.videoUrl);
-    
+
     if (uri.host.contains('youtube.com')) {
       _videoId = uri.queryParameters['v'];
     } else if (uri.host.contains('youtu.be')) {
       _videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
     }
-    
+
     if (_videoId != null) {
       _thumbnailUrl = 'https://img.youtube.com/vi/$_videoId/maxresdefault.jpg';
     }
@@ -130,7 +130,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
                 ],
               ),
             ),
-            
+
             // Video thumbnail with play overlay
             Container(
               height: 200,
@@ -168,7 +168,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.black.withValues(alpha: 0.3),
                               blurRadius: 10,
                               spreadRadius: 2,
                             ),
@@ -189,13 +189,13 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
                 ],
               ),
             ),
-            
+
             // Description and action buttons
-            Padding(
-              padding: const EdgeInsets.all(16),
+            const Padding(
+              padding: EdgeInsets.all(16),
               child: Column(
-                children: [
-                  const Text(
+                children: <Widget>[
+                  Text(
                     'Tap the play button above to watch the match highlights in your preferred video app.',
                     style: TextStyle(
                       fontSize: 14,
@@ -203,7 +203,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                 ],
               ),
             ),
