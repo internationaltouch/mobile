@@ -106,24 +106,11 @@ class _EventDetailViewState extends State<EventDetailView> {
             ),
             const SizedBox(height: 24),
             Text(
-              widget.event.name,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+              'Select a season to view divisions and results',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.grey[600],
                   ),
               textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              widget.event.description,
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'Select Season',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -202,13 +189,10 @@ class _EventDetailViewState extends State<EventDetailView> {
                             ),
                           ),
                           title: Text(
-                            '${season.title} Season',
+                            season.title,
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                             ),
-                          ),
-                          subtitle: Text(
-                            'View divisions and results for ${season.title}',
                           ),
                           trailing: const Icon(Icons.arrow_forward_ios),
                           onTap: () {

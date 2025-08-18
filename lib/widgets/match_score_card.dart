@@ -45,18 +45,13 @@ class MatchScoreCard extends StatelessWidget {
               children: [
                 // Home team
                 Expanded(
-                  flex: 3,
+                  flex: 2,
                   child: Column(
                     children: [
                       // Team logo/flag
-                      Container(
+                      SizedBox(
                         width: 50,
                         height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.grey[300]!, width: 1),
-                        ),
                         child: _buildTeamLogo(
                           fixture.homeTeamName,
                           fixture.homeTeamAbbreviation,
@@ -69,6 +64,7 @@ class MatchScoreCard extends StatelessWidget {
                         fixture.homeTeamName,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
+                              fontSize: 12,
                             ),
                         textAlign: TextAlign.center,
                         maxLines: 1,
@@ -90,44 +86,68 @@ class MatchScoreCard extends StatelessWidget {
                 
                 // Score section
                 Expanded(
-                  flex: 2,
+                  flex: 3,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (fixture.isCompleted && fixture.homeScore != null && fixture.awayScore != null) ...[
-                        // Completed match scores
+                        // Completed match scores with winner emphasis
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            // Home score
                             Text(
                               '${fixture.homeScore}',
                               style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: fixture.homeScore! > fixture.awayScore! 
+                                        ? FontWeight.bold 
+                                        : fixture.homeScore! == fixture.awayScore!
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
                                     color: Colors.black87,
                                     fontSize: 36,
                                   ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 16),
+                            // Full time text between scores
+                            Column(
+                              children: [
+                                Text(
+                                  'FULL',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: 0.8,
+                                        fontSize: 10,
+                                      ),
+                                ),
+                                Text(
+                                  'TIME',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: 0.8,
+                                        fontSize: 10,
+                                      ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 16),
+                            // Away score
                             Text(
                               '${fixture.awayScore}',
                               style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: fixture.awayScore! > fixture.homeScore! 
+                                        ? FontWeight.bold 
+                                        : fixture.homeScore! == fixture.awayScore!
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
                                     color: Colors.black87,
                                     fontSize: 36,
                                   ),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'FULL TIME',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.8,
-                                fontSize: 12,
-                              ),
                         ),
                       ] else if (fixture.isBye == true) ...[
                         // Bye match
@@ -179,18 +199,13 @@ class MatchScoreCard extends StatelessWidget {
                 
                 // Away team
                 Expanded(
-                  flex: 3,
+                  flex: 2,
                   child: Column(
                     children: [
                       // Team logo/flag
-                      Container(
+                      SizedBox(
                         width: 50,
                         height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.grey[300]!, width: 1),
-                        ),
                         child: _buildTeamLogo(
                           fixture.awayTeamName,
                           fixture.awayTeamAbbreviation,
@@ -203,6 +218,7 @@ class MatchScoreCard extends StatelessWidget {
                         fixture.awayTeamName,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
+                              fontSize: 12,
                             ),
                         textAlign: TextAlign.center,
                         maxLines: 1,
@@ -360,22 +376,28 @@ class MatchScoreCard extends StatelessWidget {
   }
 
   String _formatMatchDate(DateTime dateTime) {
+    // Convert UTC datetime to local timezone
+    final localDateTime = dateTime.toLocal();
+    
     final weekdays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
     final months = [
       'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
       'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
     ];
     
-    final weekday = weekdays[dateTime.weekday - 1];
-    final day = dateTime.day;
-    final month = months[dateTime.month - 1];
+    final weekday = weekdays[localDateTime.weekday - 1];
+    final day = localDateTime.day;
+    final month = months[localDateTime.month - 1];
     
     return '$weekday ${day}TH $month';
   }
 
   String _formatMatchTime(DateTime dateTime) {
-    final hour = dateTime.hour.toString().padLeft(2, '0');
-    final minute = dateTime.minute.toString().padLeft(2, '0');
+    // Convert UTC datetime to local timezone
+    final localDateTime = dateTime.toLocal();
+    
+    final hour = localDateTime.hour.toString().padLeft(2, '0');
+    final minute = localDateTime.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
 }

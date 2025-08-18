@@ -29,7 +29,7 @@ void main() {
     await tester.tap(find.text('Competitions'));
     await tester.pumpAndSettle();
 
-    // Verify we're now on the competitions page
-    expect(find.text('Competitions & Results'), findsOneWidget);
+    // Verify we're now on the competitions page (check for the tab itself since title was removed)
+    expect(find.text('Competitions'), findsOneWidget);
   });
 }

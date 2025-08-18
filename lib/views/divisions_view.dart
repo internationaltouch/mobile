@@ -52,13 +52,6 @@ class _DivisionsViewState extends State<DivisionsView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Select Division',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 20),
             Expanded(
               child: FutureBuilder<List<Division>>(
                 future: _divisionsFuture,
@@ -148,23 +141,11 @@ class _DivisionsViewState extends State<DivisionsView> {
                             );
                           },
                           child: Card(
-                            elevation: 4,
+                            elevation: 2,
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12.0),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    color,
-                                    Color.fromARGB(
-                                      (255 * 0.7).round(),
-                                      color.r.round(),
-                                      color.g.round(),
-                                      color.b.round(),
-                                    ),
-                                  ],
-                                ),
+                                color: color,
                               ),
                               child: Center(
                                 child: Padding(
