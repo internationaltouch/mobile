@@ -10,10 +10,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    // Verify that the app loads with the correct title.
-    expect(find.text('FIT Mobile App'), findsOneWidget);
-
-    // Verify that bottom navigation is present
+    // Verify that the app loads (check for bottom navigation tabs since title is now a logo)
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Competitions'), findsOneWidget);
   });

@@ -23,7 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.fit.mobile"
+    namespace "org.internationaltouch.mobile"
     compileSdk flutter.compileSdkVersion
 
     compileOptions {
@@ -40,7 +40,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.fit.mobile"
+        applicationId "org.internationaltouch.mobile"
         minSdk flutter.minSdkVersion
         targetSdk flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()

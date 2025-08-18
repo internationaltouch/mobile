@@ -3,6 +3,7 @@ import '../models/event.dart';
 import '../models/division.dart';
 import '../models/fixture.dart';
 import '../models/ladder_entry.dart';
+import '../models/team.dart';
 import '../services/data_service.dart';
 import '../widgets/match_score_card.dart';
 
@@ -27,6 +28,10 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
   late TabController _tabController;
   late Future<List<Fixture>> _fixturesFuture;
   late Future<List<LadderEntry>> _ladderFuture;
+  late Future<List<Team>> _teamsFuture;
+  String? _selectedTeamId;
+  List<Fixture> _allFixtures = [];
+  List<Fixture> _filteredFixtures = [];
 
   @override
   void initState() {
@@ -40,12 +45,39 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
       widget.division.slug ?? widget.division.id,
       eventId: widget.event.slug ?? widget.event.id,
       season: widget.season,
-    );
+    ).then((fixtures) {
+      _allFixtures = fixtures;
+      _filterFixtures();
+      return fixtures;
+    });
     _ladderFuture = DataService.getLadder(
       widget.division.slug ?? widget.division.id,
       eventId: widget.event.slug ?? widget.event.id,
       season: widget.season,
     );
+    _teamsFuture = DataService.getTeams(
+      widget.division.slug ?? widget.division.id,
+      eventId: widget.event.slug ?? widget.event.id,
+      season: widget.season,
+    );
+  }
+
+  void _filterFixtures() {
+    if (_selectedTeamId == null) {
+      _filteredFixtures = _allFixtures;
+    } else {
+      _filteredFixtures = _allFixtures.where((fixture) {
+        return fixture.homeTeamId == _selectedTeamId ||
+            fixture.awayTeamId == _selectedTeamId;
+      }).toList();
+    }
+  }
+
+  void _onTeamSelected(String? teamId) {
+    setState(() {
+      _selectedTeamId = teamId;
+      _filterFixtures();
+    });
   }
 
   @override
@@ -105,34 +137,69 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
           );
         }
 
-        final fixtures = snapshot.data ?? [];
-
-        return RefreshIndicator(
-          onRefresh: () async {
-            setState(() => _loadData());
-          },
-          child: fixtures.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No fixtures available',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  itemCount: fixtures.length,
-                  itemBuilder: (context, index) {
-                    final fixture = fixtures[index];
-                    return MatchScoreCard(
-                      fixture: fixture,
-                      // You can add location data here when available
-                      // homeTeamLocation: 'Dharug',
-                      // awayTeamLocation: 'Wurundjeri',
-                      venue: fixture.field.isNotEmpty ? fixture.field : null,
-                      // venueLocation: 'Sydney', // Add when available
+        return Column(
+          children: [
+            // Team filter dropdown
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: FutureBuilder<List<Team>>(
+                future: _teamsFuture,
+                builder: (context, teamsSnapshot) {
+                  if (teamsSnapshot.hasData) {
+                    final teams = teamsSnapshot.data!;
+                    return DropdownButtonFormField<String>(
+                      value: _selectedTeamId,
+                      decoration: const InputDecoration(
+                        labelText: 'Filter by Team',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: null,
+                          child: Text('All Teams'),
+                        ),
+                        ...teams.map((team) => DropdownMenuItem<String>(
+                          value: team.id,
+                          child: Text(team.name),
+                        )),
+                      ],
+                      onChanged: _onTeamSelected,
                     );
-                  },
-                ),
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+            // Fixtures list
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  setState(() => _loadData());
+                },
+                child: _filteredFixtures.isEmpty
+                    ? Center(
+                        child: Text(
+                          _selectedTeamId == null 
+                              ? 'No fixtures available'
+                              : 'No fixtures for selected team',
+                          style: const TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        itemCount: _filteredFixtures.length,
+                        itemBuilder: (context, index) {
+                          final fixture = _filteredFixtures[index];
+                          return MatchScoreCard(
+                            fixture: fixture,
+                            venue: fixture.field.isNotEmpty ? fixture.field : null,
+                          );
+                        },
+                      ),
+              ),
+            ),
+          ],
         );
       },
     );

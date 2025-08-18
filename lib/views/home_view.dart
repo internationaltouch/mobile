@@ -4,6 +4,7 @@ import '../models/news_item.dart';
 import '../services/data_service.dart';
 import 'competitions_view.dart';
 import 'news_detail_view.dart';
+import 'shortcuts_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -32,13 +33,21 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FIT Mobile App'),
+        title: Image.asset(
+          'assets/images/LOGO_FIT-HZ.png',
+          height: 32,
+          fit: BoxFit.contain,
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: const Icon(Icons.star),
+            tooltip: 'Shortcuts',
             onPressed: () {
-              // TODO: Implement notifications
+              showDialog(
+                context: context,
+                builder: (context) => const ShortcutsView(),
+              );
             },
           ),
         ],

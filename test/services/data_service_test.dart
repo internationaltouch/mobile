@@ -5,12 +5,21 @@ import 'package:fit_mobile_app/models/news_item.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 // Generate mocks
 @GenerateMocks([http.Client])
 import 'data_service_test.mocks.dart';
 
 void main() {
+  // Initialize sqflite for testing
+  setUpAll(() {
+    // Initialize ffi
+    sqfliteFfiInit();
+    // Set global factory
+    databaseFactory = databaseFactoryFfi;
+  });
+
   group('DataService Tests', () {
     late MockClient mockClient;
 
