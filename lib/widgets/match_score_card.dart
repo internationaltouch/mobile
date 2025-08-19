@@ -66,10 +66,11 @@ class MatchScoreCard extends StatelessWidget {
                         height: 28, // Fixed height for up to 2 lines of text
                         child: Text(
                           fixture.homeTeamName,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.visible,
@@ -197,7 +198,8 @@ class MatchScoreCard extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
-                                color: FITColors.accentYellow.withValues(alpha: 0.2),
+                                color: FITColors.accentYellow
+                                    .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -239,10 +241,11 @@ class MatchScoreCard extends StatelessWidget {
                         height: 28, // Fixed height for up to 2 lines of text
                         child: Text(
                           fixture.awayTeamName,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.visible,
@@ -298,7 +301,8 @@ class MatchScoreCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: FITColors.primaryBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: FITColors.primaryBlue.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: FITColors.primaryBlue.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   fixture.round!,

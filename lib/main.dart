@@ -17,7 +17,8 @@ class FITMobileApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
           final initialIndex = args?['selectedIndex'] ?? 0;
           return MainNavigationView(initialSelectedIndex: initialIndex);
         },

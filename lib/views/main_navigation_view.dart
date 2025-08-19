@@ -4,7 +4,7 @@ import 'competitions_view.dart';
 
 class MainNavigationView extends StatefulWidget {
   final int initialSelectedIndex;
-  
+
   const MainNavigationView({super.key, this.initialSelectedIndex = 0});
 
   @override

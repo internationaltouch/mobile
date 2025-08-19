@@ -3,6 +3,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import '../models/news_item.dart';
 import '../services/data_service.dart';
 import '../theme/fit_colors.dart';
+import '../utils/image_utils.dart';
 import 'competitions_view.dart';
 import 'news_detail_view.dart';
 import 'shortcuts_view.dart';
@@ -10,8 +11,9 @@ import 'shortcuts_view.dart';
 class HomeView extends StatefulWidget {
   final int initialSelectedIndex;
   final bool showOnlyNews;
-  
-  const HomeView({super.key, this.initialSelectedIndex = 0, this.showOnlyNews = false});
+
+  const HomeView(
+      {super.key, this.initialSelectedIndex = 0, this.showOnlyNews = false});
 
   @override
   State<HomeView> createState() => _HomeViewState();
@@ -42,7 +44,7 @@ class _HomeViewState extends State<HomeView> {
         body: _buildNewsPage(),
       );
     }
-    
+
     // Original behavior for backward compatibility
     return Scaffold(
       body: _selectedIndex == 0 ? _buildNewsPage() : const CompetitionsView(),
@@ -140,7 +142,8 @@ class _HomeViewState extends State<HomeView> {
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-      itemCount: visibleNewsItems.length + (hasMoreItems ? 1 : 0) + 1, // +1 for logo
+      itemCount:
+          visibleNewsItems.length + (hasMoreItems ? 1 : 0) + 1, // +1 for logo
       itemBuilder: (context, index) {
         if (index == 0) {
           // Show logo before first news item
@@ -148,7 +151,8 @@ class _HomeViewState extends State<HomeView> {
             padding: const EdgeInsets.only(top: 24.0, bottom: 12.0),
             child: Center(
               child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.6, // 60% of screen width
+                width: MediaQuery.of(context).size.width *
+                    0.6, // 60% of screen width
                 child: Image.asset(
                   'assets/images/LOGO_FIT-HZ.png',
                   fit: BoxFit.contain,
@@ -157,7 +161,8 @@ class _HomeViewState extends State<HomeView> {
             ),
           );
         } else if (index <= visibleNewsItems.length) {
-          final newsItem = visibleNewsItems[index - 1]; // -1 because logo takes index 0
+          final newsItem =
+              visibleNewsItems[index - 1]; // -1 because logo takes index 0
           return GestureDetector(
             onTap: () => _openNewsDetail(newsItem),
             child: NewsCard(
@@ -322,7 +327,7 @@ class _NewsCardState extends State<NewsCard> {
               ),
               child: Stack(
                 children: [
-                  Image.network(
+                  ImageUtils.buildImage(
                     widget.newsItem.imageUrl,
                     height: 200,
                     width: double.infinity,

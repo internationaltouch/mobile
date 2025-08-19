@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../services/data_service.dart';
+import '../utils/image_utils.dart';
 import 'event_detail_view.dart';
 import 'shortcuts_view.dart';
 
@@ -143,7 +144,7 @@ class _CompetitionsViewState extends State<CompetitionsView> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: Image.network(
+          child: ImageUtils.buildImage(
             event.logoUrl,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) =>

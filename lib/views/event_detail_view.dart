@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../models/season.dart';
 import '../services/data_service.dart';
+import '../utils/image_utils.dart';
 import 'divisions_view.dart';
 import 'main_navigation_view.dart';
 
@@ -78,7 +79,7 @@ class _EventDetailViewState extends State<EventDetailView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Image.network(
+              child: ImageUtils.buildImage(
                 widget.event.logoUrl,
                 height: 120,
                 width: 120,

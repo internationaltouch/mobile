@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../models/news_item.dart';
 import '../services/data_service.dart';
+import '../utils/image_utils.dart';
 
 class NewsDetailView extends StatefulWidget {
   final NewsItem newsItem;
@@ -67,7 +68,7 @@ class _NewsDetailViewState extends State<NewsDetailView> {
             // Hero image
             Stack(
               children: [
-                Image.network(
+                ImageUtils.buildImage(
                   widget.newsItem.imageUrl,
                   height: 250,
                   width: double.infinity,

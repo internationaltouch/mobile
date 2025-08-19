@@ -163,9 +163,9 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                         ),
                         ...(teams..sort((a, b) => a.name.compareTo(b.name)))
                             .map((team) => DropdownMenuItem<String>(
-                              value: team.id,
-                              child: Text(team.name),
-                            )),
+                                  value: team.id,
+                                  child: Text(team.name),
+                                )),
                       ],
                       onChanged: _onTeamSelected,
                     );

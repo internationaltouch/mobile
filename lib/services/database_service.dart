@@ -36,15 +36,16 @@ class DatabaseService {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, _dbName);
     debugPrint('🗄️ [SQLite] 📁 Database path: $path');
-    
+
     // Delete existing database file to force fresh start
     final dbFile = File(path);
     if (await dbFile.exists()) {
-      debugPrint('🗄️ [SQLite] 🗑️ Deleting existing database file for fresh start...');
+      debugPrint(
+          '🗄️ [SQLite] 🗑️ Deleting existing database file for fresh start...');
       await dbFile.delete();
       debugPrint('🗄️ [SQLite] ✅ Existing database deleted');
     }
-    
+
     debugPrint('🗄️ [SQLite] 📊 Database version: $_dbVersion');
     debugPrint('🗄️ [SQLite] 📛 Opening database...');
 
@@ -54,7 +55,8 @@ class DatabaseService {
         version: _dbVersion,
         onCreate: _createDB,
         onUpgrade: (db, oldVersion, newVersion) async {
-          debugPrint('🗄️ [SQLite] ⬆️ Database upgrade from $oldVersion to $newVersion (should not happen with file deletion)');
+          debugPrint(
+              '🗄️ [SQLite] ⬆️ Database upgrade from $oldVersion to $newVersion (should not happen with file deletion)');
           await _dropAllTables(db);
           await _createDB(db, newVersion);
         },
@@ -68,8 +70,9 @@ class DatabaseService {
   }
 
   static Future<void> _createDB(Database db, int version) async {
-    debugPrint('🗄️ [SQLite] 🏠 Creating database tables (version $version)...');
-    
+    debugPrint(
+        '🗄️ [SQLite] 🏠 Creating database tables (version $version)...');
+
     // Events table (Competition level)
     debugPrint('🗄️ [SQLite] 🏢 Creating events table...');
     await db.execute('''
@@ -195,7 +198,7 @@ class DatabaseService {
         expiry_duration INTEGER NOT NULL
       )
     ''');
-    
+
     debugPrint('🗄️ [SQLite] ✅ All database tables created successfully');
   }
 
@@ -218,13 +221,15 @@ class DatabaseService {
     debugPrint('🕰️ [Cache] 🔍 Checking cache validity for key: $key');
     debugPrint('🕰️ [Cache] 📞 Getting database instance...');
     final db = await database;
-    debugPrint('🕰️ [Cache] ✅ Database instance obtained, querying cache_metadata...');
+    debugPrint(
+        '🕰️ [Cache] ✅ Database instance obtained, querying cache_metadata...');
     final result = await db.query(
       'cache_metadata',
       where: 'key = ?',
       whereArgs: [key],
     );
-    debugPrint('🕰️ [Cache] 📋 Query completed, found ${result.length} results');
+    debugPrint(
+        '🕰️ [Cache] 📋 Query completed, found ${result.length} results');
 
     if (result.isEmpty) {
       debugPrint('🕰️ [Cache] ❌ No cache metadata found for key: $key');
@@ -236,8 +241,9 @@ class DatabaseService {
     final now = DateTime.now().millisecondsSinceEpoch;
     final ageMs = now - lastUpdated;
     final isValid = ageMs < expiryDuration;
-    
-    debugPrint('🕰️ [Cache] 📅 Cache for $key: age=${ageMs}ms, ttl=${expiryDuration}ms, valid=$isValid');
+
+    debugPrint(
+        '🕰️ [Cache] 📅 Cache for $key: age=${ageMs}ms, ttl=${expiryDuration}ms, valid=$isValid');
     return isValid;
   }
 
@@ -278,7 +284,8 @@ class DatabaseService {
       );
 
       // Cache the seasons for this event with composite keys
-      debugPrint('🗺️ [SQLite] 🏆 Caching ${event.seasons.length} seasons for event: ${event.name}');
+      debugPrint(
+          '🗺️ [SQLite] 🏆 Caching ${event.seasons.length} seasons for event: ${event.name}');
       for (int j = 0; j < event.seasons.length; j++) {
         final season = event.seasons[j];
         batch.insert(
@@ -292,7 +299,8 @@ class DatabaseService {
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
-        debugPrint('🗺️ [SQLite] 🏆 → Cached season: ${season.title} (${season.slug})');
+        debugPrint(
+            '🗺️ [SQLite] 🏆 → Cached season: ${season.title} (${season.slug})');
       }
     }
 
@@ -531,7 +539,8 @@ class DatabaseService {
 
   // News
   static Future<void> cacheNewsItems(List<NewsItem> newsItems) async {
-    debugPrint('🗺️ [SQLite] 💾 Caching ${newsItems.length} news items to database...');
+    debugPrint(
+        '🗺️ [SQLite] 💾 Caching ${newsItems.length} news items to database...');
     final db = await database;
     final batch = db.batch();
 
@@ -541,8 +550,9 @@ class DatabaseService {
 
     for (int i = 0; i < newsItems.length; i++) {
       final newsItem = newsItems[i];
-      debugPrint('🗺️ [SQLite] 📝 Inserting news item ${i + 1}/${newsItems.length}: ID="${newsItem.id}", Title="${newsItem.title.length > 50 ? '${newsItem.title.substring(0, 50)}...' : newsItem.title}"');
-      
+      debugPrint(
+          '🗺️ [SQLite] 📝 Inserting news item ${i + 1}/${newsItems.length}: ID="${newsItem.id}", Title="${newsItem.title.length > 50 ? '${newsItem.title.substring(0, 50)}...' : newsItem.title}"');
+
       batch.insert(
         'news_items',
         {
@@ -560,7 +570,8 @@ class DatabaseService {
 
     try {
       await batch.commit();
-      debugPrint('🗺️ [SQLite] ✅ Successfully inserted ${newsItems.length} news items into database');
+      debugPrint(
+          '🗺️ [SQLite] ✅ Successfully inserted ${newsItems.length} news items into database');
       await updateCacheMetadata('news', const Duration(minutes: 30));
       debugPrint('🗺️ [SQLite] ✅ Cache metadata updated for news (30min TTL)');
     } catch (e) {
@@ -577,8 +588,9 @@ class DatabaseService {
         'news_items',
         orderBy: 'published_at DESC',
       );
-      
-      debugPrint('🗺️ [SQLite] 📄 Found ${maps.length} cached news items in database');
+
+      debugPrint(
+          '🗺️ [SQLite] 📄 Found ${maps.length} cached news items in database');
 
       final newsItems = maps
           .map((map) => NewsItem(
@@ -591,8 +603,9 @@ class DatabaseService {
                     map['published_at'] as int),
               ))
           .toList();
-      
-      debugPrint('🗺️ [SQLite] ✅ Successfully loaded ${newsItems.length} news items from cache');
+
+      debugPrint(
+          '🗺️ [SQLite] ✅ Successfully loaded ${newsItems.length} news items from cache');
       return newsItems;
     } catch (e) {
       debugPrint('🗺️ [SQLite] ❌ Error loading cached news items: $e');

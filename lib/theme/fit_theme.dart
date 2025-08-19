@@ -7,7 +7,7 @@ class FITTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: FITColors.lightColorScheme,
-      
+
       // Typography
       textTheme: const TextTheme(
         displayLarge: TextStyle(
@@ -86,7 +86,7 @@ class FITTheme {
           color: FITColors.mediumGrey,
         ),
       ),
-      
+
       // App Bar theme
       appBarTheme: const AppBarTheme(
         backgroundColor: FITColors.primaryBlue,
@@ -102,7 +102,7 @@ class FITTheme {
           color: FITColors.white,
         ),
       ),
-      
+
       // Navigation Bar theme
       navigationBarTheme: const NavigationBarThemeData(
         backgroundColor: FITColors.white,
@@ -115,7 +115,7 @@ class FITTheme {
           ),
         ),
       ),
-      
+
       // Elevated Button theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -131,7 +131,7 @@ class FITTheme {
           ),
         ),
       ),
-      
+
       // Outlined Button theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -146,7 +146,7 @@ class FITTheme {
           ),
         ),
       ),
-      
+
       // Text Button theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -157,7 +157,7 @@ class FITTheme {
           ),
         ),
       ),
-      
+
       // Card theme
       cardTheme: const CardTheme(
         color: FITColors.white,
@@ -166,7 +166,7 @@ class FITTheme {
           borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),
-      
+
       // Input Decoration theme
       inputDecorationTheme: const InputDecorationTheme(
         border: OutlineInputBorder(
@@ -198,14 +198,14 @@ class FITTheme {
           fontSize: 14,
         ),
       ),
-      
+
       // Progress Indicator theme
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: FITColors.primaryBlue,
         linearTrackColor: FITColors.lightGrey,
         circularTrackColor: FITColors.lightGrey,
       ),
-      
+
       // Snack Bar theme
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: FITColors.primaryBlack,
@@ -219,14 +219,14 @@ class FITTheme {
         ),
         behavior: SnackBarBehavior.floating,
       ),
-      
+
       // Divider theme
       dividerTheme: const DividerThemeData(
         color: FITColors.outline,
         thickness: 1,
         space: 1,
       ),
-      
+
       // List Tile theme
       listTileTheme: const ListTileThemeData(
         textColor: FITColors.primaryBlack,

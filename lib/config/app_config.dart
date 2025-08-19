@@ -5,7 +5,7 @@ class AppConfig {
   // Image placeholder base URL (same domain as API)
   static const String imageBaseUrl = 'https://www.internationaltouch.org';
 
-  // Fallback placeholder URL generator
+  // Fallback placeholder URL generator - now returns FIT logo asset
   static String getPlaceholderImageUrl({
     required int width,
     required int height,
@@ -13,27 +13,18 @@ class AppConfig {
     required String textColor,
     required String text,
   }) {
-    return '$imageBaseUrl/placeholder/${width}x$height/$backgroundColor/$textColor?text=${Uri.encodeComponent(text)}';
+    // Return FIT vertical logo instead of placeholder URL
+    return 'assets/images/LOGO_FIT-VERT.png';
   }
 
-  // Predefined placeholder URLs for common use cases
+  // Predefined placeholder URLs for common use cases - now return FIT logo
   static String getCompetitionImageUrl(String text) {
-    return getPlaceholderImageUrl(
-      width: 300,
-      height: 200,
-      backgroundColor: '1976D2',
-      textColor: 'FFFFFF',
-      text: text,
-    );
+    // Return FIT vertical logo instead of generated placeholder
+    return 'assets/images/LOGO_FIT-VERT.png';
   }
 
   static String getCompetitionLogoUrl(String text) {
-    return getPlaceholderImageUrl(
-      width: 100,
-      height: 100,
-      backgroundColor: '1976D2',
-      textColor: 'FFFFFF',
-      text: text,
-    );
+    // Return FIT vertical logo instead of generated placeholder
+    return 'assets/images/LOGO_FIT-VERT.png';
   }
 }
