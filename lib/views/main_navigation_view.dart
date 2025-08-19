@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_view.dart';
 import 'competitions_view.dart';
+import 'my_touch_view.dart';
 
 class MainNavigationView extends StatefulWidget {
   final int initialSelectedIndex;
@@ -23,10 +24,12 @@ class _MainNavigationViewState extends State<MainNavigationView> {
     _navigatorKeys = [
       GlobalKey<NavigatorState>(), // News navigator
       GlobalKey<NavigatorState>(), // Competitions navigator
+      GlobalKey<NavigatorState>(), // My Touch navigator
     ];
     _pages = [
       _buildNewsNavigator(),
       _buildCompetitionsNavigator(),
+      _buildMyTouchNavigator(),
     ];
   }
 
@@ -48,6 +51,18 @@ class _MainNavigationViewState extends State<MainNavigationView> {
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) => const CompetitionsView(),
+          settings: settings,
+        );
+      },
+    );
+  }
+
+  Widget _buildMyTouchNavigator() {
+    return Navigator(
+      key: _navigatorKeys[2],
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const MyTouchView(),
           settings: settings,
         );
       },
@@ -76,6 +91,10 @@ class _MainNavigationViewState extends State<MainNavigationView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.sports),
             label: 'Competitions',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'My Touch',
           ),
         ],
       ),

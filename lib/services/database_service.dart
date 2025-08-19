@@ -199,12 +199,30 @@ class DatabaseService {
       )
     ''');
 
+    // Favourites table
+    await db.execute('''
+      CREATE TABLE favourites (
+        id TEXT PRIMARY KEY,
+        type TEXT NOT NULL,
+        competition_slug TEXT,
+        competition_name TEXT,
+        season_slug TEXT,
+        season_name TEXT,
+        division_slug TEXT,
+        division_name TEXT,
+        team_id TEXT,
+        team_name TEXT,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
     debugPrint('🗄️ [SQLite] ✅ All database tables created successfully');
   }
 
   // Helper method to drop all tables
   static Future<void> _dropAllTables(Database db) async {
     debugPrint('🗄️ [SQLite] 🗑️ Dropping all existing tables...');
+    await db.execute('DROP TABLE IF EXISTS favourites');
     await db.execute('DROP TABLE IF EXISTS cache_metadata');
     await db.execute('DROP TABLE IF EXISTS news_items');
     await db.execute('DROP TABLE IF EXISTS ladder_entries');
@@ -631,6 +649,117 @@ class DatabaseService {
     await db.delete('ladder_entries');
     await db.delete('news_items');
     debugPrint('🗄️ [SQLite] ✅ All cache data cleared');
+  }
+
+  // Favourites management
+  static Future<void> addFavourite({
+    required String type,
+    String? competitionSlug,
+    String? competitionName,
+    String? seasonSlug,
+    String? seasonName,
+    String? divisionSlug,
+    String? divisionName,
+    String? teamId,
+    String? teamName,
+  }) async {
+    final db = await database;
+
+    // Generate a unique ID based on the type and identifiers
+    String id;
+    switch (type) {
+      case 'competition':
+        id = 'comp_$competitionSlug';
+        break;
+      case 'season':
+        id = 'season_${competitionSlug}_$seasonSlug';
+        break;
+      case 'division':
+        id = 'div_${competitionSlug}_${seasonSlug}_$divisionSlug';
+        break;
+      case 'team':
+        id = 'team_${competitionSlug}_${seasonSlug}_${divisionSlug}_$teamId';
+        break;
+      default:
+        throw ArgumentError('Invalid favourite type: $type');
+    }
+
+    await db.insert(
+      'favourites',
+      {
+        'id': id,
+        'type': type,
+        'competition_slug': competitionSlug,
+        'competition_name': competitionName,
+        'season_slug': seasonSlug,
+        'season_name': seasonName,
+        'division_slug': divisionSlug,
+        'division_name': divisionName,
+        'team_id': teamId,
+        'team_name': teamName,
+        'created_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    debugPrint('🗄️ [SQLite] ✅ Added favourite: $type - $id');
+  }
+
+  static Future<void> removeFavourite(String id) async {
+    final db = await database;
+    await db.delete(
+      'favourites',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    debugPrint('🗄️ [SQLite] ✅ Removed favourite: $id');
+  }
+
+  static Future<List<Map<String, dynamic>>> getFavourites() async {
+    final db = await database;
+    final result = await db.query(
+      'favourites',
+      orderBy: 'created_at DESC',
+    );
+    debugPrint('🗄️ [SQLite] 📄 Found ${result.length} favourites');
+    return result;
+  }
+
+  static Future<bool> isFavourite({
+    required String type,
+    String? competitionSlug,
+    String? seasonSlug,
+    String? divisionSlug,
+    String? teamId,
+  }) async {
+    final db = await database;
+
+    String id;
+    switch (type) {
+      case 'competition':
+        id = 'comp_$competitionSlug';
+        break;
+      case 'season':
+        id = 'season_${competitionSlug}_$seasonSlug';
+        break;
+      case 'division':
+        id = 'div_${competitionSlug}_${seasonSlug}_$divisionSlug';
+        break;
+      case 'team':
+        id = 'team_${competitionSlug}_${seasonSlug}_${divisionSlug}_$teamId';
+        break;
+      default:
+        return false;
+    }
+
+    final result = await db.query(
+      'favourites',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    return result.isNotEmpty;
   }
 
   // Close database
