@@ -23,6 +23,7 @@ dependencies:
   path: ^1.9.1
   # shared_preferences: ^2.4.0  # Temporarily disabled for Android build testing
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
