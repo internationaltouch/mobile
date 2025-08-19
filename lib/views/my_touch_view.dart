@@ -5,6 +5,10 @@ import '../models/division.dart';
 import '../models/team.dart';
 import '../services/data_service.dart';
 import '../services/database_service.dart';
+import 'event_detail_view.dart';
+import 'divisions_view.dart';
+import 'fixtures_results_view.dart';
+import 'main_navigation_view.dart';
 
 class MyTouchView extends StatefulWidget {
   const MyTouchView({super.key});
@@ -655,12 +659,95 @@ class _MyTouchViewState extends State<MyTouchView> {
   }
 
   void _navigateToFavourite(Map<String, dynamic> favourite) {
-    // TODO: Implement navigation to the specific favourite item
-    // This would need to integrate with the existing competition navigation system
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Navigation to ${favourite['type']} not yet implemented'),
-      ),
-    );
+    final type = favourite['type'] as String;
+
+    try {
+      // Create Event object from favourite data
+      final event = Event(
+        id: favourite['competition_slug'] as String,
+        slug: favourite['competition_slug'] as String,
+        name: favourite['competition_name'] as String,
+        logoUrl: '',
+        seasons: [],
+        description: '',
+        seasonsLoaded: false,
+      );
+
+      switch (type) {
+        case 'competition':
+          // Navigate to Event Detail View
+          _pushToCompetitionsAndNavigate(EventDetailView(event: event));
+          break;
+
+        case 'season':
+          // Navigate directly to Divisions View
+          _pushToCompetitionsAndNavigate(
+            DivisionsView(
+              event: event,
+              season: favourite['season_name'] as String,
+            ),
+          );
+          break;
+
+        case 'division':
+          // Navigate directly to Fixtures Results View
+          final division = Division(
+            id: favourite['division_slug'] as String,
+            slug: favourite['division_slug'] as String,
+            name: favourite['division_name'] as String,
+            eventId: favourite['competition_slug'] as String,
+            season: favourite['season_slug'] as String,
+            color: '#2196F3', // Default color
+          );
+
+          _pushToCompetitionsAndNavigate(
+            FixturesResultsView(
+              event: event,
+              season: favourite['season_name'] as String,
+              division: division,
+            ),
+          );
+          break;
+
+        case 'team':
+          // Navigate to Fixtures Results View
+          // TODO: Future enhancement - pre-select the team in the dropdown filter
+          final division = Division(
+            id: favourite['division_slug'] as String,
+            slug: favourite['division_slug'] as String,
+            name: favourite['division_name'] as String,
+            eventId: favourite['competition_slug'] as String,
+            season: favourite['season_slug'] as String,
+            color: '#2196F3', // Default color
+          );
+
+          _pushToCompetitionsAndNavigate(
+            FixturesResultsView(
+              event: event,
+              season: favourite['season_name'] as String,
+              division: division,
+            ),
+          );
+          break;
+
+        default:
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Unknown favourite type: $type')),
+            );
+          }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to navigate to favourite: $e')),
+        );
+      }
+    }
+  }
+
+  void _pushToCompetitionsAndNavigate(Widget destinationView) {
+    // Use the new extension method to switch to Competitions tab (index 1) and navigate
+    context.switchToTabAndNavigate(1, destinationView);
   }
 }

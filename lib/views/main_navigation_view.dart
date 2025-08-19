@@ -90,10 +90,10 @@ class _MainNavigationViewState extends State<MainNavigationView> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.sports),
-            label: 'Competitions',
+            label: 'Events',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
+            icon: Icon(Icons.star),
             label: 'My Touch',
           ),
         ],
@@ -107,6 +107,15 @@ class _MainNavigationViewState extends State<MainNavigationView> {
       _selectedIndex = index;
     });
   }
+
+  // Method to navigate within a specific tab's navigator
+  void navigateInTab(int tabIndex, Widget destination) {
+    if (tabIndex >= 0 && tabIndex < _navigatorKeys.length) {
+      _navigatorKeys[tabIndex].currentState?.push(
+            MaterialPageRoute(builder: (context) => destination),
+          );
+    }
+  }
 }
 
 // Extension to access the main navigation from child pages
@@ -115,5 +124,19 @@ extension MainNavigationExtension on BuildContext {
     // Find the MainNavigationView in the widget tree
     final mainNav = findAncestorStateOfType<_MainNavigationViewState>();
     mainNav?.switchTab(index);
+  }
+
+  void switchToTabAndNavigate(int tabIndex, Widget destination) {
+    // Find the MainNavigationView in the widget tree
+    final mainNav = findAncestorStateOfType<_MainNavigationViewState>();
+    if (mainNav != null) {
+      // Switch to the tab first
+      mainNav.switchTab(tabIndex);
+
+      // Wait a frame for the tab switch to complete, then navigate
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        mainNav.navigateInTab(tabIndex, destination);
+      });
+    }
   }
 }
