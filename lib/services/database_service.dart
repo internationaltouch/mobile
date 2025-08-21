@@ -1,261 +1,55 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-import '../models/event.dart';
-import '../models/season.dart';
-import '../models/division.dart';
-import '../models/team.dart';
-import '../models/fixture.dart';
-import '../models/news_item.dart';
+import 'package:drift/drift.dart';
+import '../models/event.dart' as models;
+import '../models/season.dart' as models;
+import '../models/division.dart' as models;
+import '../models/team.dart' as models;
+import '../models/fixture.dart' as models;
+import '../models/news_item.dart' as models;
+import '../models/ladder_entry.dart' as models;
+import 'database.dart';
 
 class DatabaseService {
-  static Database? _database;
-  static const String _dbName = 'fit_mobile_app.db';
-  static const int _dbVersion = 1;
+  static AppDatabase? _database;
 
-  static Future<Database> get database async {
+  static AppDatabase get database {
     if (_database != null) {
-      debugPrint('🗄️ [SQLite] ♾️ Using existing database instance');
+      debugPrint('🗄️ [Drift] ♾️ Using existing database instance');
       return _database!;
     }
-    debugPrint('🗄️ [SQLite] 🔧 Initializing database...');
+    debugPrint('🗄️ [Drift] 🔧 Initializing database...');
     try {
-      _database = await _initDB();
-      debugPrint('🗄️ [SQLite] ✅ Database initialized successfully');
+      _database = AppDatabase();
+      debugPrint('🗄️ [Drift] ✅ Database initialized successfully');
       return _database!;
     } catch (e) {
-      debugPrint('🗄️ [SQLite] ❌ Database initialization failed: $e');
+      debugPrint('🗄️ [Drift] ❌ Database initialization failed: $e');
       rethrow;
     }
-  }
-
-  static Future<Database> _initDB() async {
-    debugPrint('🗄️ [SQLite] 📁 Getting database path...');
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, _dbName);
-    debugPrint('🗄️ [SQLite] 📁 Database path: $path');
-
-    // Delete existing database file to force fresh start
-    final dbFile = File(path);
-    if (await dbFile.exists()) {
-      debugPrint(
-          '🗄️ [SQLite] 🗑️ Deleting existing database file for fresh start...');
-      await dbFile.delete();
-      debugPrint('🗄️ [SQLite] ✅ Existing database deleted');
-    }
-
-    debugPrint('🗄️ [SQLite] 📊 Database version: $_dbVersion');
-    debugPrint('🗄️ [SQLite] 📛 Opening database...');
-
-    try {
-      final db = await openDatabase(
-        path,
-        version: _dbVersion,
-        onCreate: _createDB,
-        onUpgrade: (db, oldVersion, newVersion) async {
-          debugPrint(
-              '🗄️ [SQLite] ⬆️ Database upgrade from $oldVersion to $newVersion (should not happen with file deletion)');
-          await _dropAllTables(db);
-          await _createDB(db, newVersion);
-        },
-      );
-      debugPrint('🗄️ [SQLite] ✅ Database opened successfully');
-      return db;
-    } catch (e) {
-      debugPrint('🗄️ [SQLite] ❌ Failed to open database: $e');
-      rethrow;
-    }
-  }
-
-  static Future<void> _createDB(Database db, int version) async {
-    debugPrint(
-        '🗄️ [SQLite] 🏠 Creating database tables (version $version)...');
-
-    // Events table (Competition level)
-    debugPrint('🗄️ [SQLite] 🏢 Creating events table...');
-    await db.execute('''
-      CREATE TABLE events (
-        slug TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        description TEXT,
-        logo_url TEXT,
-        api_order INTEGER NOT NULL,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
-      )
-    ''');
-
-    // Seasons table (Competition + Season level)
-    await db.execute('''
-      CREATE TABLE seasons (
-        competition_slug TEXT NOT NULL,
-        season_slug TEXT NOT NULL,
-        title TEXT NOT NULL,
-        api_order INTEGER NOT NULL,
-        created_at INTEGER NOT NULL,
-        PRIMARY KEY (competition_slug, season_slug),
-        FOREIGN KEY (competition_slug) REFERENCES events (slug)
-      )
-    ''');
-
-    // Divisions table (Competition + Season + Division level)
-    await db.execute('''
-      CREATE TABLE divisions (
-        competition_slug TEXT NOT NULL,
-        season_slug TEXT NOT NULL,
-        division_slug TEXT NOT NULL,
-        name TEXT NOT NULL,
-        api_order INTEGER NOT NULL,
-        created_at INTEGER NOT NULL,
-        PRIMARY KEY (competition_slug, season_slug, division_slug),
-        FOREIGN KEY (competition_slug, season_slug) REFERENCES seasons (competition_slug, season_slug)
-      )
-    ''');
-
-    // Teams table
-    await db.execute('''
-      CREATE TABLE teams (
-        id TEXT PRIMARY KEY,
-        competition_slug TEXT NOT NULL,
-        season_slug TEXT NOT NULL,
-        division_slug TEXT NOT NULL,
-        name TEXT NOT NULL,
-        abbreviation TEXT,
-        logo_url TEXT,
-        created_at INTEGER NOT NULL,
-        FOREIGN KEY (competition_slug, season_slug, division_slug) REFERENCES divisions (competition_slug, season_slug, division_slug)
-      )
-    ''');
-
-    // Fixtures table
-    await db.execute('''
-      CREATE TABLE fixtures (
-        id TEXT PRIMARY KEY,
-        competition_slug TEXT NOT NULL,
-        season_slug TEXT NOT NULL,
-        division_slug TEXT NOT NULL,
-        home_team_id TEXT NOT NULL,
-        away_team_id TEXT NOT NULL,
-        home_team_name TEXT NOT NULL,
-        away_team_name TEXT NOT NULL,
-        home_team_abbreviation TEXT,
-        away_team_abbreviation TEXT,
-        date_time INTEGER NOT NULL,
-        field TEXT,
-        home_score INTEGER,
-        away_score INTEGER,
-        is_completed INTEGER NOT NULL,
-        round_info TEXT,
-        is_bye INTEGER,
-        videos TEXT,
-        created_at INTEGER NOT NULL,
-        FOREIGN KEY (competition_slug, season_slug, division_slug) REFERENCES divisions (competition_slug, season_slug, division_slug)
-      )
-    ''');
-
-    // Ladder table
-    await db.execute('''
-      CREATE TABLE ladder_entries (
-        id TEXT PRIMARY KEY,
-        competition_slug TEXT NOT NULL,
-        season_slug TEXT NOT NULL,
-        division_slug TEXT NOT NULL,
-        team_name TEXT NOT NULL,
-        position INTEGER NOT NULL,
-        played INTEGER NOT NULL,
-        won INTEGER NOT NULL,
-        drawn INTEGER NOT NULL,
-        lost INTEGER NOT NULL,
-        points_for INTEGER NOT NULL,
-        points_against INTEGER NOT NULL,
-        points_difference INTEGER NOT NULL,
-        points INTEGER NOT NULL,
-        created_at INTEGER NOT NULL,
-        FOREIGN KEY (competition_slug, season_slug, division_slug) REFERENCES divisions (competition_slug, season_slug, division_slug)
-      )
-    ''');
-
-    // News table
-    await db.execute('''
-      CREATE TABLE news_items (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        summary TEXT NOT NULL,
-        image_url TEXT,
-        link TEXT,
-        published_at INTEGER NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    ''');
-
-    // Cache metadata table
-    await db.execute('''
-      CREATE TABLE cache_metadata (
-        key TEXT PRIMARY KEY,
-        last_updated INTEGER NOT NULL,
-        expiry_duration INTEGER NOT NULL
-      )
-    ''');
-
-    // Favourites table
-    await db.execute('''
-      CREATE TABLE favourites (
-        id TEXT PRIMARY KEY,
-        type TEXT NOT NULL,
-        competition_slug TEXT,
-        competition_name TEXT,
-        season_slug TEXT,
-        season_name TEXT,
-        division_slug TEXT,
-        division_name TEXT,
-        team_id TEXT,
-        team_name TEXT,
-        created_at INTEGER NOT NULL
-      )
-    ''');
-
-    debugPrint('🗄️ [SQLite] ✅ All database tables created successfully');
-  }
-
-  // Helper method to drop all tables
-  static Future<void> _dropAllTables(Database db) async {
-    debugPrint('🗄️ [SQLite] 🗑️ Dropping all existing tables...');
-    await db.execute('DROP TABLE IF EXISTS favourites');
-    await db.execute('DROP TABLE IF EXISTS cache_metadata');
-    await db.execute('DROP TABLE IF EXISTS news_items');
-    await db.execute('DROP TABLE IF EXISTS ladder_entries');
-    await db.execute('DROP TABLE IF EXISTS fixtures');
-    await db.execute('DROP TABLE IF EXISTS teams');
-    await db.execute('DROP TABLE IF EXISTS divisions');
-    await db.execute('DROP TABLE IF EXISTS seasons');
-    await db.execute('DROP TABLE IF EXISTS events');
-    debugPrint('🗄️ [SQLite] ✅ All tables dropped successfully');
   }
 
   // Cache management
   static Future<bool> isCacheValid(String key, Duration maxAge) async {
     debugPrint('🕰️ [Cache] 🔍 Checking cache validity for key: $key');
     debugPrint('🕰️ [Cache] 📞 Getting database instance...');
-    final db = await database;
+    final db = database;
     debugPrint(
         '🕰️ [Cache] ✅ Database instance obtained, querying cache_metadata...');
-    final result = await db.query(
-      'cache_metadata',
-      where: 'key = ?',
-      whereArgs: [key],
-    );
+    
+    final result = await (db.select(db.cacheMetadata)
+      ..where((metadata) => metadata.key.equals(key))).getSingleOrNull();
+    
     debugPrint(
-        '🕰️ [Cache] 📋 Query completed, found ${result.length} results');
+        '🕰️ [Cache] 📋 Query completed, found ${result != null ? 1 : 0} results');
 
-    if (result.isEmpty) {
+    if (result == null) {
       debugPrint('🕰️ [Cache] ❌ No cache metadata found for key: $key');
       return false;
     }
 
-    final lastUpdated = result.first['last_updated'] as int;
-    final expiryDuration = result.first['expiry_duration'] as int;
+    final lastUpdated = result.lastUpdated;
+    final expiryDuration = result.expiryDuration;
     final now = DateTime.now().millisecondsSinceEpoch;
     final ageMs = now - lastUpdated;
     final isValid = ageMs < expiryDuration;
@@ -266,96 +60,87 @@ class DatabaseService {
   }
 
   static Future<void> updateCacheMetadata(String key, Duration maxAge) async {
-    final db = await database;
-    await db.insert(
-      'cache_metadata',
-      {
-        'key': key,
-        'last_updated': DateTime.now().millisecondsSinceEpoch,
-        'expiry_duration': maxAge.inMilliseconds,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    final db = database;
+    await db.into(db.cacheMetadata).insertOnConflictUpdate(
+      CacheMetadataCompanion.insert(
+        key: key,
+        lastUpdated: DateTime.now().millisecondsSinceEpoch,
+        expiryDuration: maxAge.inMilliseconds,
+      ),
     );
   }
 
   // Events
-  static Future<void> cacheEvents(List<Event> events) async {
-    final db = await database;
-    final batch = db.batch();
+  static Future<void> cacheEvents(List<models.Event> events) async {
+    final db = database;
+    
+    await db.transaction(() async {
+      for (int i = 0; i < events.length; i++) {
+        final event = events[i];
 
-    for (int i = 0; i < events.length; i++) {
-      final event = events[i];
-
-      // Cache the event using slug as primary key
-      batch.insert(
-        'events',
-        {
-          'slug': event.slug ?? event.id,
-          'name': event.name,
-          'description': event.description,
-          'logo_url': event.logoUrl,
-          'api_order': i,
-          'created_at': DateTime.now().millisecondsSinceEpoch,
-          'updated_at': DateTime.now().millisecondsSinceEpoch,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-
-      // Cache the seasons for this event with composite keys
-      debugPrint(
-          '🗺️ [SQLite] 🏆 Caching ${event.seasons.length} seasons for event: ${event.name}');
-      for (int j = 0; j < event.seasons.length; j++) {
-        final season = event.seasons[j];
-        batch.insert(
-          'seasons',
-          {
-            'competition_slug': event.slug ?? event.id,
-            'season_slug': season.slug,
-            'title': season.title,
-            'api_order': j,
-            'created_at': DateTime.now().millisecondsSinceEpoch,
-          },
-          conflictAlgorithm: ConflictAlgorithm.replace,
+        // Cache the event using slug as primary key
+        await db.into(db.events).insertOnConflictUpdate(
+          EventsCompanion.insert(
+            slug: event.slug ?? event.id,
+            name: event.name,
+            description: Value(event.description),
+            logoUrl: Value(event.logoUrl),
+            apiOrder: i,
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+            updatedAt: DateTime.now().millisecondsSinceEpoch,
+          ),
         );
-        debugPrint(
-            '🗺️ [SQLite] 🏆 → Cached season: ${season.title} (${season.slug})');
-      }
-    }
 
-    await batch.commit();
+        // Cache the seasons for this event with composite keys
+        debugPrint(
+            '🗺️ [Drift] 🏆 Caching ${event.seasons.length} seasons for event: ${event.name}');
+        for (int j = 0; j < event.seasons.length; j++) {
+          final season = event.seasons[j];
+          await db.into(db.seasons).insertOnConflictUpdate(
+            SeasonsCompanion.insert(
+              competitionSlug: event.slug ?? event.id,
+              seasonSlug: season.slug,
+              title: season.title,
+              apiOrder: j,
+              createdAt: DateTime.now().millisecondsSinceEpoch,
+            ),
+          );
+          debugPrint(
+              '🗺️ [Drift] 🏆 → Cached season: ${season.title} (${season.slug})');
+        }
+      }
+    });
+
     await updateCacheMetadata('events', const Duration(hours: 1));
   }
 
-  static Future<List<Event>> getCachedEvents() async {
-    final db = await database;
-    final eventMaps = await db.query('events', orderBy: 'api_order');
+  static Future<List<models.Event>> getCachedEvents() async {
+    final db = database;
+    final eventRows = await (db.select(db.events)..orderBy([(e) => OrderingTerm(expression: e.apiOrder)])).get();
 
     final events = <Event>[];
 
-    for (final eventMap in eventMaps) {
-      final competitionSlug = eventMap['slug'] as String;
+    for (final eventRow in eventRows) {
+      final competitionSlug = eventRow.slug;
 
       // Get seasons for this event using competition slug
-      final seasonMaps = await db.query(
-        'seasons',
-        where: 'competition_slug = ?',
-        whereArgs: [competitionSlug],
-        orderBy: 'api_order',
-      );
+      final seasonRows = await (db.select(db.seasons)
+        ..where((s) => s.competitionSlug.equals(competitionSlug))
+        ..orderBy([(s) => OrderingTerm(expression: s.apiOrder)])).get();
 
-      final seasons = seasonMaps
-          .map((seasonMap) => Season(
-                title: seasonMap['title'] as String,
-                slug: seasonMap['season_slug'] as String,
+      final seasons = seasonRows
+          .map((seasonRow) => models.Season(
+                title: seasonRow.title,
+                slug: seasonRow.seasonSlug,
               ))
           .toList();
 
-      final event = Event(
+      final event = models.Event(
         id: competitionSlug, // Use slug as ID for compatibility
         slug: competitionSlug,
-        name: eventMap['name'] as String,
-        description: eventMap['description'] as String? ?? '',
-        logoUrl: eventMap['logo_url'] as String? ?? '',
+        name: eventRow.name,
+        description: eventRow.description ?? '',
+        logoUrl: eventRow.logoUrl ?? '',
         seasons: seasons,
       );
 
@@ -367,288 +152,341 @@ class DatabaseService {
 
   // Divisions
   static Future<void> cacheDivisions(String competitionSlug, String seasonSlug,
-      List<Division> divisions) async {
-    final db = await database;
-    final batch = db.batch();
+      List<models.Division> divisions) async {
+    final db = database;
 
-    // Clear existing divisions for this competition/season
-    batch.delete('divisions',
-        where: 'competition_slug = ? AND season_slug = ?',
-        whereArgs: [competitionSlug, seasonSlug]);
+    await db.transaction(() async {
+      // Clear existing divisions for this competition/season
+      await (db.delete(db.divisions)
+        ..where((d) => d.competitionSlug.equals(competitionSlug) & 
+                       d.seasonSlug.equals(seasonSlug))).go();
 
-    for (int i = 0; i < divisions.length; i++) {
-      final division = divisions[i];
-      batch.insert(
-        'divisions',
-        {
-          'competition_slug': competitionSlug,
-          'season_slug': seasonSlug,
-          'division_slug': division.slug ?? division.id,
-          'name': division.name,
-          'api_order': i,
-          'created_at': DateTime.now().millisecondsSinceEpoch,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
+      for (int i = 0; i < divisions.length; i++) {
+        final division = divisions[i];
+        await db.into(db.divisions).insert(
+          DivisionsCompanion.insert(
+            competitionSlug: competitionSlug,
+            seasonSlug: seasonSlug,
+            divisionSlug: division.slug ?? division.id,
+            name: division.name,
+            apiOrder: i,
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+      }
+    });
 
-    await batch.commit();
     await updateCacheMetadata('divisions_${competitionSlug}_$seasonSlug',
         const Duration(minutes: 30));
   }
 
-  static Future<List<Division>> getCachedDivisions(
+  static Future<List<models.Division>> getCachedDivisions(
       String competitionSlug, String seasonSlug) async {
-    final db = await database;
-    final maps = await db.query(
-      'divisions',
-      where: 'competition_slug = ? AND season_slug = ?',
-      whereArgs: [competitionSlug, seasonSlug],
-      orderBy: 'api_order',
-    );
+    final db = database;
+    final rows = await (db.select(db.divisions)
+      ..where((d) => d.competitionSlug.equals(competitionSlug) & 
+                     d.seasonSlug.equals(seasonSlug))
+      ..orderBy([(d) => OrderingTerm(expression: d.apiOrder)])).get();
 
-    return maps
-        .map((map) => Division(
-              id: map['division_slug'] as String,
-              name: map['name'] as String,
-              eventId: map['competition_slug'] as String,
+    return rows
+        .map((row) => models.Division(
+              id: row.divisionSlug,
+              name: row.name,
+              eventId: row.competitionSlug,
               season: seasonSlug,
-              slug: map['division_slug'] as String,
+              slug: row.divisionSlug,
             ))
         .toList();
   }
 
   // Teams
   static Future<void> cacheTeams(String competitionSlug, String seasonSlug,
-      String divisionSlug, List<Team> teams) async {
-    final db = await database;
-    final batch = db.batch();
+      String divisionSlug, List<models.Team> teams) async {
+    final db = database;
 
-    // Clear existing teams for this division
-    batch.delete('teams',
-        where: 'competition_slug = ? AND season_slug = ? AND division_slug = ?',
-        whereArgs: [competitionSlug, seasonSlug, divisionSlug]);
+    await db.transaction(() async {
+      // Clear existing teams for this division
+      await (db.delete(db.teams)
+        ..where((t) => t.competitionSlug.equals(competitionSlug) & 
+                       t.seasonSlug.equals(seasonSlug) &
+                       t.divisionSlug.equals(divisionSlug))).go();
 
-    for (int i = 0; i < teams.length; i++) {
-      final team = teams[i];
-      batch.insert(
-        'teams',
-        {
-          'id': team.id,
-          'competition_slug': competitionSlug,
-          'season_slug': seasonSlug,
-          'division_slug': divisionSlug,
-          'name': team.name,
-          'abbreviation': team.abbreviation,
-          'logo_url': '', // Team model doesn't have logoUrl
-          'created_at': DateTime.now().millisecondsSinceEpoch,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
+      for (int i = 0; i < teams.length; i++) {
+        final team = teams[i];
+        await db.into(db.teams).insert(
+          TeamsCompanion.insert(
+            id: team.id,
+            competitionSlug: competitionSlug,
+            seasonSlug: seasonSlug,
+            divisionSlug: divisionSlug,
+            name: team.name,
+            abbreviation: Value(team.abbreviation),
+            logoUrl: const Value(''), // Team model doesn't have logoUrl
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+      }
+    });
 
-    await batch.commit();
     await updateCacheMetadata(
         'teams_${competitionSlug}_${seasonSlug}_$divisionSlug',
         const Duration(minutes: 30));
   }
 
-  static Future<List<Team>> getCachedTeams(
+  static Future<List<models.Team>> getCachedTeams(
       String competitionSlug, String seasonSlug, String divisionSlug) async {
-    final db = await database;
-    final maps = await db.query(
-      'teams',
-      where: 'competition_slug = ? AND season_slug = ? AND division_slug = ?',
-      whereArgs: [competitionSlug, seasonSlug, divisionSlug],
-      orderBy: 'name', // Teams can be ordered alphabetically
-    );
+    final db = database;
+    final rows = await (db.select(db.teams)
+      ..where((t) => t.competitionSlug.equals(competitionSlug) & 
+                     t.seasonSlug.equals(seasonSlug) &
+                     t.divisionSlug.equals(divisionSlug))
+      ..orderBy([(t) => OrderingTerm(expression: t.name)])).get();
 
-    return maps
-        .map((map) => Team(
-              id: map['id'] as String,
-              name: map['name'] as String,
+    return rows
+        .map((row) => models.Team(
+              id: row.id,
+              name: row.name,
               divisionId: divisionSlug, // Use division slug for compatibility
-              abbreviation: map['abbreviation'] as String?,
+              abbreviation: row.abbreviation,
             ))
         .toList();
   }
 
   // Fixtures
   static Future<void> cacheFixtures(String competitionSlug, String seasonSlug,
-      String divisionSlug, List<Fixture> fixtures) async {
-    final db = await database;
-    final batch = db.batch();
+      String divisionSlug, List<models.Fixture> fixtures) async {
+    final db = database;
 
-    // Clear existing fixtures for this division
-    batch.delete('fixtures',
-        where: 'competition_slug = ? AND season_slug = ? AND division_slug = ?',
-        whereArgs: [competitionSlug, seasonSlug, divisionSlug]);
+    await db.transaction(() async {
+      // Clear existing fixtures for this division
+      await (db.delete(db.fixtures)
+        ..where((f) => f.competitionSlug.equals(competitionSlug) & 
+                       f.seasonSlug.equals(seasonSlug) &
+                       f.divisionSlug.equals(divisionSlug))).go();
 
-    for (final fixture in fixtures) {
-      batch.insert(
-        'fixtures',
-        {
-          'id': fixture.id,
-          'competition_slug': competitionSlug,
-          'season_slug': seasonSlug,
-          'division_slug': divisionSlug,
-          'home_team_id': fixture.homeTeamId,
-          'away_team_id': fixture.awayTeamId,
-          'home_team_name': fixture.homeTeamName,
-          'away_team_name': fixture.awayTeamName,
-          'home_team_abbreviation': fixture.homeTeamAbbreviation,
-          'away_team_abbreviation': fixture.awayTeamAbbreviation,
-          'date_time': fixture.dateTime.millisecondsSinceEpoch,
-          'field': fixture.field,
-          'home_score': fixture.homeScore,
-          'away_score': fixture.awayScore,
-          'is_completed': fixture.isCompleted ? 1 : 0,
-          'round_info': fixture.round,
-          'is_bye': fixture.isBye == true ? 1 : 0,
-          'videos': jsonEncode(fixture.videos),
-          'created_at': DateTime.now().millisecondsSinceEpoch,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
+      for (final fixture in fixtures) {
+        await db.into(db.fixtures).insert(
+          FixturesCompanion.insert(
+            id: fixture.id,
+            competitionSlug: competitionSlug,
+            seasonSlug: seasonSlug,
+            divisionSlug: divisionSlug,
+            homeTeamId: fixture.homeTeamId,
+            awayTeamId: fixture.awayTeamId,
+            homeTeamName: fixture.homeTeamName,
+            awayTeamName: fixture.awayTeamName,
+            homeTeamAbbreviation: Value(fixture.homeTeamAbbreviation),
+            awayTeamAbbreviation: Value(fixture.awayTeamAbbreviation),
+            dateTimeMs: fixture.dateTime.millisecondsSinceEpoch, // Updated field name
+            field: Value(fixture.field),
+            homeScore: Value(fixture.homeScore),
+            awayScore: Value(fixture.awayScore),
+            isCompleted: fixture.isCompleted ? 1 : 0,
+            roundInfo: Value(fixture.round),
+            isBye: Value(fixture.isBye == true ? 1 : 0),
+            videos: Value(jsonEncode(fixture.videos)),
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+      }
+    });
 
-    await batch.commit();
     await updateCacheMetadata(
         'fixtures_${competitionSlug}_${seasonSlug}_$divisionSlug',
         const Duration(minutes: 15));
   }
 
-  static Future<List<Fixture>> getCachedFixtures(
+  static Future<List<models.Fixture>> getCachedFixtures(
       String competitionSlug, String seasonSlug, String divisionSlug) async {
-    final db = await database;
-    final maps = await db.query(
-      'fixtures',
-      where: 'competition_slug = ? AND season_slug = ? AND division_slug = ?',
-      whereArgs: [competitionSlug, seasonSlug, divisionSlug],
-      orderBy: 'date_time',
-    );
+    final db = database;
+    final rows = await (db.select(db.fixtures)
+      ..where((f) => f.competitionSlug.equals(competitionSlug) & 
+                     f.seasonSlug.equals(seasonSlug) &
+                     f.divisionSlug.equals(divisionSlug))
+      ..orderBy([(f) => OrderingTerm(expression: f.dateTimeMs)])).get(); // Updated field name
 
-    return maps.map((map) {
-      final videosJson = map['videos'] as String?;
+    return rows.map((row) {
+      final videosJson = row.videos;
       final videos = videosJson != null
           ? (jsonDecode(videosJson) as List).cast<String>()
           : <String>[];
 
-      return Fixture(
-        id: map['id'] as String,
-        homeTeamId: map['home_team_id'] as String,
-        awayTeamId: map['away_team_id'] as String,
-        homeTeamName: map['home_team_name'] as String,
-        awayTeamName: map['away_team_name'] as String,
-        homeTeamAbbreviation: map['home_team_abbreviation'] as String?,
-        awayTeamAbbreviation: map['away_team_abbreviation'] as String?,
-        dateTime: DateTime.fromMillisecondsSinceEpoch(map['date_time'] as int),
-        field: map['field'] as String? ?? '',
+      return models.Fixture(
+        id: row.id,
+        homeTeamId: row.homeTeamId,
+        awayTeamId: row.awayTeamId,
+        homeTeamName: row.homeTeamName,
+        awayTeamName: row.awayTeamName,
+        homeTeamAbbreviation: row.homeTeamAbbreviation,
+        awayTeamAbbreviation: row.awayTeamAbbreviation,
+        dateTime: DateTime.fromMillisecondsSinceEpoch(row.dateTimeMs), // Updated field name
+        field: row.field ?? '',
         divisionId: divisionSlug, // Use division slug for compatibility
-        homeScore: map['home_score'] as int?,
-        awayScore: map['away_score'] as int?,
-        isCompleted: (map['is_completed'] as int) == 1,
-        round: map['round_info'] as String?,
-        isBye: (map['is_bye'] as int?) == 1,
+        homeScore: row.homeScore,
+        awayScore: row.awayScore,
+        isCompleted: row.isCompleted == 1,
+        round: row.roundInfo,
+        isBye: row.isBye == 1,
         videos: videos,
       );
     }).toList();
   }
 
   // News
-  static Future<void> cacheNewsItems(List<NewsItem> newsItems) async {
+  static Future<void> cacheNewsItems(List<models.NewsItem> newsItems) async {
     debugPrint(
-        '🗺️ [SQLite] 💾 Caching ${newsItems.length} news items to database...');
-    final db = await database;
-    final batch = db.batch();
+        '🗺️ [Drift] 💾 Caching ${newsItems.length} news items to database...');
+    final db = database;
 
-    // Clear existing news items first to avoid conflicts
-    debugPrint('🗺️ [SQLite] 🧹 Clearing existing news items...');
-    batch.delete('news_items');
+    await db.transaction(() async {
+      // Clear existing news items first to avoid conflicts
+      debugPrint('🗺️ [Drift] 🧹 Clearing existing news items...');
+      await db.delete(db.newsItems).go();
 
-    for (int i = 0; i < newsItems.length; i++) {
-      final newsItem = newsItems[i];
-      debugPrint(
-          '🗺️ [SQLite] 📝 Inserting news item ${i + 1}/${newsItems.length}: ID="${newsItem.id}", Title="${newsItem.title.length > 50 ? '${newsItem.title.substring(0, 50)}...' : newsItem.title}"');
+      for (int i = 0; i < newsItems.length; i++) {
+        final newsItem = newsItems[i];
+        debugPrint(
+            '🗺️ [Drift] 📝 Inserting news item ${i + 1}/${newsItems.length}: ID="${newsItem.id}", Title="${newsItem.title.length > 50 ? '${newsItem.title.substring(0, 50)}...' : newsItem.title}"');
 
-      batch.insert(
-        'news_items',
-        {
-          'id': newsItem.id,
-          'title': newsItem.title,
-          'summary': newsItem.summary,
-          'image_url': newsItem.imageUrl,
-          'link': newsItem.link,
-          'published_at': newsItem.publishedAt.millisecondsSinceEpoch,
-          'created_at': DateTime.now().millisecondsSinceEpoch,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
+        await db.into(db.newsItems).insert(
+          NewsItemsCompanion.insert(
+            id: newsItem.id,
+            title: newsItem.title,
+            summary: newsItem.summary,
+            imageUrl: Value(newsItem.imageUrl),
+            link: Value(newsItem.link),
+            publishedAt: newsItem.publishedAt.millisecondsSinceEpoch,
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+      }
+    });
 
     try {
-      await batch.commit();
       debugPrint(
-          '🗺️ [SQLite] ✅ Successfully inserted ${newsItems.length} news items into database');
+          '🗺️ [Drift] ✅ Successfully inserted ${newsItems.length} news items into database');
       await updateCacheMetadata('news', const Duration(minutes: 30));
-      debugPrint('🗺️ [SQLite] ✅ Cache metadata updated for news (30min TTL)');
+      debugPrint('🗺️ [Drift] ✅ Cache metadata updated for news (30min TTL)');
     } catch (e) {
-      debugPrint('🗺️ [SQLite] ❌ Error caching news items: $e');
+      debugPrint('🗺️ [Drift] ❌ Error caching news items: $e');
       rethrow;
     }
   }
 
-  static Future<List<NewsItem>> getCachedNewsItems() async {
-    debugPrint('🗺️ [SQLite] 🔍 Querying cached news items from database...');
+  static Future<List<models.NewsItem>> getCachedNewsItems() async {
+    debugPrint('🗺️ [Drift] 🔍 Querying cached news items from database...');
     try {
-      final db = await database;
-      final maps = await db.query(
-        'news_items',
-        orderBy: 'published_at DESC',
-      );
+      final db = database;
+      final rows = await (db.select(db.newsItems)
+        ..orderBy([(n) => OrderingTerm(expression: n.publishedAt, mode: OrderingMode.desc)])).get();
 
       debugPrint(
-          '🗺️ [SQLite] 📄 Found ${maps.length} cached news items in database');
+          '🗺️ [Drift] 📄 Found ${rows.length} cached news items in database');
 
-      final newsItems = maps
-          .map((map) => NewsItem(
-                id: map['id'] as String,
-                title: map['title'] as String,
-                summary: map['summary'] as String,
-                imageUrl: map['image_url'] as String? ?? '',
-                link: map['link'] as String?,
-                publishedAt: DateTime.fromMillisecondsSinceEpoch(
-                    map['published_at'] as int),
+      final newsItems = rows
+          .map((row) => models.NewsItem(
+                id: row.id,
+                title: row.title,
+                summary: row.summary,
+                imageUrl: row.imageUrl ?? '',
+                link: row.link,
+                publishedAt: DateTime.fromMillisecondsSinceEpoch(row.publishedAt),
               ))
           .toList();
 
       debugPrint(
-          '🗺️ [SQLite] ✅ Successfully loaded ${newsItems.length} news items from cache');
+          '🗺️ [Drift] ✅ Successfully loaded ${newsItems.length} news items from cache');
       return newsItems;
     } catch (e) {
-      debugPrint('🗺️ [SQLite] ❌ Error loading cached news items: $e');
+      debugPrint('🗺️ [Drift] ❌ Error loading cached news items: $e');
       return [];
     }
   }
 
+  // Ladder entries
+  static Future<void> cacheLadderEntries(String competitionSlug, String seasonSlug,
+      String divisionSlug, List<models.LadderEntry> ladderEntries) async {
+    final db = database;
+
+    await db.transaction(() async {
+      // Clear existing ladder entries for this division
+      await (db.delete(db.ladderEntries)
+        ..where((l) => l.competitionSlug.equals(competitionSlug) & 
+                       l.seasonSlug.equals(seasonSlug) &
+                       l.divisionSlug.equals(divisionSlug))).go();
+
+      for (int i = 0; i < ladderEntries.length; i++) {
+        final entry = ladderEntries[i];
+        await db.into(db.ladderEntries).insert(
+          LadderEntriesCompanion.insert(
+            id: '${competitionSlug}_${seasonSlug}_${divisionSlug}_${entry.teamId}',
+            competitionSlug: competitionSlug,
+            seasonSlug: seasonSlug,
+            divisionSlug: divisionSlug,
+            teamName: entry.teamName,
+            position: i + 1, // Position based on order in list
+            played: entry.played,
+            won: entry.wins,
+            drawn: entry.draws,
+            lost: entry.losses,
+            pointsFor: entry.goalsFor,
+            pointsAgainst: entry.goalsAgainst,
+            pointsDifference: entry.goalDifference,
+            points: entry.points,
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+      }
+    });
+
+    await updateCacheMetadata(
+        'ladder_${competitionSlug}_${seasonSlug}_$divisionSlug',
+        const Duration(minutes: 15));
+  }
+
+  static Future<List<models.LadderEntry>> getCachedLadderEntries(
+      String competitionSlug, String seasonSlug, String divisionSlug) async {
+    final db = database;
+    final rows = await (db.select(db.ladderEntries)
+      ..where((l) => l.competitionSlug.equals(competitionSlug) & 
+                     l.seasonSlug.equals(seasonSlug) &
+                     l.divisionSlug.equals(divisionSlug))
+      ..orderBy([(l) => OrderingTerm(expression: l.position)])).get();
+
+    return rows.map((row) => models.LadderEntry(
+      teamId: row.id,
+      teamName: row.teamName,
+      played: row.played,
+      wins: row.won,
+      draws: row.drawn,
+      losses: row.lost,
+      points: row.points,
+      goalDifference: row.pointsDifference,
+      goalsFor: row.pointsFor,
+      goalsAgainst: row.pointsAgainst,
+    )).toList();
+  }
+
   // Clear all cache
   static Future<void> clearAllCache() async {
-    final db = await database;
+    final db = database;
     await _clearAllCacheWithDb(db);
   }
 
   // Helper method to clear cache with existing database instance
-  static Future<void> _clearAllCacheWithDb(Database db) async {
-    debugPrint('🗄️ [SQLite] 🧤 Clearing all cache data...');
-    await db.delete('cache_metadata');
-    await db.delete('events');
-    await db.delete('seasons');
-    await db.delete('divisions');
-    await db.delete('teams');
-    await db.delete('fixtures');
-    await db.delete('ladder_entries');
-    await db.delete('news_items');
-    debugPrint('🗄️ [SQLite] ✅ All cache data cleared');
+  static Future<void> _clearAllCacheWithDb(AppDatabase db) async {
+    debugPrint('🗄️ [Drift] 🧤 Clearing all cache data...');
+    await db.transaction(() async {
+      await db.delete(db.cacheMetadata).go();
+      await db.delete(db.events).go();
+      await db.delete(db.seasons).go();
+      await db.delete(db.divisions).go();
+      await db.delete(db.teams).go();
+      await db.delete(db.fixtures).go();
+      await db.delete(db.ladderEntries).go();
+      await db.delete(db.newsItems).go();
+    });
+    debugPrint('🗄️ [Drift] ✅ All cache data cleared');
   }
 
   // Favourites management
@@ -663,7 +501,7 @@ class DatabaseService {
     String? teamId,
     String? teamName,
   }) async {
-    final db = await database;
+    final db = database;
 
     // Generate a unique ID based on the type and identifiers
     String id;
@@ -684,44 +522,51 @@ class DatabaseService {
         throw ArgumentError('Invalid favourite type: $type');
     }
 
-    await db.insert(
-      'favourites',
-      {
-        'id': id,
-        'type': type,
-        'competition_slug': competitionSlug,
-        'competition_name': competitionName,
-        'season_slug': seasonSlug,
-        'season_name': seasonName,
-        'division_slug': divisionSlug,
-        'division_name': divisionName,
-        'team_id': teamId,
-        'team_name': teamName,
-        'created_at': DateTime.now().millisecondsSinceEpoch,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    await db.into(db.favourites).insertOnConflictUpdate(
+      FavouritesCompanion.insert(
+        id: id,
+        type: type,
+        competitionSlug: Value(competitionSlug),
+        competitionName: Value(competitionName),
+        seasonSlug: Value(seasonSlug),
+        seasonName: Value(seasonName),
+        divisionSlug: Value(divisionSlug),
+        divisionName: Value(divisionName),
+        teamId: Value(teamId),
+        teamName: Value(teamName),
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ),
     );
 
-    debugPrint('🗄️ [SQLite] ✅ Added favourite: $type - $id');
+    debugPrint('🗄️ [Drift] ✅ Added favourite: $type - $id');
   }
 
   static Future<void> removeFavourite(String id) async {
-    final db = await database;
-    await db.delete(
-      'favourites',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-    debugPrint('🗄️ [SQLite] ✅ Removed favourite: $id');
+    final db = database;
+    await (db.delete(db.favourites)..where((f) => f.id.equals(id))).go();
+    debugPrint('🗄️ [Drift] ✅ Removed favourite: $id');
   }
 
   static Future<List<Map<String, dynamic>>> getFavourites() async {
-    final db = await database;
-    final result = await db.query(
-      'favourites',
-      orderBy: 'created_at DESC',
-    );
-    debugPrint('🗄️ [SQLite] 📄 Found ${result.length} favourites');
+    final db = database;
+    final rows = await (db.select(db.favourites)
+      ..orderBy([(f) => OrderingTerm(expression: f.createdAt, mode: OrderingMode.desc)])).get();
+    
+    final result = rows.map((row) => {
+      'id': row.id,
+      'type': row.type,
+      'competition_slug': row.competitionSlug,
+      'competition_name': row.competitionName,
+      'season_slug': row.seasonSlug,
+      'season_name': row.seasonName,
+      'division_slug': row.divisionSlug,
+      'division_name': row.divisionName,
+      'team_id': row.teamId,
+      'team_name': row.teamName,
+      'created_at': row.createdAt,
+    }).toList();
+    
+    debugPrint('🗄️ [Drift] 📄 Found ${result.length} favourites');
     return result;
   }
 
@@ -732,7 +577,7 @@ class DatabaseService {
     String? divisionSlug,
     String? teamId,
   }) async {
-    final db = await database;
+    final db = database;
 
     String id;
     switch (type) {
@@ -752,14 +597,11 @@ class DatabaseService {
         return false;
     }
 
-    final result = await db.query(
-      'favourites',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
+    final result = await (db.select(db.favourites)
+      ..where((f) => f.id.equals(id))
+      ..limit(1)).getSingleOrNull();
 
-    return result.isNotEmpty;
+    return result != null;
   }
 
   // Close database
