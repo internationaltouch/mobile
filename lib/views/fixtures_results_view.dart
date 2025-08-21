@@ -235,18 +235,61 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
           onRefresh: () async {
             setState(() => _loadData());
           },
-          child: ladder.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No ladder data available',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                )
-              : SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: DataTable(
+          child: Column(
+            children: [
+              // Warning banner
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: FITColors.accentYellow,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.warning,
+                      color: FITColors.primaryBlack,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: RichText(
+                        text: const TextSpan(
+                          style: TextStyle(
+                            color: FITColors.primaryBlack,
+                            fontSize: 14,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'Warning: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: 'this data is being calculated in the app and may have errors, see the FIT website for accurate ladder information.',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Ladder content
+              Expanded(
+                child: ladder.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No ladder data available',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: DataTable(
                       columns: const [
                         DataColumn(label: Text('Position')),
                         DataColumn(label: Text('Team')),
@@ -316,7 +359,10 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                       }).toList(),
                     ),
                   ),
-                ),
+                        ),
+                      ),
+            ],
+          ),
         );
       },
     );
