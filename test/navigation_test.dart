@@ -110,19 +110,10 @@ void main() {
         seasonsLoaded: true,
       );
 
-      final testDivision = Division(
-        id: 'test-division',
-        name: 'Test Division',
-        eventId: 'test-event',
-        season: '2024',
-        slug: 'test-division',
-        color: '#1976D2',
-      );
-
       Widget createCompetitionApp() {
         return MaterialApp(
           theme: FITTheme.lightTheme,
-          home: MainNavigationView(initialSelectedIndex: 1),
+          home: const MainNavigationView(initialSelectedIndex: 1),
           routes: {
             '/event-detail': (context) => EventDetailView(event: testEvent),
             '/divisions': (context) =>
@@ -141,7 +132,7 @@ void main() {
         // Mock navigation to event detail
         await tester.pumpWidget(MaterialApp(
           theme: FITTheme.lightTheme,
-          home: MainNavigationView(initialSelectedIndex: 1),
+          home: const MainNavigationView(initialSelectedIndex: 1),
           builder: (context, child) {
             return Navigator(
               onGenerateRoute: (settings) {

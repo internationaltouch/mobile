@@ -129,8 +129,6 @@ void main() {
       // which was the source of the back navigation issue
 
       final navigatorKey = GlobalKey<NavigatorState>();
-      bool pushReplacementCalled = false;
-      bool pushCalled = false;
 
       await tester.pumpWidget(MaterialApp(
         navigatorKey: navigatorKey,
@@ -143,12 +141,12 @@ void main() {
                   context,
                   MaterialPageRoute(
                       builder: (context) => Scaffold(
-                            appBar: AppBar(title: Text('Second Page')),
-                            body: Text('Second Page'),
+                            appBar: AppBar(title: const Text('Second Page')),
+                            body: const Text('Second Page'),
                           )),
-                ).then((_) => pushCalled = true);
+                );
               },
-              child: Text('Navigate'),
+              child: const Text('Navigate'),
             ),
           ),
         ),

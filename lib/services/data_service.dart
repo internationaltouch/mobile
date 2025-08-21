@@ -506,19 +506,6 @@ class DataService {
         '🏆 [Divisions] 🎉 Background: Division loading complete! Cached $totalDivisionsCached divisions across ${allSeasonData.length} seasons');
   }
 
-  // Load divisions for all seasons in a specific competition (used for on-demand loading)
-  static Future<void> _loadDivisionsForCompetition(
-      String competitionSlug, List<Season> seasons) async {
-    final seasonDataList = seasons
-        .map((season) => {
-              'competitionSlug': competitionSlug,
-              'competitionTitle': competitionSlug, // Use slug as fallback title
-              'season': season,
-            })
-        .toList();
-
-    await _loadAllDivisionsBreadthFirst(seasonDataList);
-  }
 
   // Load seasons for a specific event (lazy loading)
   static Future<Event> loadEventSeasons(Event event) async {

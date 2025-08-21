@@ -6,7 +6,6 @@ import '../theme/fit_colors.dart';
 import '../utils/image_utils.dart';
 import 'competitions_view.dart';
 import 'news_detail_view.dart';
-import 'shortcuts_view.dart';
 
 class HomeView extends StatefulWidget {
   final int initialSelectedIndex;

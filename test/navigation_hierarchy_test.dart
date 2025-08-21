@@ -2,14 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fit_mobile_app/views/main_navigation_view.dart';
 import 'package:fit_mobile_app/views/competitions_view.dart';
-import 'package:fit_mobile_app/views/event_detail_view.dart';
-import 'package:fit_mobile_app/views/divisions_view.dart';
-import 'package:fit_mobile_app/views/fixtures_results_view.dart';
 import 'package:fit_mobile_app/views/my_touch_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
-import 'package:fit_mobile_app/models/event.dart';
-import 'package:fit_mobile_app/models/season.dart';
-import 'package:fit_mobile_app/models/division.dart';
 
 void main() {
   group('Navigation Hierarchy Tests', () {
@@ -144,7 +138,7 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
         theme: FITTheme.lightTheme,
-        home: MainNavigationView(initialSelectedIndex: 0),
+        home: const MainNavigationView(initialSelectedIndex: 0),
       ));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));

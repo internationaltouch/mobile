@@ -451,7 +451,7 @@ class _MyTouchViewState extends State<MyTouchView> {
                           labelText: 'Competition',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedCompetition != null && 
+                        initialValue: _selectedCompetition != null && 
                                 _competitions.any((comp) => 
                                   comp.id == _selectedCompetition!.id ||
                                   (comp.slug != null && comp.slug == _selectedCompetition!.slug))
@@ -492,7 +492,7 @@ class _MyTouchViewState extends State<MyTouchView> {
                           labelText: 'Season',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedSeason,
+                        initialValue: _selectedSeason,
                         isExpanded: true,
                         onChanged: (Season? season) {
                           if (season != null) {
@@ -523,7 +523,7 @@ class _MyTouchViewState extends State<MyTouchView> {
                           labelText: 'Division',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedDivision,
+                        initialValue: _selectedDivision,
                         isExpanded: true,
                         onChanged: (Division? division) {
                           if (division != null) {
@@ -554,7 +554,7 @@ class _MyTouchViewState extends State<MyTouchView> {
                           labelText: 'Team',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedTeam,
+                        initialValue: _selectedTeam,
                         isExpanded: true,
                         onChanged: (Team? team) {
                           if (team != null) {
