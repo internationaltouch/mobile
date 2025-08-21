@@ -159,7 +159,7 @@ class FITTheme {
       ),
 
       // Card theme
-      cardTheme: const CardTheme(
+      cardTheme: const CardThemeData(
         color: FITColors.white,
         elevation: 2,
         shape: RoundedRectangleBorder(

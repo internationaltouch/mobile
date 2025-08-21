@@ -12,8 +12,14 @@ import 'database.dart';
 
 class DatabaseService {
   static AppDatabase? _database;
+  static AppDatabase? _testDatabase;
 
   static AppDatabase get database {
+    if (_testDatabase != null) {
+      debugPrint('🗄️ [Drift] ♾️ Using test database instance');
+      return _testDatabase!;
+    }
+    
     if (_database != null) {
       debugPrint('🗄️ [Drift] ♾️ Using existing database instance');
       return _database!;
@@ -27,6 +33,16 @@ class DatabaseService {
       debugPrint('🗄️ [Drift] ❌ Database initialization failed: $e');
       rethrow;
     }
+  }
+
+  // Test helper methods
+  static void setTestDatabase(AppDatabase testDb) {
+    _testDatabase = testDb;
+  }
+
+  static void clearTestDatabase() {
+    _testDatabase?.close();
+    _testDatabase = null;
   }
 
   // Cache management
@@ -118,7 +134,7 @@ class DatabaseService {
     final db = database;
     final eventRows = await (db.select(db.events)..orderBy([(e) => OrderingTerm(expression: e.apiOrder)])).get();
 
-    final events = <Event>[];
+    final events = <models.Event>[];
 
     for (final eventRow in eventRows) {
       final competitionSlug = eventRow.slug;
@@ -606,6 +622,10 @@ class DatabaseService {
 
   // Close database
   static Future<void> close() async {
+    if (_testDatabase != null) {
+      await _testDatabase!.close();
+      _testDatabase = null;
+    }
     if (_database != null) {
       await _database!.close();
       _database = null;

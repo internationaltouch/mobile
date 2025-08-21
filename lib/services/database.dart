@@ -148,7 +148,7 @@ class Favourites extends Table {
 // Database class
 @DriftDatabase(tables: [Events, Seasons, Divisions, Teams, Fixtures, LadderEntries, NewsItems, CacheMetadata, Favourites])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
   int get schemaVersion => 1;
@@ -161,6 +161,11 @@ class AppDatabase extends _$AppDatabase {
       },
     );
   }
+}
+
+// Create a test database factory
+AppDatabase createTestDatabase() {
+  return AppDatabase(NativeDatabase.memory());
 }
 
 LazyDatabase _openConnection() {

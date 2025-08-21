@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fit_mobile_app/services/data_service.dart';
-import 'package:fit_mobile_app/models/event.dart';
-import 'package:fit_mobile_app/models/news_item.dart';
+import 'package:fit_mobile_app/services/database_service.dart';
+import 'package:fit_mobile_app/services/database.dart';
+import 'package:fit_mobile_app/models/event.dart' as models;
+import 'package:fit_mobile_app/models/news_item.dart' as models;
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
@@ -24,6 +26,9 @@ void main() {
     late MockClient mockClient;
 
     setUp(() {
+      // Set up test database
+      DatabaseService.setTestDatabase(createTestDatabase());
+      
       mockClient = MockClient();
       DataService.setHttpClient(mockClient);
       DataService.clearCache(); // Clear cache before each test
@@ -32,6 +37,7 @@ void main() {
     tearDown(() {
       DataService.resetHttpClient();
       DataService.clearCache(); // Clear cache after each test
+      DatabaseService.clearTestDatabase();
       reset(mockClient);
     });
 
@@ -116,7 +122,7 @@ void main() {
 <body>Test content</body>
 </html>''';
 
-        final newsItem = NewsItem(
+        final newsItem = models.NewsItem(
           id: 'test',
           title: 'Test Item',
           summary: 'Test summary',
@@ -144,7 +150,7 @@ void main() {
 </html>''';
 
         const originalImageUrl = 'placeholder.jpg';
-        final newsItem = NewsItem(
+        final newsItem = models.NewsItem(
           id: 'test',
           title: 'Test Item',
           summary: 'Test summary',
@@ -164,7 +170,7 @@ void main() {
 
       test('handles HTTP errors when fetching image', () async {
         const originalImageUrl = 'placeholder.jpg';
-        final newsItem = NewsItem(
+        final newsItem = models.NewsItem(
           id: 'test',
           title: 'Test Item',
           summary: 'Test summary',
@@ -210,7 +216,7 @@ void main() {
     group('getEvents', () {
       test('handles API failures gracefully', () async {
         final events = await DataService.getEvents();
-        expect(events, isA<List<Event>>());
+        expect(events, isA<List<models.Event>>());
       });
     });
 
