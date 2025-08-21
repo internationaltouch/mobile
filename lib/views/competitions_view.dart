@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../services/data_service.dart';
 import '../utils/image_utils.dart';
+import '../theme/fit_colors.dart';
 import 'event_detail_view.dart';
-import 'shortcuts_view.dart';
 
 /*
  * COMPETITION CONFIGURATION GUIDE
@@ -185,24 +185,9 @@ class _CompetitionsViewState extends State<CompetitionsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset(
-          'assets/images/LOGO_FIT-HZ.png',
-          height: 32,
-          fit: BoxFit.contain,
-        ),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.star),
-            tooltip: 'Shortcuts',
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => const ShortcutsView(),
-              );
-            },
-          ),
-        ],
+        title: const Text('Events'),
+        backgroundColor: FITColors.successGreen,
+        foregroundColor: FITColors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),

@@ -5,8 +5,8 @@ import '../models/fixture.dart';
 import '../models/ladder_entry.dart';
 import '../models/team.dart';
 import '../services/data_service.dart';
+import '../theme/fit_colors.dart';
 import '../widgets/match_score_card.dart';
-import 'main_navigation_view.dart';
 
 class FixturesResultsView extends StatefulWidget {
   final Event event;
@@ -104,9 +104,13 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
             ),
           ],
         ),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: FITColors.successGreen,
+        foregroundColor: FITColors.white,
         bottom: TabBar(
           controller: _tabController,
+          labelColor: FITColors.white,
+          unselectedLabelColor: FITColors.white.withValues(alpha: 0.7),
+          indicatorColor: FITColors.white,
           tabs: const [
             Tab(text: 'Fixtures', icon: Icon(Icons.schedule)),
             Tab(text: 'Ladder', icon: Icon(Icons.leaderboard)),

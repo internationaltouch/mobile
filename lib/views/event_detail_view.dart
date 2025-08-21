@@ -3,8 +3,8 @@ import '../models/event.dart';
 import '../models/season.dart';
 import '../services/data_service.dart';
 import '../utils/image_utils.dart';
+import '../theme/fit_colors.dart';
 import 'divisions_view.dart';
-import 'main_navigation_view.dart';
 
 class EventDetailView extends StatefulWidget {
   final Event event;
@@ -71,7 +71,8 @@ class _EventDetailViewState extends State<EventDetailView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.name),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: FITColors.successGreen,
+        foregroundColor: FITColors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
