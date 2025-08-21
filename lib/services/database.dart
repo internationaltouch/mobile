@@ -69,9 +69,12 @@ class Fixtures extends Table {
   TextColumn get awayTeamId => text().named('away_team_id')();
   TextColumn get homeTeamName => text().named('home_team_name')();
   TextColumn get awayTeamName => text().named('away_team_name')();
-  TextColumn get homeTeamAbbreviation => text().nullable().named('home_team_abbreviation')();
-  TextColumn get awayTeamAbbreviation => text().nullable().named('away_team_abbreviation')();
-  IntColumn get dateTimeMs => integer().named('date_time')(); // Renamed to avoid conflict
+  TextColumn get homeTeamAbbreviation =>
+      text().nullable().named('home_team_abbreviation')();
+  TextColumn get awayTeamAbbreviation =>
+      text().nullable().named('away_team_abbreviation')();
+  IntColumn get dateTimeMs =>
+      integer().named('date_time')(); // Renamed to avoid conflict
   TextColumn get field => text().nullable().named('field')();
   IntColumn get homeScore => integer().nullable().named('home_score')();
   IntColumn get awayScore => integer().nullable().named('away_score')();
@@ -131,8 +134,10 @@ class CacheMetadata extends Table {
 class Favourites extends Table {
   TextColumn get id => text().named('id')();
   TextColumn get type => text().named('type')();
-  TextColumn get competitionSlug => text().nullable().named('competition_slug')();
-  TextColumn get competitionName => text().nullable().named('competition_name')();
+  TextColumn get competitionSlug =>
+      text().nullable().named('competition_slug')();
+  TextColumn get competitionName =>
+      text().nullable().named('competition_name')();
   TextColumn get seasonSlug => text().nullable().named('season_slug')();
   TextColumn get seasonName => text().nullable().named('season_name')();
   TextColumn get divisionSlug => text().nullable().named('division_slug')();
@@ -146,7 +151,17 @@ class Favourites extends Table {
 }
 
 // Database class
-@DriftDatabase(tables: [Events, Seasons, Divisions, Teams, Fixtures, LadderEntries, NewsItems, CacheMetadata, Favourites])
+@DriftDatabase(tables: [
+  Events,
+  Seasons,
+  Divisions,
+  Teams,
+  Fixtures,
+  LadderEntries,
+  NewsItems,
+  CacheMetadata,
+  Favourites
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 

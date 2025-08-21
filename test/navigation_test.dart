@@ -144,7 +144,7 @@ void main() {
           },
         ));
         await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
 
         // Should show EventDetailView
         expect(find.byType(EventDetailView), findsOneWidget);
@@ -160,7 +160,7 @@ void main() {
 
         // Wait for the view to load
         await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
 
         // Should show EventDetailView
         expect(find.byType(EventDetailView), findsOneWidget);
@@ -171,7 +171,7 @@ void main() {
           // If multiple "2024" widgets exist, tap the first one
           await tester.tap(seasonFinders.first);
           await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+          await tester.pump(const Duration(seconds: 1));
 
           // Should navigate to DivisionsView
           expect(find.byType(DivisionsView), findsOneWidget);
@@ -203,7 +203,7 @@ void main() {
         ));
 
         await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
         expect(find.byType(EventDetailView), findsOneWidget);
       });
     });
@@ -219,13 +219,13 @@ void main() {
         // Switch to News tab
         await tester.tap(find.text('News'));
         await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
         expect(find.byType(HomeView), findsOneWidget);
 
         // Switch back to Events tab
         await tester.tap(find.text('Events'));
         await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
         expect(find.byType(CompetitionsView), findsOneWidget);
 
         // Navigation state should be preserved (still on CompetitionsView, not deep in hierarchy)
@@ -245,7 +245,7 @@ void main() {
         // Switch to Events tab
         await tester.tap(find.text('Events'));
         await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
 
         // Bottom navigation should still be visible
         expect(find.byType(BottomNavigationBar), findsOneWidget);
@@ -261,7 +261,7 @@ void main() {
         // Switch tabs and verify still only one
         await tester.tap(find.text('Events'));
         await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
         expect(find.byType(BottomNavigationBar), findsOneWidget);
       });
     });
@@ -289,7 +289,7 @@ void main() {
       testWidgets('Should pre-select team when initialTeamId is provided',
           (WidgetTester tester) async {
         const testTeamId = 'team-123';
-        
+
         await tester.pumpWidget(MaterialApp(
           theme: FITTheme.lightTheme,
           home: FixturesResultsView(
@@ -305,7 +305,7 @@ void main() {
 
         // Verify that FixturesResultsView is displayed and accepts initialTeamId
         expect(find.byType(FixturesResultsView), findsOneWidget);
-        
+
         // This test verifies:
         // 1. The FixturesResultsView widget accepts the initialTeamId parameter
         // 2. The widget renders without crashing

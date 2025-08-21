@@ -201,9 +201,10 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                     }
 
                     return DropdownButtonFormField<String>(
-                      initialValue: teams.any((team) => team.id == _selectedTeamId)
-                          ? _selectedTeamId
-                          : null,
+                      initialValue:
+                          teams.any((team) => team.id == _selectedTeamId)
+                              ? _selectedTeamId
+                              : null,
                       decoration: const InputDecoration(
                         labelText: 'Filter by Team',
                         border: OutlineInputBorder(),

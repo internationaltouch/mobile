@@ -71,8 +71,8 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       // Start on News tab (index 0)
-      BottomNavigationBar getNavBar() => tester
-          .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+      BottomNavigationBar getNavBar() =>
+          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(getNavBar().currentIndex, equals(0));
 
       // Switch to Events (index 1)
@@ -103,8 +103,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
-      final navBar = tester
-          .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+      final navBar =
+          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(navBar.currentIndex, equals(2));
       expect(find.byType(MyTouchView), findsOneWidget);
     });
@@ -148,8 +148,8 @@ void main() {
       // the content of other tabs
 
       // Start on News tab
-      BottomNavigationBar getNavBar() => tester
-          .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+      BottomNavigationBar getNavBar() =>
+          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(getNavBar().currentIndex, equals(0));
 
       // Switch to Events tab
@@ -158,7 +158,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       expect(getNavBar().currentIndex, equals(1));
 
-      // Switch to My Touch tab  
+      // Switch to My Touch tab
       await tester.tap(find.text('My Touch'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));

@@ -19,7 +19,7 @@ class DatabaseService {
       debugPrint('🗄️ [Drift] ♾️ Using test database instance');
       return _testDatabase!;
     }
-    
+
     if (_database != null) {
       debugPrint('🗄️ [Drift] ♾️ Using existing database instance');
       return _database!;
@@ -52,10 +52,11 @@ class DatabaseService {
     final db = database;
     debugPrint(
         '🕰️ [Cache] ✅ Database instance obtained, querying cache_metadata...');
-    
+
     final result = await (db.select(db.cacheMetadata)
-      ..where((metadata) => metadata.key.equals(key))).getSingleOrNull();
-    
+          ..where((metadata) => metadata.key.equals(key)))
+        .getSingleOrNull();
+
     debugPrint(
         '🕰️ [Cache] 📋 Query completed, found ${result != null ? 1 : 0} results');
 
@@ -78,34 +79,34 @@ class DatabaseService {
   static Future<void> updateCacheMetadata(String key, Duration maxAge) async {
     final db = database;
     await db.into(db.cacheMetadata).insertOnConflictUpdate(
-      CacheMetadataCompanion.insert(
-        key: key,
-        lastUpdated: DateTime.now().millisecondsSinceEpoch,
-        expiryDuration: maxAge.inMilliseconds,
-      ),
-    );
+          CacheMetadataCompanion.insert(
+            key: key,
+            lastUpdated: DateTime.now().millisecondsSinceEpoch,
+            expiryDuration: maxAge.inMilliseconds,
+          ),
+        );
   }
 
   // Events
   static Future<void> cacheEvents(List<models.Event> events) async {
     final db = database;
-    
+
     await db.transaction(() async {
       for (int i = 0; i < events.length; i++) {
         final event = events[i];
 
         // Cache the event using slug as primary key
         await db.into(db.events).insertOnConflictUpdate(
-          EventsCompanion.insert(
-            slug: event.slug ?? event.id,
-            name: event.name,
-            description: Value(event.description),
-            logoUrl: Value(event.logoUrl),
-            apiOrder: i,
-            createdAt: DateTime.now().millisecondsSinceEpoch,
-            updatedAt: DateTime.now().millisecondsSinceEpoch,
-          ),
-        );
+              EventsCompanion.insert(
+                slug: event.slug ?? event.id,
+                name: event.name,
+                description: Value(event.description),
+                logoUrl: Value(event.logoUrl),
+                apiOrder: i,
+                createdAt: DateTime.now().millisecondsSinceEpoch,
+                updatedAt: DateTime.now().millisecondsSinceEpoch,
+              ),
+            );
 
         // Cache the seasons for this event with composite keys
         debugPrint(
@@ -113,14 +114,14 @@ class DatabaseService {
         for (int j = 0; j < event.seasons.length; j++) {
           final season = event.seasons[j];
           await db.into(db.seasons).insertOnConflictUpdate(
-            SeasonsCompanion.insert(
-              competitionSlug: event.slug ?? event.id,
-              seasonSlug: season.slug,
-              title: season.title,
-              apiOrder: j,
-              createdAt: DateTime.now().millisecondsSinceEpoch,
-            ),
-          );
+                SeasonsCompanion.insert(
+                  competitionSlug: event.slug ?? event.id,
+                  seasonSlug: season.slug,
+                  title: season.title,
+                  apiOrder: j,
+                  createdAt: DateTime.now().millisecondsSinceEpoch,
+                ),
+              );
           debugPrint(
               '🗺️ [Drift] 🏆 → Cached season: ${season.title} (${season.slug})');
         }
@@ -132,7 +133,9 @@ class DatabaseService {
 
   static Future<List<models.Event>> getCachedEvents() async {
     final db = database;
-    final eventRows = await (db.select(db.events)..orderBy([(e) => OrderingTerm(expression: e.apiOrder)])).get();
+    final eventRows = await (db.select(db.events)
+          ..orderBy([(e) => OrderingTerm(expression: e.apiOrder)]))
+        .get();
 
     final events = <models.Event>[];
 
@@ -141,8 +144,9 @@ class DatabaseService {
 
       // Get seasons for this event using competition slug
       final seasonRows = await (db.select(db.seasons)
-        ..where((s) => s.competitionSlug.equals(competitionSlug))
-        ..orderBy([(s) => OrderingTerm(expression: s.apiOrder)])).get();
+            ..where((s) => s.competitionSlug.equals(competitionSlug))
+            ..orderBy([(s) => OrderingTerm(expression: s.apiOrder)]))
+          .get();
 
       final seasons = seasonRows
           .map((seasonRow) => models.Season(
@@ -174,21 +178,23 @@ class DatabaseService {
     await db.transaction(() async {
       // Clear existing divisions for this competition/season
       await (db.delete(db.divisions)
-        ..where((d) => d.competitionSlug.equals(competitionSlug) & 
-                       d.seasonSlug.equals(seasonSlug))).go();
+            ..where((d) =>
+                d.competitionSlug.equals(competitionSlug) &
+                d.seasonSlug.equals(seasonSlug)))
+          .go();
 
       for (int i = 0; i < divisions.length; i++) {
         final division = divisions[i];
         await db.into(db.divisions).insert(
-          DivisionsCompanion.insert(
-            competitionSlug: competitionSlug,
-            seasonSlug: seasonSlug,
-            divisionSlug: division.slug ?? division.id,
-            name: division.name,
-            apiOrder: i,
-            createdAt: DateTime.now().millisecondsSinceEpoch,
-          ),
-        );
+              DivisionsCompanion.insert(
+                competitionSlug: competitionSlug,
+                seasonSlug: seasonSlug,
+                divisionSlug: division.slug ?? division.id,
+                name: division.name,
+                apiOrder: i,
+                createdAt: DateTime.now().millisecondsSinceEpoch,
+              ),
+            );
       }
     });
 
@@ -200,9 +206,11 @@ class DatabaseService {
       String competitionSlug, String seasonSlug) async {
     final db = database;
     final rows = await (db.select(db.divisions)
-      ..where((d) => d.competitionSlug.equals(competitionSlug) & 
-                     d.seasonSlug.equals(seasonSlug))
-      ..orderBy([(d) => OrderingTerm(expression: d.apiOrder)])).get();
+          ..where((d) =>
+              d.competitionSlug.equals(competitionSlug) &
+              d.seasonSlug.equals(seasonSlug))
+          ..orderBy([(d) => OrderingTerm(expression: d.apiOrder)]))
+        .get();
 
     return rows
         .map((row) => models.Division(
@@ -223,24 +231,26 @@ class DatabaseService {
     await db.transaction(() async {
       // Clear existing teams for this division
       await (db.delete(db.teams)
-        ..where((t) => t.competitionSlug.equals(competitionSlug) & 
-                       t.seasonSlug.equals(seasonSlug) &
-                       t.divisionSlug.equals(divisionSlug))).go();
+            ..where((t) =>
+                t.competitionSlug.equals(competitionSlug) &
+                t.seasonSlug.equals(seasonSlug) &
+                t.divisionSlug.equals(divisionSlug)))
+          .go();
 
       for (int i = 0; i < teams.length; i++) {
         final team = teams[i];
         await db.into(db.teams).insert(
-          TeamsCompanion.insert(
-            id: team.id,
-            competitionSlug: competitionSlug,
-            seasonSlug: seasonSlug,
-            divisionSlug: divisionSlug,
-            name: team.name,
-            abbreviation: Value(team.abbreviation),
-            logoUrl: const Value(''), // Team model doesn't have logoUrl
-            createdAt: DateTime.now().millisecondsSinceEpoch,
-          ),
-        );
+              TeamsCompanion.insert(
+                id: team.id,
+                competitionSlug: competitionSlug,
+                seasonSlug: seasonSlug,
+                divisionSlug: divisionSlug,
+                name: team.name,
+                abbreviation: Value(team.abbreviation),
+                logoUrl: const Value(''), // Team model doesn't have logoUrl
+                createdAt: DateTime.now().millisecondsSinceEpoch,
+              ),
+            );
       }
     });
 
@@ -253,10 +263,12 @@ class DatabaseService {
       String competitionSlug, String seasonSlug, String divisionSlug) async {
     final db = database;
     final rows = await (db.select(db.teams)
-      ..where((t) => t.competitionSlug.equals(competitionSlug) & 
-                     t.seasonSlug.equals(seasonSlug) &
-                     t.divisionSlug.equals(divisionSlug))
-      ..orderBy([(t) => OrderingTerm(expression: t.name)])).get();
+          ..where((t) =>
+              t.competitionSlug.equals(competitionSlug) &
+              t.seasonSlug.equals(seasonSlug) &
+              t.divisionSlug.equals(divisionSlug))
+          ..orderBy([(t) => OrderingTerm(expression: t.name)]))
+        .get();
 
     return rows
         .map((row) => models.Team(
@@ -276,34 +288,37 @@ class DatabaseService {
     await db.transaction(() async {
       // Clear existing fixtures for this division
       await (db.delete(db.fixtures)
-        ..where((f) => f.competitionSlug.equals(competitionSlug) & 
-                       f.seasonSlug.equals(seasonSlug) &
-                       f.divisionSlug.equals(divisionSlug))).go();
+            ..where((f) =>
+                f.competitionSlug.equals(competitionSlug) &
+                f.seasonSlug.equals(seasonSlug) &
+                f.divisionSlug.equals(divisionSlug)))
+          .go();
 
       for (final fixture in fixtures) {
         await db.into(db.fixtures).insert(
-          FixturesCompanion.insert(
-            id: fixture.id,
-            competitionSlug: competitionSlug,
-            seasonSlug: seasonSlug,
-            divisionSlug: divisionSlug,
-            homeTeamId: fixture.homeTeamId,
-            awayTeamId: fixture.awayTeamId,
-            homeTeamName: fixture.homeTeamName,
-            awayTeamName: fixture.awayTeamName,
-            homeTeamAbbreviation: Value(fixture.homeTeamAbbreviation),
-            awayTeamAbbreviation: Value(fixture.awayTeamAbbreviation),
-            dateTimeMs: fixture.dateTime.millisecondsSinceEpoch, // Updated field name
-            field: Value(fixture.field),
-            homeScore: Value(fixture.homeScore),
-            awayScore: Value(fixture.awayScore),
-            isCompleted: fixture.isCompleted ? 1 : 0,
-            roundInfo: Value(fixture.round),
-            isBye: Value(fixture.isBye == true ? 1 : 0),
-            videos: Value(jsonEncode(fixture.videos)),
-            createdAt: DateTime.now().millisecondsSinceEpoch,
-          ),
-        );
+              FixturesCompanion.insert(
+                id: fixture.id,
+                competitionSlug: competitionSlug,
+                seasonSlug: seasonSlug,
+                divisionSlug: divisionSlug,
+                homeTeamId: fixture.homeTeamId,
+                awayTeamId: fixture.awayTeamId,
+                homeTeamName: fixture.homeTeamName,
+                awayTeamName: fixture.awayTeamName,
+                homeTeamAbbreviation: Value(fixture.homeTeamAbbreviation),
+                awayTeamAbbreviation: Value(fixture.awayTeamAbbreviation),
+                dateTimeMs: fixture
+                    .dateTime.millisecondsSinceEpoch, // Updated field name
+                field: Value(fixture.field),
+                homeScore: Value(fixture.homeScore),
+                awayScore: Value(fixture.awayScore),
+                isCompleted: fixture.isCompleted ? 1 : 0,
+                roundInfo: Value(fixture.round),
+                isBye: Value(fixture.isBye == true ? 1 : 0),
+                videos: Value(jsonEncode(fixture.videos)),
+                createdAt: DateTime.now().millisecondsSinceEpoch,
+              ),
+            );
       }
     });
 
@@ -316,10 +331,12 @@ class DatabaseService {
       String competitionSlug, String seasonSlug, String divisionSlug) async {
     final db = database;
     final rows = await (db.select(db.fixtures)
-      ..where((f) => f.competitionSlug.equals(competitionSlug) & 
-                     f.seasonSlug.equals(seasonSlug) &
-                     f.divisionSlug.equals(divisionSlug))
-      ..orderBy([(f) => OrderingTerm(expression: f.dateTimeMs)])).get(); // Updated field name
+          ..where((f) =>
+              f.competitionSlug.equals(competitionSlug) &
+              f.seasonSlug.equals(seasonSlug) &
+              f.divisionSlug.equals(divisionSlug))
+          ..orderBy([(f) => OrderingTerm(expression: f.dateTimeMs)]))
+        .get(); // Updated field name
 
     return rows.map((row) {
       final videosJson = row.videos;
@@ -335,7 +352,8 @@ class DatabaseService {
         awayTeamName: row.awayTeamName,
         homeTeamAbbreviation: row.homeTeamAbbreviation,
         awayTeamAbbreviation: row.awayTeamAbbreviation,
-        dateTime: DateTime.fromMillisecondsSinceEpoch(row.dateTimeMs), // Updated field name
+        dateTime: DateTime.fromMillisecondsSinceEpoch(
+            row.dateTimeMs), // Updated field name
         field: row.field ?? '',
         divisionId: divisionSlug, // Use division slug for compatibility
         homeScore: row.homeScore,
@@ -365,16 +383,16 @@ class DatabaseService {
             '🗺️ [Drift] 📝 Inserting news item ${i + 1}/${newsItems.length}: ID="${newsItem.id}", Title="${newsItem.title.length > 50 ? '${newsItem.title.substring(0, 50)}...' : newsItem.title}"');
 
         await db.into(db.newsItems).insert(
-          NewsItemsCompanion.insert(
-            id: newsItem.id,
-            title: newsItem.title,
-            summary: newsItem.summary,
-            imageUrl: Value(newsItem.imageUrl),
-            link: Value(newsItem.link),
-            publishedAt: newsItem.publishedAt.millisecondsSinceEpoch,
-            createdAt: DateTime.now().millisecondsSinceEpoch,
-          ),
-        );
+              NewsItemsCompanion.insert(
+                id: newsItem.id,
+                title: newsItem.title,
+                summary: newsItem.summary,
+                imageUrl: Value(newsItem.imageUrl),
+                link: Value(newsItem.link),
+                publishedAt: newsItem.publishedAt.millisecondsSinceEpoch,
+                createdAt: DateTime.now().millisecondsSinceEpoch,
+              ),
+            );
       }
     });
 
@@ -394,7 +412,11 @@ class DatabaseService {
     try {
       final db = database;
       final rows = await (db.select(db.newsItems)
-        ..orderBy([(n) => OrderingTerm(expression: n.publishedAt, mode: OrderingMode.desc)])).get();
+            ..orderBy([
+              (n) => OrderingTerm(
+                  expression: n.publishedAt, mode: OrderingMode.desc)
+            ]))
+          .get();
 
       debugPrint(
           '🗺️ [Drift] 📄 Found ${rows.length} cached news items in database');
@@ -406,7 +428,8 @@ class DatabaseService {
                 summary: row.summary,
                 imageUrl: row.imageUrl ?? '',
                 link: row.link,
-                publishedAt: DateTime.fromMillisecondsSinceEpoch(row.publishedAt),
+                publishedAt:
+                    DateTime.fromMillisecondsSinceEpoch(row.publishedAt),
               ))
           .toList();
 
@@ -420,38 +443,43 @@ class DatabaseService {
   }
 
   // Ladder entries
-  static Future<void> cacheLadderEntries(String competitionSlug, String seasonSlug,
-      String divisionSlug, List<models.LadderEntry> ladderEntries) async {
+  static Future<void> cacheLadderEntries(
+      String competitionSlug,
+      String seasonSlug,
+      String divisionSlug,
+      List<models.LadderEntry> ladderEntries) async {
     final db = database;
 
     await db.transaction(() async {
       // Clear existing ladder entries for this division
       await (db.delete(db.ladderEntries)
-        ..where((l) => l.competitionSlug.equals(competitionSlug) & 
-                       l.seasonSlug.equals(seasonSlug) &
-                       l.divisionSlug.equals(divisionSlug))).go();
+            ..where((l) =>
+                l.competitionSlug.equals(competitionSlug) &
+                l.seasonSlug.equals(seasonSlug) &
+                l.divisionSlug.equals(divisionSlug)))
+          .go();
 
       for (int i = 0; i < ladderEntries.length; i++) {
         final entry = ladderEntries[i];
         await db.into(db.ladderEntries).insert(
-          LadderEntriesCompanion.insert(
-            id: '${competitionSlug}_${seasonSlug}_${divisionSlug}_${entry.teamId}',
-            competitionSlug: competitionSlug,
-            seasonSlug: seasonSlug,
-            divisionSlug: divisionSlug,
-            teamName: entry.teamName,
-            position: i + 1, // Position based on order in list
-            played: entry.played,
-            won: entry.wins,
-            drawn: entry.draws,
-            lost: entry.losses,
-            pointsFor: entry.goalsFor,
-            pointsAgainst: entry.goalsAgainst,
-            pointsDifference: entry.goalDifference,
-            points: entry.points,
-            createdAt: DateTime.now().millisecondsSinceEpoch,
-          ),
-        );
+              LadderEntriesCompanion.insert(
+                id: '${competitionSlug}_${seasonSlug}_${divisionSlug}_${entry.teamId}',
+                competitionSlug: competitionSlug,
+                seasonSlug: seasonSlug,
+                divisionSlug: divisionSlug,
+                teamName: entry.teamName,
+                position: i + 1, // Position based on order in list
+                played: entry.played,
+                won: entry.wins,
+                drawn: entry.draws,
+                lost: entry.losses,
+                pointsFor: entry.goalsFor,
+                pointsAgainst: entry.goalsAgainst,
+                pointsDifference: entry.goalDifference,
+                points: entry.points,
+                createdAt: DateTime.now().millisecondsSinceEpoch,
+              ),
+            );
       }
     });
 
@@ -464,45 +492,54 @@ class DatabaseService {
       String competitionSlug, String seasonSlug, String divisionSlug) async {
     final db = database;
     final rows = await (db.select(db.ladderEntries)
-      ..where((l) => l.competitionSlug.equals(competitionSlug) & 
-                     l.seasonSlug.equals(seasonSlug) &
-                     l.divisionSlug.equals(divisionSlug))
-      ..orderBy([(l) => OrderingTerm(expression: l.position)])).get();
+          ..where((l) =>
+              l.competitionSlug.equals(competitionSlug) &
+              l.seasonSlug.equals(seasonSlug) &
+              l.divisionSlug.equals(divisionSlug))
+          ..orderBy([(l) => OrderingTerm(expression: l.position)]))
+        .get();
 
-    return rows.map((row) => models.LadderEntry(
-      teamId: row.id,
-      teamName: row.teamName,
-      played: row.played,
-      wins: row.won,
-      draws: row.drawn,
-      losses: row.lost,
-      points: row.points,
-      goalDifference: row.pointsDifference,
-      goalsFor: row.pointsFor,
-      goalsAgainst: row.pointsAgainst,
-    )).toList();
+    return rows
+        .map((row) => models.LadderEntry(
+              teamId: row.id,
+              teamName: row.teamName,
+              played: row.played,
+              wins: row.won,
+              draws: row.drawn,
+              losses: row.lost,
+              points: row.points,
+              goalDifference: row.pointsDifference,
+              goalsFor: row.pointsFor,
+              goalsAgainst: row.pointsAgainst,
+            ))
+        .toList();
   }
 
   // Clear specific cache entry by key
   static Future<void> clearSpecificCache(String cacheKey) async {
     final db = database;
     debugPrint('🗄️ [Drift] 🧤 Clearing specific cache entry: $cacheKey');
-    
+
     await db.transaction(() async {
       // Remove cache metadata entry
       await (db.delete(db.cacheMetadata)
-        ..where((metadata) => metadata.key.equals(cacheKey))).go();
-      
+            ..where((metadata) => metadata.key.equals(cacheKey)))
+          .go();
+
       // Clear associated data based on cache key type
       if (cacheKey.startsWith('fixtures_')) {
         // Parse eventId, seasonSlug, divisionId from key: fixtures_{eventId}_{seasonSlug}_{divisionId}
         final parts = cacheKey.split('_');
         if (parts.length >= 4) {
-          final divisionId = parts.sublist(3).join('_'); // Handle division IDs with underscores
+          final divisionId = parts
+              .sublist(3)
+              .join('_'); // Handle division IDs with underscores
           await (db.delete(db.fixtures)
-            ..where((fixture) => fixture.divisionSlug.equals(divisionId))).go();
-          
-          debugPrint('🗄️ [Drift] ✅ Cleared fixtures cache for division: $divisionId');
+                ..where((fixture) => fixture.divisionSlug.equals(divisionId)))
+              .go();
+
+          debugPrint(
+              '🗄️ [Drift] ✅ Cleared fixtures cache for division: $divisionId');
         }
       }
       // Add more cache types as needed (teams, ladder, etc.)
@@ -565,20 +602,20 @@ class DatabaseService {
     }
 
     await db.into(db.favourites).insertOnConflictUpdate(
-      FavouritesCompanion.insert(
-        id: id,
-        type: type,
-        competitionSlug: Value(competitionSlug),
-        competitionName: Value(competitionName),
-        seasonSlug: Value(seasonSlug),
-        seasonName: Value(seasonName),
-        divisionSlug: Value(divisionSlug),
-        divisionName: Value(divisionName),
-        teamId: Value(teamId),
-        teamName: Value(teamName),
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-      ),
-    );
+          FavouritesCompanion.insert(
+            id: id,
+            type: type,
+            competitionSlug: Value(competitionSlug),
+            competitionName: Value(competitionName),
+            seasonSlug: Value(seasonSlug),
+            seasonName: Value(seasonName),
+            divisionSlug: Value(divisionSlug),
+            divisionName: Value(divisionName),
+            teamId: Value(teamId),
+            teamName: Value(teamName),
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
 
     debugPrint('🗄️ [Drift] ✅ Added favourite: $type - $id');
   }
@@ -592,22 +629,28 @@ class DatabaseService {
   static Future<List<Map<String, dynamic>>> getFavourites() async {
     final db = database;
     final rows = await (db.select(db.favourites)
-      ..orderBy([(f) => OrderingTerm(expression: f.createdAt, mode: OrderingMode.desc)])).get();
-    
-    final result = rows.map((row) => {
-      'id': row.id,
-      'type': row.type,
-      'competition_slug': row.competitionSlug,
-      'competition_name': row.competitionName,
-      'season_slug': row.seasonSlug,
-      'season_name': row.seasonName,
-      'division_slug': row.divisionSlug,
-      'division_name': row.divisionName,
-      'team_id': row.teamId,
-      'team_name': row.teamName,
-      'created_at': row.createdAt,
-    }).toList();
-    
+          ..orderBy([
+            (f) =>
+                OrderingTerm(expression: f.createdAt, mode: OrderingMode.desc)
+          ]))
+        .get();
+
+    final result = rows
+        .map((row) => {
+              'id': row.id,
+              'type': row.type,
+              'competition_slug': row.competitionSlug,
+              'competition_name': row.competitionName,
+              'season_slug': row.seasonSlug,
+              'season_name': row.seasonName,
+              'division_slug': row.divisionSlug,
+              'division_name': row.divisionName,
+              'team_id': row.teamId,
+              'team_name': row.teamName,
+              'created_at': row.createdAt,
+            })
+        .toList();
+
     debugPrint('🗄️ [Drift] 📄 Found ${result.length} favourites');
     return result;
   }
@@ -640,8 +683,9 @@ class DatabaseService {
     }
 
     final result = await (db.select(db.favourites)
-      ..where((f) => f.id.equals(id))
-      ..limit(1)).getSingleOrNull();
+          ..where((f) => f.id.equals(id))
+          ..limit(1))
+        .getSingleOrNull();
 
     return result != null;
   }

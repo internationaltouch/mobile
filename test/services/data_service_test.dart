@@ -12,14 +12,13 @@ import 'package:http/http.dart' as http;
 import 'data_service_test.mocks.dart';
 
 void main() {
-
   group('DataService Tests', () {
     late MockClient mockClient;
 
     setUp(() {
       // Set up test database
       DatabaseService.setTestDatabase(createTestDatabase());
-      
+
       mockClient = MockClient();
       DataService.setHttpClient(mockClient);
       DataService.clearCache(); // Clear cache before each test

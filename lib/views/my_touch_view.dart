@@ -73,18 +73,26 @@ class _MyTouchViewState extends State<MyTouchView> {
           // Preserve selected competition if it exists in new data (by ID/slug)
           if (_selectedCompetition != null) {
             final matchingCompetition = competitions.firstWhere(
-              (comp) => comp.id == _selectedCompetition!.id || 
-                        (comp.slug != null && comp.slug == _selectedCompetition!.slug),
+              (comp) =>
+                  comp.id == _selectedCompetition!.id ||
+                  (comp.slug != null &&
+                      comp.slug == _selectedCompetition!.slug),
               orElse: () => competitions.firstWhere(
                 (comp) => comp.name == _selectedCompetition!.name,
-                orElse: () => competitions.isEmpty ? Event(
-                  id: '', name: '', logoUrl: '', seasons: [], description: ''
-                ) : competitions.first,
+                orElse: () => competitions.isEmpty
+                    ? Event(
+                        id: '',
+                        name: '',
+                        logoUrl: '',
+                        seasons: [],
+                        description: '')
+                    : competitions.first,
               ),
             );
-            
+
             // Only reset if we couldn't find a match
-            if (matchingCompetition.id.isEmpty || !competitions.contains(matchingCompetition)) {
+            if (matchingCompetition.id.isEmpty ||
+                !competitions.contains(matchingCompetition)) {
               _selectedCompetition = null;
               _selectedSeason = null;
               _selectedDivision = null;
@@ -364,9 +372,9 @@ class _MyTouchViewState extends State<MyTouchView> {
   Widget build(BuildContext context) {
     // Clean up any stale selections that don't exist in current lists (by ID/slug)
     if (_selectedCompetition != null &&
-        !_competitions.any((comp) => 
-          comp.id == _selectedCompetition!.id ||
-          (comp.slug != null && comp.slug == _selectedCompetition!.slug))) {
+        !_competitions.any((comp) =>
+            comp.id == _selectedCompetition!.id ||
+            (comp.slug != null && comp.slug == _selectedCompetition!.slug))) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
@@ -451,13 +459,16 @@ class _MyTouchViewState extends State<MyTouchView> {
                           labelText: 'Competition',
                           border: OutlineInputBorder(),
                         ),
-                        initialValue: _selectedCompetition != null && 
-                                _competitions.any((comp) => 
-                                  comp.id == _selectedCompetition!.id ||
-                                  (comp.slug != null && comp.slug == _selectedCompetition!.slug))
-                            ? _competitions.firstWhere((comp) => 
+                        initialValue: _selectedCompetition != null &&
+                                _competitions.any((comp) =>
+                                    comp.id == _selectedCompetition!.id ||
+                                    (comp.slug != null &&
+                                        comp.slug ==
+                                            _selectedCompetition!.slug))
+                            ? _competitions.firstWhere((comp) =>
                                 comp.id == _selectedCompetition!.id ||
-                                (comp.slug != null && comp.slug == _selectedCompetition!.slug))
+                                (comp.slug != null &&
+                                    comp.slug == _selectedCompetition!.slug))
                             : null,
                         isExpanded: true,
                         onChanged: _competitions.isEmpty
