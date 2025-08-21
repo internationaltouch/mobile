@@ -71,7 +71,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       // Start on News tab (index 0)
-      final getNavBar = () => tester
+      BottomNavigationBar getNavBar() => tester
           .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(getNavBar().currentIndex, equals(0));
 
@@ -148,7 +148,7 @@ void main() {
       // the content of other tabs
 
       // Start on News tab
-      final getNavBar = () => tester
+      BottomNavigationBar getNavBar() => tester
           .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(getNavBar().currentIndex, equals(0));
 
