@@ -116,6 +116,22 @@ class _MainNavigationViewState extends State<MainNavigationView> {
           );
     }
   }
+
+  // Method to reset navigation stack and navigate to a destination
+  // Keeps the base route (CompetitionsView) and removes only deep navigation
+  void resetAndNavigateInTab(int tabIndex, Widget destination) {
+    if (tabIndex >= 0 && tabIndex < _navigatorKeys.length) {
+      final navigatorState = _navigatorKeys[tabIndex].currentState;
+      if (navigatorState != null) {
+        // Pop until we're back to the base route (CompetitionsView)
+        navigatorState.popUntil((route) => route.isFirst);
+        // Then push the destination
+        navigatorState.push(
+          MaterialPageRoute(builder: (context) => destination),
+        );
+      }
+    }
+  }
 }
 
 // Extension to access the main navigation from child pages
@@ -133,9 +149,10 @@ extension MainNavigationExtension on BuildContext {
       // Switch to the tab first
       mainNav.switchTab(tabIndex);
 
-      // Wait a frame for the tab switch to complete, then navigate
+      // Wait a frame for the tab switch to complete, then reset stack and navigate
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        mainNav.navigateInTab(tabIndex, destination);
+        // Clear the navigation stack for the target tab to prevent build-up
+        mainNav.resetAndNavigateInTab(tabIndex, destination);
       });
     }
   }

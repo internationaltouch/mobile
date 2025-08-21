@@ -73,7 +73,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
       eventId: widget.event.slug ?? widget.event.id,
       season: widget.season,
     );
-    
+
     // Show feedback to user
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -83,7 +83,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
         ),
       );
     }
-    
+
     // Reload all data
     setState(() {
       _loadData();
@@ -186,8 +186,24 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                 builder: (context, teamsSnapshot) {
                   if (teamsSnapshot.hasData) {
                     final teams = teamsSnapshot.data!;
+
+                    // Reset selected team if it doesn't exist in current team list
+                    if (_selectedTeamId != null &&
+                        !teams.any((team) => team.id == _selectedTeamId)) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedTeamId = null;
+                            _filterFixtures();
+                          });
+                        }
+                      });
+                    }
+
                     return DropdownButtonFormField<String>(
-                      value: _selectedTeamId,
+                      value: teams.any((team) => team.id == _selectedTeamId)
+                          ? _selectedTeamId
+                          : null,
                       decoration: const InputDecoration(
                         labelText: 'Filter by Team',
                         border: OutlineInputBorder(),
@@ -301,7 +317,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             TextSpan(
-                              text: 'this data is being calculated in the app and may have errors, see the FIT website for accurate ladder information.',
+                              text:
+                                  'this data is being calculated in the app and may have errors, see the FIT website for accurate ladder information.',
                             ),
                           ],
                         ),
@@ -324,77 +341,77 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Position')),
-                        DataColumn(label: Text('Team')),
-                        DataColumn(label: Text('P')),
-                        DataColumn(label: Text('W')),
-                        DataColumn(label: Text('D')),
-                        DataColumn(label: Text('L')),
-                        DataColumn(label: Text('Pts')),
-                        DataColumn(label: Text('GD')),
-                      ],
-                      rows: ladder.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final ladderEntry = entry.value;
+                            columns: const [
+                              DataColumn(label: Text('Position')),
+                              DataColumn(label: Text('Team')),
+                              DataColumn(label: Text('P')),
+                              DataColumn(label: Text('W')),
+                              DataColumn(label: Text('D')),
+                              DataColumn(label: Text('L')),
+                              DataColumn(label: Text('Pts')),
+                              DataColumn(label: Text('GD')),
+                            ],
+                            rows: ladder.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final ladderEntry = entry.value;
 
-                        return DataRow(
-                          cells: [
-                            DataCell(
-                              Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: _getPositionColor(index),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
+                              return DataRow(
+                                cells: [
+                                  DataCell(
+                                    Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color: _getPositionColor(index),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ),
-                            DataCell(
-                              Text(
-                                ladderEntry.teamName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                            DataCell(Text('${ladderEntry.played}')),
-                            DataCell(Text('${ladderEntry.wins}')),
-                            DataCell(Text('${ladderEntry.draws}')),
-                            DataCell(Text('${ladderEntry.losses}')),
-                            DataCell(
-                              Text(
-                                '${ladderEntry.points}',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            DataCell(
-                              Text(
-                                ladderEntry.goalDifferenceText,
-                                style: TextStyle(
-                                  color: ladderEntry.goalDifference >= 0
-                                      ? Colors.green[700]
-                                      : Colors.red[700],
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                  ),
+                                  DataCell(
+                                    Text(
+                                      ladderEntry.teamName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                  DataCell(Text('${ladderEntry.played}')),
+                                  DataCell(Text('${ladderEntry.wins}')),
+                                  DataCell(Text('${ladderEntry.draws}')),
+                                  DataCell(Text('${ladderEntry.losses}')),
+                                  DataCell(
+                                    Text(
+                                      '${ladderEntry.points}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      ladderEntry.goalDifferenceText,
+                                      style: TextStyle(
+                                        color: ladderEntry.goalDifference >= 0
+                                            ? Colors.green[700]
+                                            : Colors.red[700],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
+              ),
             ],
           ),
         );
