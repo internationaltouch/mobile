@@ -1,0 +1,68 @@
+# Build directories
+build/
+.dart_tool/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.tmp
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Flutter/Dart specific
+.packages
+.metadata
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+pubspec.lock
+
+# Test coverage
+coverage/
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Android specific
+android/app/debug
+android/app/profile
+android/app/release
+android/app/.cxx/
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/gradle-wrapper.jar
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+
+# iOS specific
+ios/Flutter/flutter_assets/
+ios/Flutter/flutter_export_environment.sh
+ios/Runner.xcarchive
+ios/Runner.xcworkspace/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.flx
+
+# Web specific
+web/
+
+# MacOS specific
+macos/
+
+# Windows specific
+windows/
+
+# Linux specific
+linux/
