@@ -32,33 +32,34 @@ void main() {
       expect(find.byType(HomeView), findsOneWidget);
     });
 
-    testWidgets('Should switch to Competitions tab when tapped',
+    testWidgets('Should switch to Events tab when tapped',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
 
-      // Tap on Competitions tab
-      await tester.tap(find.text('Competitions'));
-      await tester.pumpAndSettle();
+      // Tap on Events tab
+      await tester.tap(find.text('Events'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
-      // Verify Competitions tab is selected
+      // Verify Events tab is selected
       final bottomNavBar =
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(bottomNavBar.currentIndex, equals(1));
 
-      // Verify Competitions content is visible
+      // Verify Events content is visible
       expect(find.byType(CompetitionsView), findsOneWidget);
     });
 
-    testWidgets('Should start with Competitions tab when specified',
+    testWidgets('Should start with Events tab when specified',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp(initialTab: 1));
 
-      // Verify that Competitions tab is selected
+      // Verify that Events tab is selected
       final bottomNavBar =
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(bottomNavBar.currentIndex, equals(1));
 
-      // Verify Competitions content is visible
+      // Verify Events content is visible
       expect(find.byType(CompetitionsView), findsOneWidget);
     });
 
@@ -73,9 +74,10 @@ void main() {
               .currentIndex,
           equals(0));
 
-      // Switch to Competitions
-      await tester.tap(find.text('Competitions'));
-      await tester.pumpAndSettle();
+      // Switch to Events
+      await tester.tap(find.text('Events'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
       expect(
           tester
               .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
@@ -84,7 +86,8 @@ void main() {
 
       // Switch back to News
       await tester.tap(find.text('News'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
       expect(
           tester
               .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
@@ -127,7 +130,7 @@ void main() {
         );
       }
 
-      testWidgets('Should navigate from Competitions to Event Detail',
+      testWidgets('Should navigate from Events to Event Detail',
           (WidgetTester tester) async {
         await tester.pumpWidget(createCompetitionApp());
 
@@ -148,7 +151,8 @@ void main() {
             );
           },
         ));
-        await tester.pumpAndSettle();
+        await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
         // Should show EventDetailView
         expect(find.byType(EventDetailView), findsOneWidget);
@@ -163,15 +167,19 @@ void main() {
         ));
 
         // Wait for the view to load
-        await tester.pumpAndSettle();
+        await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
         // Should show EventDetailView
         expect(find.byType(EventDetailView), findsOneWidget);
 
         // Tap on a season (if seasons are displayed as tappable items)
-        if (find.text('2024').evaluate().isNotEmpty) {
-          await tester.tap(find.text('2024'));
-          await tester.pumpAndSettle();
+        final seasonFinders = find.text('2024');
+        if (seasonFinders.evaluate().isNotEmpty) {
+          // If multiple "2024" widgets exist, tap the first one
+          await tester.tap(seasonFinders.first);
+          await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
           // Should navigate to DivisionsView
           expect(find.byType(DivisionsView), findsOneWidget);
@@ -202,7 +210,8 @@ void main() {
           ),
         ));
 
-        await tester.pumpAndSettle();
+        await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
         expect(find.byType(EventDetailView), findsOneWidget);
       });
     });
@@ -212,17 +221,19 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(initialTab: 1));
 
-        // Start on Competitions tab
+        // Start on Events tab
         expect(find.byType(CompetitionsView), findsOneWidget);
 
         // Switch to News tab
         await tester.tap(find.text('News'));
-        await tester.pumpAndSettle();
+        await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
         expect(find.byType(HomeView), findsOneWidget);
 
-        // Switch back to Competitions tab
-        await tester.tap(find.text('Competitions'));
-        await tester.pumpAndSettle();
+        // Switch back to Events tab
+        await tester.tap(find.text('Events'));
+        await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
         expect(find.byType(CompetitionsView), findsOneWidget);
 
         // Navigation state should be preserved (still on CompetitionsView, not deep in hierarchy)
@@ -239,9 +250,10 @@ void main() {
         // Bottom navigation should be visible on News tab
         expect(find.byType(BottomNavigationBar), findsOneWidget);
 
-        // Switch to Competitions tab
-        await tester.tap(find.text('Competitions'));
-        await tester.pumpAndSettle();
+        // Switch to Events tab
+        await tester.tap(find.text('Events'));
+        await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
         // Bottom navigation should still be visible
         expect(find.byType(BottomNavigationBar), findsOneWidget);
@@ -255,8 +267,9 @@ void main() {
         expect(find.byType(BottomNavigationBar), findsOneWidget);
 
         // Switch tabs and verify still only one
-        await tester.tap(find.text('Competitions'));
-        await tester.pumpAndSettle();
+        await tester.tap(find.text('Events'));
+        await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
         expect(find.byType(BottomNavigationBar), findsOneWidget);
       });
     });
