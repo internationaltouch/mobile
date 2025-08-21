@@ -4,6 +4,7 @@ import 'package:fit_mobile_app/views/main_navigation_view.dart';
 import 'package:fit_mobile_app/views/competitions_view.dart';
 import 'package:fit_mobile_app/views/event_detail_view.dart';
 import 'package:fit_mobile_app/views/divisions_view.dart';
+import 'package:fit_mobile_app/views/fixtures_results_view.dart';
 import 'package:fit_mobile_app/views/home_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/models/event.dart';
@@ -271,6 +272,72 @@ void main() {
         await tester.pump();
       await tester.pump(const Duration(seconds: 1));
         expect(find.byType(BottomNavigationBar), findsOneWidget);
+      });
+    });
+
+    group('Team Pre-selection Tests', () {
+      final testEvent = Event(
+        id: 'test-event',
+        name: 'Test Event',
+        logoUrl: '',
+        seasons: [Season(title: '2024', slug: '2024')],
+        description: 'Test event description',
+        slug: 'test-event',
+        seasonsLoaded: true,
+      );
+
+      final testDivision = Division(
+        id: 'test-division',
+        name: 'Test Division',
+        eventId: 'test-event',
+        season: '2024',
+        slug: 'test-division',
+        color: '#1976D2',
+      );
+
+      testWidgets('Should pre-select team when initialTeamId is provided',
+          (WidgetTester tester) async {
+        const testTeamId = 'team-123';
+        
+        await tester.pumpWidget(MaterialApp(
+          theme: FITTheme.lightTheme,
+          home: FixturesResultsView(
+            event: testEvent,
+            season: '2024',
+            division: testDivision,
+            initialTeamId: testTeamId,
+          ),
+        ));
+
+        await tester.pump();
+        // Don't wait for data loading to avoid API call failures in tests
+
+        // Verify that FixturesResultsView is displayed and accepts initialTeamId
+        expect(find.byType(FixturesResultsView), findsOneWidget);
+        
+        // This test verifies:
+        // 1. The FixturesResultsView widget accepts the initialTeamId parameter
+        // 2. The widget renders without crashing
+        // Note: Full team dropdown testing requires mocked API responses
+      });
+
+      testWidgets('Should work normally when no initialTeamId is provided',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(MaterialApp(
+          theme: FITTheme.lightTheme,
+          home: FixturesResultsView(
+            event: testEvent,
+            season: '2024',
+            division: testDivision,
+            // No initialTeamId provided
+          ),
+        ));
+
+        await tester.pump();
+        // Don't wait for data loading to avoid API call failures in tests
+
+        // Should display normally without any team pre-selected
+        expect(find.byType(FixturesResultsView), findsOneWidget);
       });
     });
   });

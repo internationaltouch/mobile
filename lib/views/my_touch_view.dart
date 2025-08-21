@@ -710,8 +710,7 @@ class _MyTouchViewState extends State<MyTouchView> {
           break;
 
         case 'team':
-          // Navigate to Fixtures Results View
-          // TODO: Future enhancement - pre-select the team in the dropdown filter
+          // Navigate to Fixtures Results View with pre-selected team
           final division = Division(
             id: favourite['division_slug'] as String,
             slug: favourite['division_slug'] as String,
@@ -726,6 +725,7 @@ class _MyTouchViewState extends State<MyTouchView> {
               event: event,
               season: favourite['season_name'] as String,
               division: division,
+              initialTeamId: favourite['team_id'] as String?,
             ),
           );
           break;

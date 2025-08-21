@@ -12,12 +12,14 @@ class FixturesResultsView extends StatefulWidget {
   final Event event;
   final String season;
   final Division division;
+  final String? initialTeamId;
 
   const FixturesResultsView({
     super.key,
     required this.event,
     required this.season,
     required this.division,
+    this.initialTeamId,
   });
 
   @override
@@ -38,6 +40,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _selectedTeamId = widget.initialTeamId;
     _loadData();
   }
 
