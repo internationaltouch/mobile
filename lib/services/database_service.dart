@@ -483,6 +483,32 @@ class DatabaseService {
     )).toList();
   }
 
+  // Clear specific cache entry by key
+  static Future<void> clearSpecificCache(String cacheKey) async {
+    final db = database;
+    debugPrint('🗄️ [Drift] 🧤 Clearing specific cache entry: $cacheKey');
+    
+    await db.transaction(() async {
+      // Remove cache metadata entry
+      await (db.delete(db.cacheMetadata)
+        ..where((metadata) => metadata.key.equals(cacheKey))).go();
+      
+      // Clear associated data based on cache key type
+      if (cacheKey.startsWith('fixtures_')) {
+        // Parse eventId, seasonSlug, divisionId from key: fixtures_{eventId}_{seasonSlug}_{divisionId}
+        final parts = cacheKey.split('_');
+        if (parts.length >= 4) {
+          final divisionId = parts.sublist(3).join('_'); // Handle division IDs with underscores
+          await (db.delete(db.fixtures)
+            ..where((fixture) => fixture.divisionSlug.equals(divisionId))).go();
+          
+          debugPrint('🗄️ [Drift] ✅ Cleared fixtures cache for division: $divisionId');
+        }
+      }
+      // Add more cache types as needed (teams, ladder, etc.)
+    });
+  }
+
   // Clear all cache
   static Future<void> clearAllCache() async {
     final db = database;

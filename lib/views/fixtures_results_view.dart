@@ -66,6 +66,30 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
     );
   }
 
+  void _reloadData() async {
+    // Clear cache only for this specific division's data
+    await DataService.clearDivisionCache(
+      widget.division.slug ?? widget.division.id,
+      eventId: widget.event.slug ?? widget.event.id,
+      season: widget.season,
+    );
+    
+    // Show feedback to user
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Refreshing data from server...'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+    
+    // Reload all data
+    setState(() {
+      _loadData();
+    });
+  }
+
   void _filterFixtures() {
     if (_selectedTeamId == null) {
       _filteredFixtures = _allFixtures;
@@ -109,6 +133,13 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
         ),
         backgroundColor: FITColors.successGreen,
         foregroundColor: FITColors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Reload data',
+            onPressed: () => _reloadData(),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: FITColors.white,
