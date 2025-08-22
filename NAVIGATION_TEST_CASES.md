@@ -80,7 +80,9 @@
 **Expected:**
 - App switches to Competitions tab
 - Opens FixturesResultsView for the team's division
-- User can filter by "Australia" team to see their specific fixtures
+- **Team "Australia" is automatically pre-selected in the team filter dropdown**
+- Fixtures are automatically filtered to show only "Australia" team matches
+- User can change team filter or select "All Teams" to see other fixtures
 
 **Data Structure:**
 ```json
@@ -114,6 +116,7 @@
 4. ✅ **Error Handling**: Added comprehensive try-catch blocks with user-friendly error messages
 5. ✅ **Data Validation**: Season title/slug conversion handled by DataService's internal helper methods
 6. ✅ **Navigation Stack**: Each navigation properly uses the Competitions tab's navigator stack for correct back button behavior
+7. ✅ **Team Pre-selection**: Team shortcuts now automatically pre-select the team in the fixtures filter dropdown
 
 ## Technical Implementation
 

@@ -70,14 +70,41 @@ class _MyTouchViewState extends State<MyTouchView> {
           _competitions = competitions;
           _isLoadingCompetitions = false;
 
-          // Reset all selections when reloading competitions to avoid dropdown reference issues
-          _selectedCompetition = null;
-          _selectedSeason = null;
-          _selectedDivision = null;
-          _selectedTeam = null;
-          _seasons = [];
-          _divisions = [];
-          _teams = [];
+          // Preserve selected competition if it exists in new data (by ID/slug)
+          if (_selectedCompetition != null) {
+            final matchingCompetition = competitions.firstWhere(
+              (comp) =>
+                  comp.id == _selectedCompetition!.id ||
+                  (comp.slug != null &&
+                      comp.slug == _selectedCompetition!.slug),
+              orElse: () => competitions.firstWhere(
+                (comp) => comp.name == _selectedCompetition!.name,
+                orElse: () => competitions.isEmpty
+                    ? Event(
+                        id: '',
+                        name: '',
+                        logoUrl: '',
+                        seasons: [],
+                        description: '')
+                    : competitions.first,
+              ),
+            );
+
+            // Only reset if we couldn't find a match
+            if (matchingCompetition.id.isEmpty ||
+                !competitions.contains(matchingCompetition)) {
+              _selectedCompetition = null;
+              _selectedSeason = null;
+              _selectedDivision = null;
+              _selectedTeam = null;
+              _seasons = [];
+              _divisions = [];
+              _teams = [];
+            } else {
+              // Update reference to the new object
+              _selectedCompetition = matchingCompetition;
+            }
+          }
         });
       }
     } catch (e) {
@@ -343,9 +370,11 @@ class _MyTouchViewState extends State<MyTouchView> {
 
   @override
   Widget build(BuildContext context) {
-    // Clean up any stale selections that don't exist in current lists
+    // Clean up any stale selections that don't exist in current lists (by ID/slug)
     if (_selectedCompetition != null &&
-        !_competitions.contains(_selectedCompetition)) {
+        !_competitions.any((comp) =>
+            comp.id == _selectedCompetition!.id ||
+            (comp.slug != null && comp.slug == _selectedCompetition!.slug))) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
@@ -430,9 +459,16 @@ class _MyTouchViewState extends State<MyTouchView> {
                           labelText: 'Competition',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedCompetition != null &&
-                                _competitions.contains(_selectedCompetition)
-                            ? _selectedCompetition
+                        initialValue: _selectedCompetition != null &&
+                                _competitions.any((comp) =>
+                                    comp.id == _selectedCompetition!.id ||
+                                    (comp.slug != null &&
+                                        comp.slug ==
+                                            _selectedCompetition!.slug))
+                            ? _competitions.firstWhere((comp) =>
+                                comp.id == _selectedCompetition!.id ||
+                                (comp.slug != null &&
+                                    comp.slug == _selectedCompetition!.slug))
                             : null,
                         isExpanded: true,
                         onChanged: _competitions.isEmpty
@@ -467,7 +503,7 @@ class _MyTouchViewState extends State<MyTouchView> {
                           labelText: 'Season',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedSeason,
+                        initialValue: _selectedSeason,
                         isExpanded: true,
                         onChanged: (Season? season) {
                           if (season != null) {
@@ -498,7 +534,7 @@ class _MyTouchViewState extends State<MyTouchView> {
                           labelText: 'Division',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedDivision,
+                        initialValue: _selectedDivision,
                         isExpanded: true,
                         onChanged: (Division? division) {
                           if (division != null) {
@@ -529,7 +565,7 @@ class _MyTouchViewState extends State<MyTouchView> {
                           labelText: 'Team',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedTeam,
+                        initialValue: _selectedTeam,
                         isExpanded: true,
                         onChanged: (Team? team) {
                           if (team != null) {
@@ -710,8 +746,7 @@ class _MyTouchViewState extends State<MyTouchView> {
           break;
 
         case 'team':
-          // Navigate to Fixtures Results View
-          // TODO: Future enhancement - pre-select the team in the dropdown filter
+          // Navigate to Fixtures Results View with pre-selected team
           final division = Division(
             id: favourite['division_slug'] as String,
             slug: favourite['division_slug'] as String,
@@ -726,6 +761,7 @@ class _MyTouchViewState extends State<MyTouchView> {
               event: event,
               season: favourite['season_name'] as String,
               division: division,
+              initialTeamId: favourite['team_id'] as String?,
             ),
           );
           break;

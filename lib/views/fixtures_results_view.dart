@@ -5,19 +5,21 @@ import '../models/fixture.dart';
 import '../models/ladder_entry.dart';
 import '../models/team.dart';
 import '../services/data_service.dart';
+import '../theme/fit_colors.dart';
 import '../widgets/match_score_card.dart';
-import 'main_navigation_view.dart';
 
 class FixturesResultsView extends StatefulWidget {
   final Event event;
   final String season;
   final Division division;
+  final String? initialTeamId;
 
   const FixturesResultsView({
     super.key,
     required this.event,
     required this.season,
     required this.division,
+    this.initialTeamId,
   });
 
   @override
@@ -38,6 +40,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _selectedTeamId = widget.initialTeamId;
     _loadData();
   }
 
@@ -61,6 +64,30 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
       eventId: widget.event.slug ?? widget.event.id,
       season: widget.season,
     );
+  }
+
+  void _reloadData() async {
+    // Clear cache only for this specific division's data
+    await DataService.clearDivisionCache(
+      widget.division.slug ?? widget.division.id,
+      eventId: widget.event.slug ?? widget.event.id,
+      season: widget.season,
+    );
+
+    // Show feedback to user
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Refreshing data from server...'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+
+    // Reload all data
+    setState(() {
+      _loadData();
+    });
   }
 
   void _filterFixtures() {
@@ -104,9 +131,20 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
             ),
           ],
         ),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: FITColors.successGreen,
+        foregroundColor: FITColors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Reload data',
+            onPressed: () => _reloadData(),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
+          labelColor: FITColors.white,
+          unselectedLabelColor: FITColors.white.withValues(alpha: 0.7),
+          indicatorColor: FITColors.white,
           tabs: const [
             Tab(text: 'Fixtures', icon: Icon(Icons.schedule)),
             Tab(text: 'Ladder', icon: Icon(Icons.leaderboard)),
@@ -148,8 +186,25 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                 builder: (context, teamsSnapshot) {
                   if (teamsSnapshot.hasData) {
                     final teams = teamsSnapshot.data!;
+
+                    // Reset selected team if it doesn't exist in current team list
+                    if (_selectedTeamId != null &&
+                        !teams.any((team) => team.id == _selectedTeamId)) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedTeamId = null;
+                            _filterFixtures();
+                          });
+                        }
+                      });
+                    }
+
                     return DropdownButtonFormField<String>(
-                      value: _selectedTeamId,
+                      initialValue:
+                          teams.any((team) => team.id == _selectedTeamId)
+                              ? _selectedTeamId
+                              : null,
                       decoration: const InputDecoration(
                         labelText: 'Filter by Team',
                         border: OutlineInputBorder(),
@@ -231,88 +286,135 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
           onRefresh: () async {
             setState(() => _loadData());
           },
-          child: ladder.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No ladder data available',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                )
-              : SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Position')),
-                        DataColumn(label: Text('Team')),
-                        DataColumn(label: Text('P')),
-                        DataColumn(label: Text('W')),
-                        DataColumn(label: Text('D')),
-                        DataColumn(label: Text('L')),
-                        DataColumn(label: Text('Pts')),
-                        DataColumn(label: Text('GD')),
-                      ],
-                      rows: ladder.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final ladderEntry = entry.value;
-
-                        return DataRow(
-                          cells: [
-                            DataCell(
-                              Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: _getPositionColor(index),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
+          child: Column(
+            children: [
+              // Warning banner
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: FITColors.accentYellow,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.warning,
+                      color: FITColors.primaryBlack,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: RichText(
+                        text: const TextSpan(
+                          style: TextStyle(
+                            color: FITColors.primaryBlack,
+                            fontSize: 14,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'Warning: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            DataCell(
-                              Text(
-                                ladderEntry.teamName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                            DataCell(Text('${ladderEntry.played}')),
-                            DataCell(Text('${ladderEntry.wins}')),
-                            DataCell(Text('${ladderEntry.draws}')),
-                            DataCell(Text('${ladderEntry.losses}')),
-                            DataCell(
-                              Text(
-                                '${ladderEntry.points}',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            DataCell(
-                              Text(
-                                ladderEntry.goalDifferenceText,
-                                style: TextStyle(
-                                  color: ladderEntry.goalDifference >= 0
-                                      ? Colors.green[700]
-                                      : Colors.red[700],
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                            TextSpan(
+                              text:
+                                  'this data is being calculated in the app and may have errors, see the FIT website for accurate ladder information.',
                             ),
                           ],
-                        );
-                      }).toList(),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
+              ),
+              // Ladder content
+              Expanded(
+                child: ladder.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No ladder data available',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: DataTable(
+                            columns: const [
+                              DataColumn(label: Text('Position')),
+                              DataColumn(label: Text('Team')),
+                              DataColumn(label: Text('P')),
+                              DataColumn(label: Text('W')),
+                              DataColumn(label: Text('D')),
+                              DataColumn(label: Text('L')),
+                              DataColumn(label: Text('Pts')),
+                              DataColumn(label: Text('GD')),
+                            ],
+                            rows: ladder.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final ladderEntry = entry.value;
+
+                              return DataRow(
+                                cells: [
+                                  DataCell(
+                                    Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color: _getPositionColor(index),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      ladderEntry.teamName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                  DataCell(Text('${ladderEntry.played}')),
+                                  DataCell(Text('${ladderEntry.wins}')),
+                                  DataCell(Text('${ladderEntry.draws}')),
+                                  DataCell(Text('${ladderEntry.losses}')),
+                                  DataCell(
+                                    Text(
+                                      '${ladderEntry.points}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Text(
+                                      ladderEntry.goalDifferenceText,
+                                      style: TextStyle(
+                                        color: ladderEntry.goalDifference >= 0
+                                            ? Colors.green[700]
+                                            : Colors.red[700],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+              ),
+            ],
+          ),
         );
       },
     );

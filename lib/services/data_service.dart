@@ -506,20 +506,6 @@ class DataService {
         '🏆 [Divisions] 🎉 Background: Division loading complete! Cached $totalDivisionsCached divisions across ${allSeasonData.length} seasons');
   }
 
-  // Load divisions for all seasons in a specific competition (used for on-demand loading)
-  static Future<void> _loadDivisionsForCompetition(
-      String competitionSlug, List<Season> seasons) async {
-    final seasonDataList = seasons
-        .map((season) => {
-              'competitionSlug': competitionSlug,
-              'competitionTitle': competitionSlug, // Use slug as fallback title
-              'season': season,
-            })
-        .toList();
-
-    await _loadAllDivisionsBreadthFirst(seasonDataList);
-  }
-
   // Load seasons for a specific event (lazy loading)
   static Future<Event> loadEventSeasons(Event event) async {
     if (event.seasonsLoaded || event.slug == null) {
@@ -875,6 +861,25 @@ class DataService {
     _cachedDivisions.clear();
     _cachedTeams.clear();
     _cachedFixtures.clear();
+  }
+
+  // Clear cache for a specific division (selective clearing)
+  static Future<void> clearDivisionCache(String divisionId,
+      {String? eventId, String? season}) async {
+    // Clear in-memory cache for this division
+    _cachedTeams.remove(divisionId);
+    _cachedFixtures.remove(divisionId);
+
+    // Clear database cache for this division's fixtures if we have the event/season info
+    if (eventId != null && season != null) {
+      final seasonSlug = _findSeasonSlug(eventId, season);
+      final fixturesCacheKey = 'fixtures_${eventId}_${seasonSlug}_$divisionId';
+
+      // Clear specific cache entries from database
+      await DatabaseService.clearSpecificCache(fixturesCacheKey);
+
+      debugPrint('🗄️ [Cache] 🧤 Cleared cache for division $divisionId');
+    }
   }
 
   // Clear database cache (for testing or cache invalidation)
