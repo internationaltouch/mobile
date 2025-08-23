@@ -8,10 +8,24 @@ class ApiService {
     'Content-Type': 'application/json',
   };
 
+  // HTTP client for dependency injection in tests
+  static http.Client? _httpClient;
+  static http.Client get httpClient => _httpClient ?? http.Client();
+
+  // Method to set HTTP client for testing
+  static void setHttpClient(http.Client client) {
+    _httpClient = client;
+  }
+
+  // Method to reset HTTP client (for tests)
+  static void resetHttpClient() {
+    _httpClient = null;
+  }
+
   // Fetch competitions from the API
   static Future<List<Map<String, dynamic>>> fetchCompetitions() async {
     try {
-      final response = await http.get(
+      final response = await httpClient.get(
         Uri.parse('$baseUrl/competitions/?format=json'),
         headers: headers,
       );
@@ -31,7 +45,7 @@ class ApiService {
   static Future<Map<String, dynamic>> fetchCompetitionDetails(
       String slug) async {
     try {
-      final response = await http.get(
+      final response = await httpClient.get(
         Uri.parse('$baseUrl/competitions/$slug/?format=json'),
         headers: headers,
       );
@@ -51,7 +65,7 @@ class ApiService {
   static Future<Map<String, dynamic>> fetchSeasonDetails(
       String competitionSlug, String seasonSlug) async {
     try {
-      final response = await http.get(
+      final response = await httpClient.get(
         Uri.parse(
             '$baseUrl/competitions/$competitionSlug/seasons/$seasonSlug/?format=json'),
         headers: headers,
@@ -72,7 +86,7 @@ class ApiService {
   static Future<Map<String, dynamic>> fetchDivisionDetails(
       String competitionSlug, String seasonSlug, String divisionSlug) async {
     try {
-      final response = await http.get(
+      final response = await httpClient.get(
         Uri.parse(
             '$baseUrl/competitions/$competitionSlug/seasons/$seasonSlug/divisions/$divisionSlug/?format=json'),
         headers: headers,

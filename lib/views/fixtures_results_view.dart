@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../models/division.dart';
 import '../models/fixture.dart';
-import '../models/ladder_entry.dart';
+import '../models/ladder_stage.dart';
 import '../models/team.dart';
 import '../services/data_service.dart';
 import '../theme/fit_colors.dart';
@@ -30,7 +30,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late Future<List<Fixture>> _fixturesFuture;
-  late Future<List<LadderEntry>> _ladderFuture;
+  late Future<List<LadderStage>> _ladderStagesFuture;
   late Future<List<Team>> _teamsFuture;
   String? _selectedTeamId;
   List<Fixture> _allFixtures = [];
@@ -54,7 +54,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
       _filterFixtures();
       return fixtures;
     });
-    _ladderFuture = DataService.getLadder(
+    _ladderStagesFuture = DataService.getLadderStages(
       widget.division.slug ?? widget.division.id,
       eventId: widget.event.slug ?? widget.event.id,
       season: widget.season,
@@ -267,8 +267,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
   }
 
   Widget _buildLadderTab() {
-    return FutureBuilder<List<LadderEntry>>(
-      future: _ladderFuture,
+    return FutureBuilder<List<LadderStage>>(
+      future: _ladderStagesFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -281,145 +281,176 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
           );
         }
 
-        final ladder = snapshot.data ?? [];
+        final ladderStages = snapshot.data ?? [];
 
         return RefreshIndicator(
           onRefresh: () async {
             setState(() => _loadData());
           },
-          child: Column(
-            children: [
-              // Warning banner
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.all(16.0),
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  color: FITColors.accentYellow,
-                  borderRadius: BorderRadius.circular(8.0),
+          child: ladderStages.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No ladder data available',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                )
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Build each stage's ladder table
+                      ...ladderStages.asMap().entries.map((entry) {
+                        final stageIndex = entry.key;
+                        final stage = entry.value;
+                        return _buildLadderStageSection(
+                          stage,
+                          showHeader: ladderStages.length > 1,
+                          isLast: stageIndex == ladderStages.length - 1,
+                        );
+                      }),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.warning,
-                      color: FITColors.primaryBlack,
-                      size: 20,
+        );
+      },
+    );
+  }
+
+  Widget _buildLadderStageSection(LadderStage stage,
+      {bool showHeader = true, bool isLast = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Stage header (only show if there are multiple stages)
+        if (showHeader) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              stage.title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: FITColors.primaryBlack,
+              ),
+            ),
+          ),
+        ],
+        // Ladder table
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: SizedBox(
+            width: double.infinity,
+            child: DataTable(
+              columnSpacing: 8.0,
+              horizontalMargin: 8.0,
+              columns: [
+                const DataColumn(
+                    label: Text('Team',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Container(
+                        width: 24,
+                        alignment: Alignment.center,
+                        child: const Text('P',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    tooltip: 'Played'),
+                DataColumn(
+                    label: Container(
+                        width: 24,
+                        alignment: Alignment.center,
+                        child: const Text('W',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    tooltip: 'Wins'),
+                DataColumn(
+                    label: Container(
+                        width: 24,
+                        alignment: Alignment.center,
+                        child: const Text('L',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    tooltip: 'Losses'),
+                DataColumn(
+                    label: Container(
+                        width: 24,
+                        alignment: Alignment.center,
+                        child: const Text('D',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    tooltip: 'Draws'),
+                DataColumn(
+                    label: Container(
+                        width: 32,
+                        alignment: Alignment.center,
+                        child: const Text('+/-',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    tooltip: 'Goal Difference'),
+                DataColumn(
+                    label: Container(
+                        width: 32,
+                        alignment: Alignment.center,
+                        child: const Text('%',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    tooltip: 'Percentage'),
+                DataColumn(
+                    label: Container(
+                        width: 32,
+                        alignment: Alignment.center,
+                        child: const Text('Pts',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    tooltip: 'Points'),
+              ],
+              rows: stage.ladder.map((ladderEntry) {
+                return DataRow(
+                  cells: [
+                    DataCell(
+                      Text(
+                        ladderEntry.teamName,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: RichText(
-                        text: const TextSpan(
+                    DataCell(Center(child: Text('${ladderEntry.played}'))),
+                    DataCell(Center(child: Text('${ladderEntry.wins}'))),
+                    DataCell(Center(child: Text('${ladderEntry.losses}'))),
+                    DataCell(Center(child: Text('${ladderEntry.draws}'))),
+                    DataCell(
+                      Center(
+                        child: Text(
+                          ladderEntry.goalDifferenceText,
                           style: TextStyle(
-                            color: FITColors.primaryBlack,
-                            fontSize: 14,
+                            color: ladderEntry.goalDifference >= 0
+                                ? Colors.green[700]
+                                : Colors.red[700],
+                            fontWeight: FontWeight.w600,
                           ),
-                          children: [
-                            TextSpan(
-                              text: 'Warning: ',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                              text:
-                                  'this data is being calculated in the app and may have errors, see the FIT website for accurate ladder information.',
-                            ),
-                          ],
+                        ),
+                      ),
+                    ),
+                    DataCell(
+                      Center(
+                        child: Text(
+                          '${(ladderEntry.percentage ?? 0.0).toStringAsFixed(1)}%',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                    DataCell(
+                      Center(
+                        child: Text(
+                          ladderEntry.points % 1 == 0
+                              ? ladderEntry.points.toInt().toString()
+                              : ladderEntry.points.toStringAsFixed(1),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
                   ],
-                ),
-              ),
-              // Ladder content
-              Expanded(
-                child: ladder.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'No ladder data available',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: DataTable(
-                              columns: const [
-                                DataColumn(label: Text('Position')),
-                                DataColumn(label: Text('Team')),
-                                DataColumn(label: Text('P')),
-                                DataColumn(label: Text('W')),
-                                DataColumn(label: Text('D')),
-                                DataColumn(label: Text('L')),
-                                DataColumn(label: Text('Pts')),
-                                DataColumn(label: Text('GD')),
-                              ],
-                              rows: ladder.asMap().entries.map((entry) {
-                                final index = entry.key;
-                                final ladderEntry = entry.value;
-
-                                return DataRow(
-                                  cells: [
-                                    DataCell(
-                                      Container(
-                                        width: 30,
-                                        height: 30,
-                                        decoration: BoxDecoration(
-                                          color: _getPositionColor(index),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            '${index + 1}',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        ladderEntry.teamName,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                    ),
-                                    DataCell(Text('${ladderEntry.played}')),
-                                    DataCell(Text('${ladderEntry.wins}')),
-                                    DataCell(Text('${ladderEntry.draws}')),
-                                    DataCell(Text('${ladderEntry.losses}')),
-                                    DataCell(
-                                      Text(
-                                        '${ladderEntry.points}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        ladderEntry.goalDifferenceText,
-                                        style: TextStyle(
-                                          color: ladderEntry.goalDifference >= 0
-                                              ? Colors.green[700]
-                                              : Colors.red[700],
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ),
-                      ),
-              ),
-            ],
+                );
+              }).toList(),
+            ),
           ),
-        );
-      },
+        ),
+        // Add spacing between stages (except for the last one)
+        if (!isLast && showHeader) const SizedBox(height: 24),
+      ],
     );
   }
 
@@ -453,18 +484,5 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
         ],
       ),
     );
-  }
-
-  Color _getPositionColor(int position) {
-    switch (position) {
-      case 0:
-        return Colors.amber; // Gold
-      case 1:
-        return Colors.grey[400]!; // Silver
-      case 2:
-        return Colors.orange[700]!; // Bronze
-      default:
-        return Colors.blue;
-    }
   }
 }

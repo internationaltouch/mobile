@@ -511,6 +511,9 @@ class DatabaseService {
               goalDifference: row.pointsDifference,
               goalsFor: row.pointsFor,
               goalsAgainst: row.pointsAgainst,
+              percentage: row.pointsAgainst > 0
+                  ? (row.pointsFor / row.pointsAgainst * 100)
+                  : (row.pointsFor > 0 ? 100.0 : 0.0),
             ))
         .toList();
   }

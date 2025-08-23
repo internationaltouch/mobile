@@ -71,8 +71,9 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
   }
 
   void _shareVideo() async {
-    final shareText = 'Watch ${widget.homeTeamName} vs ${widget.awayTeamName} in the ${widget.divisionName} division! ${widget.videoUrl}';
-    
+    final shareText =
+        'Watch ${widget.homeTeamName} vs ${widget.awayTeamName} in the ${widget.divisionName} division! ${widget.videoUrl}';
+
     try {
       await Share.share(shareText);
     } catch (e) {
@@ -207,7 +208,8 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: FITColors.primaryBlue,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                   ),
                 ),
               ),
