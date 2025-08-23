@@ -254,6 +254,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                             fixture: fixture,
                             venue:
                                 fixture.field.isNotEmpty ? fixture.field : null,
+                            divisionName: widget.division.name,
                           );
                         },
                       ),

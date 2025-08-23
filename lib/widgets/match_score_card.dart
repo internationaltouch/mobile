@@ -9,6 +9,7 @@ class MatchScoreCard extends StatelessWidget {
   final String? awayTeamLocation;
   final String? venue;
   final String? venueLocation;
+  final String? divisionName;
 
   const MatchScoreCard({
     super.key,
@@ -17,6 +18,7 @@ class MatchScoreCard extends StatelessWidget {
     this.awayTeamLocation,
     this.venue,
     this.venueLocation,
+    this.divisionName,
   });
 
   @override
@@ -476,7 +478,12 @@ class MatchScoreCard extends StatelessWidget {
   void _showVideoDialog(BuildContext context, String videoUrl) {
     showDialog(
       context: context,
-      builder: (context) => VideoPlayerDialog(videoUrl: videoUrl),
+      builder: (context) => VideoPlayerDialog(
+        videoUrl: videoUrl,
+        homeTeamName: fixture.homeTeamName,
+        awayTeamName: fixture.awayTeamName,
+        divisionName: divisionName ?? 'Tournament',
+      ),
     );
   }
 }
