@@ -338,77 +338,79 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                         ),
                       )
                     : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: DataTable(
-                            columns: const [
-                              DataColumn(label: Text('Position')),
-                              DataColumn(label: Text('Team')),
-                              DataColumn(label: Text('P')),
-                              DataColumn(label: Text('W')),
-                              DataColumn(label: Text('D')),
-                              DataColumn(label: Text('L')),
-                              DataColumn(label: Text('Pts')),
-                              DataColumn(label: Text('GD')),
-                            ],
-                            rows: ladder.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final ladderEntry = entry.value;
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: DataTable(
+                              columns: const [
+                                DataColumn(label: Text('Position')),
+                                DataColumn(label: Text('Team')),
+                                DataColumn(label: Text('P')),
+                                DataColumn(label: Text('W')),
+                                DataColumn(label: Text('D')),
+                                DataColumn(label: Text('L')),
+                                DataColumn(label: Text('Pts')),
+                                DataColumn(label: Text('GD')),
+                              ],
+                              rows: ladder.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final ladderEntry = entry.value;
 
-                              return DataRow(
-                                cells: [
-                                  DataCell(
-                                    Container(
-                                      width: 30,
-                                      height: 30,
-                                      decoration: BoxDecoration(
-                                        color: _getPositionColor(index),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${index + 1}',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                return DataRow(
+                                  cells: [
+                                    DataCell(
+                                      Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: BoxDecoration(
+                                          color: _getPositionColor(index),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${index + 1}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  DataCell(
-                                    Text(
-                                      ladderEntry.teamName,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                  DataCell(Text('${ladderEntry.played}')),
-                                  DataCell(Text('${ladderEntry.wins}')),
-                                  DataCell(Text('${ladderEntry.draws}')),
-                                  DataCell(Text('${ladderEntry.losses}')),
-                                  DataCell(
-                                    Text(
-                                      '${ladderEntry.points}',
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  DataCell(
-                                    Text(
-                                      ladderEntry.goalDifferenceText,
-                                      style: TextStyle(
-                                        color: ladderEntry.goalDifference >= 0
-                                            ? Colors.green[700]
-                                            : Colors.red[700],
-                                        fontWeight: FontWeight.w600,
+                                    DataCell(
+                                      Text(
+                                        ladderEntry.teamName,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            }).toList(),
+                                    DataCell(Text('${ladderEntry.played}')),
+                                    DataCell(Text('${ladderEntry.wins}')),
+                                    DataCell(Text('${ladderEntry.draws}')),
+                                    DataCell(Text('${ladderEntry.losses}')),
+                                    DataCell(
+                                      Text(
+                                        '${ladderEntry.points}',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      Text(
+                                        ladderEntry.goalDifferenceText,
+                                        style: TextStyle(
+                                          color: ladderEntry.goalDifference >= 0
+                                              ? Colors.green[700]
+                                              : Colors.red[700],
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
                           ),
                         ),
                       ),
