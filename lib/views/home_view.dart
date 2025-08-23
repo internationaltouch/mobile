@@ -23,12 +23,45 @@ class _HomeViewState extends State<HomeView> {
   late Future<List<NewsItem>> _newsFuture;
   List<NewsItem> _allNewsItems = [];
   int _visibleItemsCount = 10;
+  ScrollController? _scrollController;
+  bool _showReturnToTop = false;
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialSelectedIndex;
     _testConnectivityAndLoadNews();
+  }
+
+  @override
+  void dispose() {
+    _scrollController?.removeListener(_scrollListener);
+    _scrollController?.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController != null && _scrollController!.offset > 200) {
+      if (!_showReturnToTop) {
+        setState(() {
+          _showReturnToTop = true;
+        });
+      }
+    } else {
+      if (_showReturnToTop) {
+        setState(() {
+          _showReturnToTop = false;
+        });
+      }
+    }
+  }
+
+  void _scrollToTop() {
+    _scrollController?.animateTo(
+      0,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
   }
 
   Future<void> _testConnectivityAndLoadNews() async {
@@ -69,19 +102,41 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildNewsPage() {
+    // Initialize scroll controller if not already initialized
+    if (_scrollController == null) {
+      _scrollController = ScrollController();
+      _scrollController!.addListener(_scrollListener);
+    }
+    
     return FutureBuilder<List<NewsItem>>(
       future: _newsFuture,
       builder: (context, snapshot) {
-        return RefreshIndicator(
-          onRefresh: () async {
-            // Clear cache and refresh
-            DataService.clearCache();
-            setState(() {
-              _newsFuture = DataService.getNewsItems();
-            });
-            await _newsFuture;
-          },
-          child: _buildNewsContent(snapshot),
+        return Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: () async {
+                // Clear cache and refresh
+                DataService.clearCache();
+                setState(() {
+                  _newsFuture = DataService.getNewsItems();
+                });
+                await _newsFuture;
+              },
+              child: _buildNewsContent(snapshot),
+            ),
+            if (_showReturnToTop)
+              Positioned(
+                bottom: 24,
+                right: 16,
+                child: FloatingActionButton(
+                  mini: true,
+                  onPressed: _scrollToTop,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  child: const Icon(Icons.keyboard_arrow_up),
+                ),
+              ),
+          ],
         );
       },
     );
@@ -140,6 +195,7 @@ class _HomeViewState extends State<HomeView> {
     final hasMoreItems = _allNewsItems.length > _visibleItemsCount;
 
     return ListView.builder(
+      controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
       itemCount:
           visibleNewsItems.length + (hasMoreItems ? 1 : 0) + 1, // +1 for logo
