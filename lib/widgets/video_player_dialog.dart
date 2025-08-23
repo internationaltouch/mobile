@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class VideoPlayerDialog extends StatefulWidget {
   final String videoUrl;
@@ -15,12 +15,21 @@ class VideoPlayerDialog extends StatefulWidget {
 
 class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
   String? _videoId;
-  String? _thumbnailUrl;
+  late YoutubePlayerController _controller;
 
   @override
   void initState() {
     super.initState();
     _extractVideoId();
+    if (_videoId != null) {
+      _initializePlayer();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
   }
 
   void _extractVideoId() {
@@ -32,45 +41,30 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
     } else if (uri.host.contains('youtu.be')) {
       _videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
     }
-
-    if (_videoId != null) {
-      _thumbnailUrl = 'https://img.youtube.com/vi/$_videoId/maxresdefault.jpg';
-    }
   }
 
-  Future<void> _launchVideo() async {
-    try {
-      final uri = Uri.parse(widget.videoUrl);
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-      // Close dialog after launching
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      // If launching fails, try with system default
-      try {
-        final uri = Uri.parse(widget.videoUrl);
-        await launchUrl(uri);
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      } catch (e) {
-        // Show error if both attempts fail
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to open video: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    }
+  void _initializePlayer() {
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: _videoId!,
+      autoPlay: false,
+      params: const YoutubePlayerParams(
+        showControls: true,
+        mute: false,
+        showFullscreenButton: true,
+        loop: false,
+      ),
+    );
+
+    _controller.setFullScreenListener(
+      (isFullScreen) {
+        // Handle fullscreen changes if needed
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_videoId == null || _thumbnailUrl == null) {
+    if (_videoId == null) {
       return AlertDialog(
         title: const Text('Video Error'),
         content: const Text('Unable to play this video. Invalid YouTube URL.'),
@@ -131,72 +125,26 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
               ),
             ),
 
-            // Video thumbnail with play overlay
+            // YouTube Player
             Container(
               height: 200,
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.black87,
               ),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Video thumbnail
-                  Image.network(
-                    _thumbnailUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.black87,
-                        child: const Center(
-                          child: Icon(
-                            Icons.video_library,
-                            size: 64,
-                            color: Colors.white54,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  // Play overlay
-                  Container(
-                    color: Colors.black26,
-                    child: Center(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          onPressed: _launchVideo,
-                          icon: const Icon(
-                            Icons.play_arrow,
-                            color: Colors.white,
-                            size: 48,
-                          ),
-                          iconSize: 48,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: YoutubePlayer(
+                controller: _controller,
+                aspectRatio: 16 / 9,
               ),
             ),
 
-            // Description and action buttons
+            // Description
             const Padding(
               padding: EdgeInsets.all(16),
               child: Column(
                 children: <Widget>[
                   Text(
-                    'Tap the play button above to watch the match highlights in your preferred video app.',
+                    'Watch the match highlights directly in the app.',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
