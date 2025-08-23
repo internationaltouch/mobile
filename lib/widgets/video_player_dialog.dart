@@ -16,7 +16,6 @@ class VideoPlayerDialog extends StatefulWidget {
 class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
   String? _videoId;
   late YoutubePlayerController _controller;
-  bool _isPlayerReady = false;
 
   @override
   void initState() {
