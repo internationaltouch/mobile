@@ -385,31 +385,18 @@ class MatchScoreCard extends StatelessWidget {
 
   String _generateFallbackAbbreviation(String teamName) {
     // Generate abbreviation as fallback for teams without club abbreviation
-    if (teamName.toLowerCase().contains('france')) {
-      return 'FRA';
-    } else if (teamName.toLowerCase().contains('scotland')) {
-      return 'SCO';
-    } else if (teamName.toLowerCase().contains('england')) {
-      return 'ENG';
-    } else if (teamName.toLowerCase().contains('united states')) {
-      return 'USA';
-    } else if (teamName.toLowerCase().contains('new zealand')) {
-      return 'NZL';
+    // Default: use first letters of up to 3 words, max 3 characters
+    final words = teamName.split(' ').where((word) => word.isNotEmpty).toList();
+    if (words.length >= 3) {
+      return words.take(3).map((word) => word[0].toUpperCase()).join();
+    } else if (words.length >= 2) {
+      return words.take(2).map((word) => word[0].toUpperCase()).join();
+    } else if (words.isNotEmpty) {
+      return words.first.length >= 3
+          ? words.first.substring(0, 3).toUpperCase()
+          : words.first.toUpperCase();
     } else {
-      // Default: use first letters of up to 3 words, max 3 characters
-      final words =
-          teamName.split(' ').where((word) => word.isNotEmpty).toList();
-      if (words.length >= 3) {
-        return words.take(3).map((word) => word[0].toUpperCase()).join();
-      } else if (words.length >= 2) {
-        return words.take(2).map((word) => word[0].toUpperCase()).join();
-      } else if (words.isNotEmpty) {
-        return words.first.length >= 3
-            ? words.first.substring(0, 3).toUpperCase()
-            : words.first.toUpperCase();
-      } else {
-        return 'TEM';
-      }
+      return 'TEM';
     }
   }
 

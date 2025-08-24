@@ -126,6 +126,11 @@ class FlagService {
       return _clubToFlagMapping[normalizedTeamName];
     }
 
+    // Check if team name matches a country name exactly
+    if (_countryNameToISO.containsKey(normalizedTeamName)) {
+      return _countryNameToISO[normalizedTeamName];
+    }
+
     // If we have a club abbreviation, check if it matches a country
     if (clubAbbreviation != null && clubAbbreviation.isNotEmpty) {
       final abbrevUpper = clubAbbreviation.toUpperCase();
@@ -254,13 +259,6 @@ class FlagService {
           case 'COK':
             return 'CK';
         }
-      }
-    }
-
-    // Check if team name contains a country name
-    for (final entry in _countryNameToISO.entries) {
-      if (normalizedTeamName.contains(entry.key.toLowerCase())) {
-        return entry.value;
       }
     }
 
