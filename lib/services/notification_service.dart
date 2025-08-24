@@ -51,7 +51,8 @@ class NotificationService {
           _notificationsPlugin.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
 
-      final bool? granted = await androidImplementation?.requestNotificationsPermission();
+      final bool? granted =
+          await androidImplementation?.requestNotificationsPermission();
       return granted ?? false;
     } else if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
@@ -103,7 +104,8 @@ class NotificationService {
     final String body = '$changeType: $details';
 
     // Create payload for navigation
-    final String payload = 'team_update:$teamName:$competitionName:$divisionName';
+    final String payload =
+        'team_update:$teamName:$competitionName:$divisionName';
 
     await _notificationsPlugin.show(
       DateTime.now().millisecond, // Use timestamp as unique ID
@@ -152,13 +154,14 @@ class NotificationService {
 
     final String title = '$homeTeam vs $awayTeam';
     String body = changeType;
-    
+
     if (newScore != null) {
       body += ': $newScore';
     }
 
     // Create payload for navigation
-    final String payload = 'fixture_update:$homeTeam:$awayTeam:$competitionName:$divisionName';
+    final String payload =
+        'fixture_update:$homeTeam:$awayTeam:$competitionName:$divisionName';
 
     await _notificationsPlugin.show(
       DateTime.now().millisecond + 1, // Use timestamp as unique ID

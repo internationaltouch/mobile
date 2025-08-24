@@ -12,7 +12,7 @@ class BackgroundUpdateService {
 
   // Update interval - 2 minutes for high frequency when app is active
   static const Duration _updateInterval = Duration(minutes: 2);
-  
+
   // Time window for checking matches (+/- 12 hours)
   static const Duration _matchTimeWindow = Duration(hours: 12);
 
@@ -22,7 +22,7 @@ class BackgroundUpdateService {
 
     await NotificationService.initialize();
     await NotificationService.requestPermissions();
-    
+
     _initialized = true;
     debugPrint('📱 [BackgroundUpdate] ✅ Initialized successfully');
   }
@@ -53,33 +53,38 @@ class BackgroundUpdateService {
   /// Perform a single background update check
   static Future<void> _performBackgroundUpdate() async {
     if (_isRunning) {
-      debugPrint('📱 [BackgroundUpdate] ⏳ Update already in progress, skipping');
+      debugPrint(
+          '📱 [BackgroundUpdate] ⏳ Update already in progress, skipping');
       return;
     }
 
     _isRunning = true;
-    
+
     try {
-      debugPrint('📱 [BackgroundUpdate] 🔄 Starting background update check...');
-      
+      debugPrint(
+          '📱 [BackgroundUpdate] 🔄 Starting background update check...');
+
       // Get all favourites to determine what to monitor
       final favourites = await DatabaseService.getFavourites();
-      
+
       if (favourites.isEmpty) {
-        debugPrint('📱 [BackgroundUpdate] 📭 No favourites found, skipping update');
+        debugPrint(
+            '📱 [BackgroundUpdate] 📭 No favourites found, skipping update');
         return;
       }
 
       // Group favourites by division for efficient API calls
       final divisionsToCheck = <String, Map<String, String>>{};
-      
+
       for (final favourite in favourites) {
         if (favourite['type'] == 'team' || favourite['type'] == 'division') {
           final competitionSlug = favourite['competition_slug'] as String?;
           final seasonSlug = favourite['season_slug'] as String?;
           final divisionSlug = favourite['division_slug'] as String?;
-          
-          if (competitionSlug != null && seasonSlug != null && divisionSlug != null) {
+
+          if (competitionSlug != null &&
+              seasonSlug != null &&
+              divisionSlug != null) {
             final key = '${competitionSlug}_${seasonSlug}_$divisionSlug';
             divisionsToCheck[key] = {
               'competition': competitionSlug,
@@ -179,7 +184,6 @@ class BackgroundUpdateService {
         divisionName: divisionName,
         favourites: favourites,
       );
-
     } catch (e) {
       debugPrint(
           '📱 [BackgroundUpdate] ❌ Error checking division $divisionSlug: $e');
@@ -218,10 +222,11 @@ class BackgroundUpdateService {
     // Check each fresh fixture for changes
     for (final freshFixture in freshFixtures) {
       final cachedFixture = cachedMap[freshFixture.id];
-      
+
       // Check if this fixture involves any favourited teams
-      final involvesFavourite = favouritedTeams.contains(freshFixture.homeTeamId) ||
-          favouritedTeams.contains(freshFixture.awayTeamId);
+      final involvesFavourite =
+          favouritedTeams.contains(freshFixture.homeTeamId) ||
+              favouritedTeams.contains(freshFixture.awayTeamId);
 
       if (!involvesFavourite) continue; // Skip non-favourited team matches
 
@@ -229,7 +234,7 @@ class BackgroundUpdateService {
         // New fixture detected
         debugPrint(
             '📱 [BackgroundUpdate] 🆕 New fixture: ${freshFixture.homeTeamName} vs ${freshFixture.awayTeamName}');
-        
+
         await NotificationService.showFixtureUpdate(
           homeTeam: freshFixture.homeTeamName,
           awayTeam: freshFixture.awayTeamName,
@@ -240,10 +245,12 @@ class BackgroundUpdateService {
         );
       } else {
         // Check for score changes
-        final scoreChanged = (cachedFixture.homeScore != freshFixture.homeScore) ||
-            (cachedFixture.awayScore != freshFixture.awayScore);
+        final scoreChanged =
+            (cachedFixture.homeScore != freshFixture.homeScore) ||
+                (cachedFixture.awayScore != freshFixture.awayScore);
 
-        final completionChanged = cachedFixture.isCompleted != freshFixture.isCompleted;
+        final completionChanged =
+            cachedFixture.isCompleted != freshFixture.isCompleted;
 
         if (scoreChanged || completionChanged) {
           String changeType = '';
@@ -251,12 +258,14 @@ class BackgroundUpdateService {
 
           if (completionChanged && freshFixture.isCompleted) {
             changeType = 'Match completed';
-            if (freshFixture.homeScore != null && freshFixture.awayScore != null) {
+            if (freshFixture.homeScore != null &&
+                freshFixture.awayScore != null) {
               newScore = '${freshFixture.homeScore}-${freshFixture.awayScore}';
             }
           } else if (scoreChanged) {
             changeType = 'Score updated';
-            if (freshFixture.homeScore != null && freshFixture.awayScore != null) {
+            if (freshFixture.homeScore != null &&
+                freshFixture.awayScore != null) {
               newScore = '${freshFixture.homeScore}-${freshFixture.awayScore}';
             }
           }
@@ -321,7 +330,7 @@ class BackgroundUpdateService {
       for (int i = 0; i < cachedLadder.length; i++) {
         cachedPositions[cachedLadder[i].teamName] = i + 1;
       }
-      
+
       final freshPositions = <String, int>{};
       for (int i = 0; i < freshLadder.length; i++) {
         freshPositions[freshLadder[i].teamName] = i + 1;
@@ -352,14 +361,24 @@ class BackgroundUpdateService {
         }
       }
     } catch (e) {
-      debugPrint(
-          '📱 [BackgroundUpdate] ❌ Error checking ladder changes: $e');
+      debugPrint('📱 [BackgroundUpdate] ❌ Error checking ladder changes: $e');
     }
   }
 
-  /// Check if the service is currently running
-  static bool get isRunning => _updateTimer != null;
+  /// Perform a manual background update for testing purposes
+  static Future<void> performManualUpdate() async {
+    debugPrint('📱 [BackgroundUpdate] 🧪 Manual update triggered');
+    await _performBackgroundUpdate();
+  }
 
-  /// Get the current update interval
-  static Duration get updateInterval => _updateInterval;
+  /// Get current update status for debugging
+  static Map<String, dynamic> getStatus() {
+    return {
+      'isRunning': _isRunning,
+      'timerActive': _updateTimer != null,
+      'updateInterval': _updateInterval.inMinutes,
+      'timeWindow': _matchTimeWindow.inHours,
+      'initialized': _initialized,
+    };
+  }
 }
