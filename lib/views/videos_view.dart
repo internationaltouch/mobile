@@ -43,11 +43,21 @@ class _VideosViewState extends State<VideosView> {
     _loadVideoFixtures();
   }
 
-  void _playVideo(String videoUrl, String matchTitle) {
-    showDialog(
-      context: context,
-      builder: (context) => VideoPlayerDialog(videoUrl: videoUrl),
-    );
+  Future<void> _playVideo(
+      String videoUrl, String matchTitle, Fixture fixture) async {
+    final divisionName = await _getDivisionName(fixture.divisionId);
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => VideoPlayerDialog(
+          videoUrl: videoUrl,
+          homeTeamName: fixture.homeTeamName,
+          awayTeamName: fixture.awayTeamName,
+          divisionName: divisionName,
+        ),
+      );
+    }
   }
 
   @override
@@ -195,8 +205,10 @@ class _VideosViewState extends State<VideosView> {
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () => _playVideo(videoUrl,
-                            '${fixture.homeTeamName} vs ${fixture.awayTeamName}'),
+                        onPressed: () => _playVideo(
+                            videoUrl,
+                            '${fixture.homeTeamName} vs ${fixture.awayTeamName}',
+                            fixture),
                         icon: const Icon(Icons.play_circle_fill),
                         label: Text(videoTitle),
                         style: ElevatedButton.styleFrom(
@@ -286,6 +298,44 @@ class _VideosViewState extends State<VideosView> {
         ],
       ),
     );
+  }
+
+  Future<String> _getDivisionName(String divisionId) async {
+    try {
+      // Get all events and search for the division
+      final events = await DataService.getEvents();
+
+      for (final event in events) {
+        final eventWithSeasons = await DataService.loadEventSeasons(event);
+
+        for (final season in eventWithSeasons.seasons) {
+          try {
+            final divisions =
+                await DataService.getDivisions(event.id, season.slug);
+            final division =
+                divisions.where((d) => d.id == divisionId).firstOrNull;
+
+            if (division != null) {
+              return division.name;
+            }
+          } catch (e) {
+            // Continue searching in other seasons/events
+          }
+        }
+      }
+
+      // Fallback: return formatted division ID
+      return divisionId
+          .split('-')
+          .map((word) => word[0].toUpperCase() + word.substring(1))
+          .join(' ');
+    } catch (e) {
+      // Fallback: return formatted division ID
+      return divisionId
+          .split('-')
+          .map((word) => word[0].toUpperCase() + word.substring(1))
+          .join(' ');
+    }
   }
 
   String _formatDateTime(DateTime dateTime) {

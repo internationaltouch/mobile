@@ -931,67 +931,63 @@ class DataService {
   // Get all fixtures that have videos, sorted by most recent first (past matches only)
   static Future<List<Fixture>> getFixturesWithVideos() async {
     try {
-      // For web/demo purposes, return mock fixtures with videos
-      final mockFixturesWithVideos = [
-        Fixture(
-          id: 'demo-video-1',
-          homeTeamId: 'aus',
-          awayTeamId: 'nzl',
-          homeTeamName: 'Australia',
-          awayTeamName: 'New Zealand',
-          homeTeamAbbreviation: 'AUS',
-          awayTeamAbbreviation: 'NZL',
-          dateTime: DateTime.now().subtract(const Duration(days: 1)),
-          field: 'Field 1',
-          divisionId: 'mens-open',
-          homeScore: 8,
-          awayScore: 6,
-          isCompleted: true,
-          round: 'Final',
-          videos: ['https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
-        ),
-        Fixture(
-          id: 'demo-video-2',
-          homeTeamId: 'eng',
-          awayTeamId: 'fra',
-          homeTeamName: 'England',
-          awayTeamName: 'France',
-          homeTeamAbbreviation: 'ENG',
-          awayTeamAbbreviation: 'FRA',
-          dateTime: DateTime.now().subtract(const Duration(days: 2)),
-          field: 'Field 2',
-          divisionId: 'womens-open',
-          homeScore: 5,
-          awayScore: 4,
-          isCompleted: true,
-          round: 'Semi-Final',
-          videos: [
-            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            'https://www.youtube.com/watch?v=oHg5SJYRHA0'
-          ],
-        ),
-        Fixture(
-          id: 'demo-video-3',
-          homeTeamId: 'usa',
-          awayTeamId: 'can',
-          homeTeamName: 'United States',
-          awayTeamName: 'Canada',
-          homeTeamAbbreviation: 'USA',
-          awayTeamAbbreviation: 'CAN',
-          dateTime: DateTime.now().subtract(const Duration(days: 3)),
-          field: 'Field 3',
-          divisionId: 'mixed-open',
-          homeScore: 7,
-          awayScore: 3,
-          isCompleted: true,
-          round: 'Quarter-Final',
-          videos: ['https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
-        ),
-      ];
+      debugPrint(
+          '🎥 [Videos] 🔍 Searching for fixtures with videos across all divisions');
+
+      // Get all events to search through their divisions
+      final events = await getEvents();
+      final allFixturesWithVideos = <Fixture>[];
+
+      for (final event in events) {
+        try {
+          // Load seasons for this event if not already loaded
+          final eventWithSeasons = await loadEventSeasons(event);
+
+          for (final season in eventWithSeasons.seasons) {
+            try {
+              // Get divisions for this event/season
+              final divisions = await getDivisions(event.id, season.slug);
+
+              for (final division in divisions) {
+                try {
+                  // Get fixtures for this division
+                  final fixtures = await getFixtures(division.id,
+                      eventId: event.id, season: season.slug);
+
+                  // Filter for completed fixtures with videos
+                  final fixturesWithVideos = fixtures
+                      .where((fixture) =>
+                          fixture.isCompleted && fixture.videos.isNotEmpty)
+                      .toList();
+
+                  allFixturesWithVideos.addAll(fixturesWithVideos);
+
+                  if (fixturesWithVideos.isNotEmpty) {
+                    debugPrint(
+                        '🎥 [Videos] ✅ Found ${fixturesWithVideos.length} fixtures with videos in ${division.name}');
+                  }
+                } catch (e) {
+                  debugPrint(
+                      '🎥 [Videos] ⚠️ Failed to load fixtures for division ${division.name}: $e');
+                }
+              }
+            } catch (e) {
+              debugPrint(
+                  '🎥 [Videos] ⚠️ Failed to load divisions for ${event.name}/${season.title}: $e');
+            }
+          }
+        } catch (e) {
+          debugPrint(
+              '🎥 [Videos] ⚠️ Failed to load seasons for ${event.name}: $e');
+        }
+      }
+
+      // Sort by most recent first
+      allFixturesWithVideos.sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
       debugPrint(
-          '🎥 [Videos] ✅ Returning ${mockFixturesWithVideos.length} mock fixtures with videos');
-      return mockFixturesWithVideos;
+          '🎥 [Videos] ✅ Found ${allFixturesWithVideos.length} total fixtures with videos');
+      return allFixturesWithVideos;
     } catch (e) {
       debugPrint('🎥 [Videos] ❌ Failed to load fixtures with videos: $e');
       rethrow;
