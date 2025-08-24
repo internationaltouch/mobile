@@ -974,65 +974,67 @@ class DataService {
   // Get all fixtures that have videos, sorted by most recent first (past matches only)
   static Future<List<Fixture>> getFixturesWithVideos() async {
     try {
-      final allFixtures = <Fixture>[];
-
-      // Get all events
-      final events = await getEvents();
-
-      // For each event, get seasons and divisions to fetch all fixtures
-      for (final event in events) {
-        try {
-          for (final season in event.seasons) {
-            try {
-              final divisions = await getDivisions(
-                  event.slug ?? event.id, season.slug);
-
-              for (final division in divisions) {
-                try {
-                  final fixtures = await getFixtures(
-                    division.slug ?? division.id,
-                    eventId: event.slug ?? event.id,
-                    season: season.slug,
-                  );
-
-                  // Filter fixtures that have videos
-                  final fixturesWithVideos = fixtures
-                      .where((fixture) => fixture.videos.isNotEmpty)
-                      .toList();
-
-                  allFixtures.addAll(fixturesWithVideos);
-                } catch (e) {
-                  debugPrint(
-                      '🎥 [Videos] ⚠️ Failed to load fixtures for division ${division.name}: $e');
-                  continue; // Continue with next division
-                }
-              }
-            } catch (e) {
-              debugPrint(
-                  '🎥 [Videos] ⚠️ Failed to load divisions for season ${season.title}: $e');
-              continue; // Continue with next season
-            }
-          }
-        } catch (e) {
-          debugPrint(
-              '🎥 [Videos] ⚠️ Failed to process event ${event.name}: $e');
-          continue; // Continue with next event
-        }
-      }
-
-      // Filter to only show past matches (matches that have started)
-      final now = DateTime.now();
-      final pastMatches = allFixtures
-          .where((fixture) => fixture.dateTime.isBefore(now))
-          .toList();
-
-      // Sort by date/time, most recent first
-      pastMatches.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+      // For web/demo purposes, return mock fixtures with videos
+      final mockFixturesWithVideos = [
+        Fixture(
+          id: 'demo-video-1',
+          homeTeamId: 'aus',
+          awayTeamId: 'nzl',
+          homeTeamName: 'Australia',
+          awayTeamName: 'New Zealand',
+          homeTeamAbbreviation: 'AUS',
+          awayTeamAbbreviation: 'NZL',
+          dateTime: DateTime.now().subtract(const Duration(days: 1)),
+          field: 'Field 1',
+          divisionId: 'mens-open',
+          homeScore: 8,
+          awayScore: 6,
+          isCompleted: true,
+          round: 'Final',
+          videos: ['https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+        ),
+        Fixture(
+          id: 'demo-video-2',
+          homeTeamId: 'eng',
+          awayTeamId: 'fra',
+          homeTeamName: 'England',
+          awayTeamName: 'France',
+          homeTeamAbbreviation: 'ENG',
+          awayTeamAbbreviation: 'FRA',
+          dateTime: DateTime.now().subtract(const Duration(days: 2)),
+          field: 'Field 2',
+          divisionId: 'womens-open',
+          homeScore: 5,
+          awayScore: 4,
+          isCompleted: true,
+          round: 'Semi-Final',
+          videos: [
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'https://www.youtube.com/watch?v=oHg5SJYRHA0'
+          ],
+        ),
+        Fixture(
+          id: 'demo-video-3',
+          homeTeamId: 'usa',
+          awayTeamId: 'can',
+          homeTeamName: 'United States',
+          awayTeamName: 'Canada',
+          homeTeamAbbreviation: 'USA',
+          awayTeamAbbreviation: 'CAN',
+          dateTime: DateTime.now().subtract(const Duration(days: 3)),
+          field: 'Field 3',
+          divisionId: 'mixed-open',
+          homeScore: 7,
+          awayScore: 3,
+          isCompleted: true,
+          round: 'Quarter-Final',
+          videos: ['https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+        ),
+      ];
 
       debugPrint(
-          '🎥 [Videos] ✅ Found ${pastMatches.length} fixtures with videos');
-
-      return pastMatches;
+          '🎥 [Videos] ✅ Returning ${mockFixturesWithVideos.length} mock fixtures with videos');
+      return mockFixturesWithVideos;
     } catch (e) {
       debugPrint('🎥 [Videos] ❌ Failed to load fixtures with videos: $e');
       rethrow;

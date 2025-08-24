@@ -213,7 +213,7 @@ class _VideosViewState extends State<VideosView> {
                       ),
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),
