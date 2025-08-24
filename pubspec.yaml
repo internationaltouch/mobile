@@ -27,6 +27,7 @@ dependencies:
   sqlite3: ^2.4.6
   path_provider: ^2.1.4
   path: ^1.9.0
+  flag: ^7.0.0
   # shared_preferences: ^2.4.0  # Temporarily disabled for Android build testing
 
 

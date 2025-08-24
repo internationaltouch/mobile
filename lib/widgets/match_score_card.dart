@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/fixture.dart';
 import '../theme/fit_colors.dart';
+import '../services/flag_service.dart';
 import 'video_player_dialog.dart';
 
 class MatchScoreCard extends StatelessWidget {
@@ -59,7 +60,6 @@ class MatchScoreCard extends StatelessWidget {
                         child: _buildTeamLogo(
                           fixture.homeTeamName,
                           fixture.homeTeamAbbreviation,
-                          fixture.homeTeamFlagUrl,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -234,7 +234,6 @@ class MatchScoreCard extends StatelessWidget {
                         child: _buildTeamLogo(
                           fixture.awayTeamName,
                           fixture.awayTeamAbbreviation,
-                          fixture.awayTeamFlagUrl,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -343,59 +342,42 @@ class MatchScoreCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTeamLogo(
-      String teamName, String? abbreviation, String? flagUrl) {
-    // Use actual abbreviation from API data if available, otherwise generate fallback
-    final displayAbbreviation =
-        abbreviation ?? _generateFallbackAbbreviation(teamName);
+  Widget _buildTeamLogo(String teamName, String? abbreviation) {
+    // Try to get flag widget from flag service first
+    final flagWidget = FlagService.getFlagWidget(
+      teamName: teamName,
+      clubAbbreviation: abbreviation,
+      size: 45.0,
+    );
 
-    // Try to load flag image if URL is available
-    if (flagUrl != null && flagUrl.isNotEmpty) {
+    if (flagWidget != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
-        child: Image.network(
-          flagUrl,
-          width: 45,
-          height: 45,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            // Fallback to abbreviation text if image fails to load
-            return Center(
-              child: Text(
-                displayAbbreviation,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            );
-          },
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Center(
-              child: Text(
-                displayAbbreviation,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            );
-          },
-        ),
+        child: flagWidget,
       );
     }
 
-    // Fallback to abbreviation text when no flag URL available
-    return Center(
-      child: Text(
-        displayAbbreviation,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
+    // Fallback to abbreviation text when no flag is available
+    final displayAbbreviation =
+        abbreviation ?? _generateFallbackAbbreviation(teamName);
+
+    return Container(
+      width: 45,
+      height: 45,
+      decoration: BoxDecoration(
+        color: FITColors.lightGrey,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: FITColors.darkGrey.withValues(alpha: 0.3)),
+      ),
+      child: Center(
+        child: Text(
+          displayAbbreviation,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: FITColors.primaryBlack,
+          ),
+          textAlign: TextAlign.center,
         ),
       ),
     );

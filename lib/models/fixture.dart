@@ -143,17 +143,13 @@ class Fixture {
     return '';
   }
 
-  String? get homeTeamFlagUrl {
-    if (homeTeamAbbreviation != null) {
-      return 'https://www.internationaltouch.org/static/images/flag-${homeTeamAbbreviation}x2.png';
-    }
-    return null;
+  /// Check if home team has a flag available
+  bool get homeTeamHasFlag {
+    return homeTeamAbbreviation != null || homeTeamName.isNotEmpty;
   }
 
-  String? get awayTeamFlagUrl {
-    if (awayTeamAbbreviation != null) {
-      return 'https://www.internationaltouch.org/static/images/flag-${awayTeamAbbreviation}x2.png';
-    }
-    return null;
+  /// Check if away team has a flag available
+  bool get awayTeamHasFlag {
+    return awayTeamAbbreviation != null || awayTeamName.isNotEmpty;
   }
 }
