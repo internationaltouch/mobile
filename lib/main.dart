@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'views/main_navigation_view.dart';
 import 'theme/fit_theme.dart';
+import 'services/background_update_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +12,14 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // Initialize background update service
+  try {
+    await BackgroundUpdateService.initialize();
+    debugPrint('🚀 [Main] ✅ Background update service initialized');
+  } catch (e) {
+    debugPrint('🚀 [Main] ❌ Failed to initialize background update service: $e');
+  }
 
   runApp(const FITMobileApp());
 }

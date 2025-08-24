@@ -678,7 +678,7 @@ class DataService {
 
   // Fetch fixtures from API
   static Future<List<Fixture>> getFixtures(String divisionId,
-      {String? eventId, String? season}) async {
+      {String? eventId, String? season, bool forceRefresh = false}) async {
     if (eventId == null || season == null) {
       throw Exception(
           'eventId and season are required to fetch fixtures from API');
@@ -688,8 +688,10 @@ class DataService {
     final cacheKey = 'fixtures_${eventId}_${seasonSlug}_$divisionId';
 
     // Check if cache is valid (fixtures update frequently, so shorter cache)
-    if (await DatabaseService.isCacheValid(
-        cacheKey, const Duration(minutes: 15))) {
+    // Skip cache check if forceRefresh is true
+    if (!forceRefresh &&
+        await DatabaseService.isCacheValid(
+            cacheKey, const Duration(minutes: 15))) {
       final cachedFixtures = await DatabaseService.getCachedFixtures(
           eventId, seasonSlug, divisionId);
       if (cachedFixtures.isNotEmpty) {
@@ -810,6 +812,13 @@ class DataService {
       debugPrint('Failed to fetch ladder: $e');
       rethrow;
     }
+  }
+
+  // Alias for getLadder to match the naming used in background update service
+  static Future<List<LadderEntry>> getLadderEntries(String divisionId,
+      {String? eventId, String? season, bool forceRefresh = false}) async {
+    return getLadder(divisionId,
+        eventId: eventId, season: season, forceRefresh: forceRefresh);
   }
 
   // Clear cache to force refresh
