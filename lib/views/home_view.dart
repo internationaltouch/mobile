@@ -107,7 +107,7 @@ class _HomeViewState extends State<HomeView> {
       _scrollController = ScrollController();
       _scrollController!.addListener(_scrollListener);
     }
-    
+
     return FutureBuilder<List<NewsItem>>(
       future: _newsFuture,
       builder: (context, snapshot) {

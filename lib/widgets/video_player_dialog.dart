@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:share_plus/share_plus.dart';
+import '../theme/fit_colors.dart';
 
 class VideoPlayerDialog extends StatefulWidget {
   final String videoUrl;
+  final String homeTeamName;
+  final String awayTeamName;
+  final String divisionName;
 
   const VideoPlayerDialog({
     super.key,
     required this.videoUrl,
+    required this.homeTeamName,
+    required this.awayTeamName,
+    required this.divisionName,
   });
 
   @override
@@ -62,6 +70,54 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
     );
   }
 
+  void _shareVideo() async {
+    final shareText =
+        'Watch ${widget.homeTeamName} vs ${widget.awayTeamName} in the ${widget.divisionName} division! ${widget.videoUrl}';
+
+    try {
+      await Share.share(shareText);
+    } catch (e) {
+      if (mounted) {
+        // Fallback: Show a dialog with the text to copy
+        _showShareFallback(shareText);
+      }
+    }
+  }
+
+  void _showShareFallback(String text) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Share Video'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Copy this text to share:'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: FITColors.lightGrey,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(
+                text,
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_videoId == null) {
@@ -91,7 +147,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
-                color: Colors.red,
+                color: FITColors.errorRed,
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
@@ -138,21 +194,24 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
               ),
             ),
 
-            // Description
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                children: <Widget>[
-                  Text(
-                    'Watch the match highlights directly in the app.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                    textAlign: TextAlign.center,
+            // Share button
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _shareVideo,
+                  icon: const Icon(Icons.share, color: FITColors.white),
+                  label: const Text(
+                    'Share this video',
+                    style: TextStyle(color: FITColors.white),
                   ),
-                  SizedBox(height: 16),
-                ],
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FITColors.primaryBlue,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                  ),
+                ),
               ),
             ),
           ],

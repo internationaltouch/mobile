@@ -5,10 +5,11 @@ class LadderEntry {
   final int wins;
   final int draws;
   final int losses;
-  final int points;
+  final double points;
   final int goalDifference;
   final int goalsFor;
   final int goalsAgainst;
+  final double? percentage;
 
   LadderEntry({
     required this.teamId,
@@ -21,20 +22,53 @@ class LadderEntry {
     required this.goalDifference,
     required this.goalsFor,
     required this.goalsAgainst,
+    this.percentage,
   });
 
   factory LadderEntry.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely parse numeric values that might be strings
+    int parseIntSafely(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is double) return value.round();
+      if (value is String) {
+        return int.tryParse(value) ?? 0;
+      }
+      return 0;
+    }
+
+    // Helper function to safely parse double values that might be strings
+    double parseDoubleSafely(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) {
+        return double.tryParse(value) ?? 0.0;
+      }
+      return 0.0;
+    }
+
+    // Map API structure to our internal structure
+    final scoreFor = parseIntSafely(json['score_for']);
+    final scoreAgainst = parseIntSafely(json['score_against']);
+
     return LadderEntry(
-      teamId: json['teamId'],
-      teamName: json['teamName'],
-      played: json['played'],
-      wins: json['wins'],
-      draws: json['draws'],
-      losses: json['losses'],
-      points: json['points'],
-      goalDifference: json['goalDifference'],
-      goalsFor: json['goalsFor'],
-      goalsAgainst: json['goalsAgainst'],
+      teamId: json['team']?.toString() ?? json['teamId']?.toString() ?? '',
+      teamName: json['team_name'] ??
+          json['teamName'] ??
+          '', // Will be filled in by LadderStage
+      played: parseIntSafely(json['played']),
+      wins: parseIntSafely(
+          json['win'] ?? json['wins']), // API uses 'win', fallback to 'wins'
+      draws: parseIntSafely(json['draw'] ??
+          json['draws']), // API uses 'draw', fallback to 'draws'
+      losses: parseIntSafely(json['loss'] ??
+          json['losses']), // API uses 'loss', fallback to 'losses'
+      points: parseDoubleSafely(json['points']),
+      goalDifference: scoreFor - scoreAgainst,
+      goalsFor: scoreFor,
+      goalsAgainst: scoreAgainst,
+      percentage: parseDoubleSafely(json['percentage']),
     );
   }
 
@@ -50,6 +84,7 @@ class LadderEntry {
       'goalDifference': goalDifference,
       'goalsFor': goalsFor,
       'goalsAgainst': goalsAgainst,
+      'percentage': percentage,
     };
   }
 

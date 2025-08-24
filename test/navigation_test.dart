@@ -10,6 +10,16 @@ import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/models/event.dart';
 import 'package:fit_mobile_app/models/season.dart';
 import 'package:fit_mobile_app/models/division.dart';
+import 'package:fit_mobile_app/services/data_service.dart';
+import 'package:fit_mobile_app/services/api_service.dart';
+import 'package:fit_mobile_app/services/database_service.dart';
+import 'package:fit_mobile_app/services/database.dart' show createTestDatabase;
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
+import 'package:http/http.dart' as http;
+
+@GenerateMocks([http.Client])
+import 'navigation_test.mocks.dart';
 
 void main() {
   group('Navigation Tests', () {
@@ -267,6 +277,8 @@ void main() {
     });
 
     group('Team Pre-selection Tests', () {
+      late MockClient mockClient;
+
       final testEvent = Event(
         id: 'test-event',
         name: 'Test Event',
@@ -285,6 +297,32 @@ void main() {
         slug: 'test-division',
         color: '#1976D2',
       );
+
+      setUp(() {
+        // Set up test database
+        DatabaseService.setTestDatabase(createTestDatabase());
+
+        // Mock HTTP client to avoid real API calls
+        mockClient = MockClient();
+        DataService.setHttpClient(mockClient);
+        ApiService.setHttpClient(mockClient);
+        DataService.clearCache();
+
+        // Mock API responses to return empty data
+        when(mockClient.get(
+          any,
+          headers: anyNamed('headers'),
+        )).thenAnswer(
+            (_) async => http.Response('{"stages": [], "teams": []}', 200));
+      });
+
+      tearDown(() {
+        DataService.resetHttpClient();
+        ApiService.resetHttpClient();
+        DataService.clearCache();
+        DatabaseService.clearTestDatabase();
+        reset(mockClient);
+      });
 
       testWidgets('Should pre-select team when initialTeamId is provided',
           (WidgetTester tester) async {

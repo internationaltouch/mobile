@@ -9,6 +9,7 @@ import '../models/division.dart';
 import '../models/team.dart';
 import '../models/fixture.dart';
 import '../models/ladder_entry.dart';
+import '../models/ladder_stage.dart';
 import '../models/news_item.dart';
 import '../config/app_config.dart';
 import 'api_service.dart';
@@ -715,8 +716,8 @@ class DataService {
 
           final fixture = Fixture(
             id: match['id'].toString(),
-            homeTeamId: match['home_team']?.toString() ?? '',
-            awayTeamId: match['away_team']?.toString() ?? '',
+            homeTeamId: homeTeam?.id ?? match['home_team']?.toString() ?? '',
+            awayTeamId: awayTeam?.id ?? match['away_team']?.toString() ?? '',
             homeTeamName: homeTeam?.name ?? 'TBD',
             awayTeamName: awayTeam?.name ?? 'TBD',
             homeTeamAbbreviation: homeTeam?.abbreviation,
@@ -759,98 +760,54 @@ class DataService {
     }
   }
 
-  // Calculate ladder from fixtures (since API doesn't provide ladder directly)
-  static Future<List<LadderEntry>> getLadder(String divisionId,
+  // Get ladder stages from API
+  static Future<List<LadderStage>> getLadderStages(String divisionId,
       {String? eventId, String? season}) async {
+    if (eventId == null || season == null) {
+      throw Exception(
+          'eventId and season are required to fetch ladder from API');
+    }
+
     try {
-      final fixtures =
-          await getFixtures(divisionId, eventId: eventId, season: season);
-      final teams =
-          await getTeams(divisionId, eventId: eventId, season: season);
+      final seasonSlug = _findSeasonSlug(eventId, season);
+      final divisionDetails = await ApiService.fetchDivisionDetails(
+          eventId, seasonSlug, divisionId);
 
-      final ladder = <String, LadderEntry>{};
+      final stages = <LadderStage>[];
+      final teams = divisionDetails['teams'] as List<dynamic>? ?? [];
 
-      // Initialize ladder entries
-      for (final team in teams) {
-        ladder[team.id] = LadderEntry(
-          teamId: team.id,
-          teamName: team.name,
-          played: 0,
-          wins: 0,
-          draws: 0,
-          losses: 0,
-          points: 0,
-          goalDifference: 0,
-          goalsFor: 0,
-          goalsAgainst: 0,
-        );
-      }
-
-      // Calculate stats from completed fixtures
-      for (final fixture in fixtures) {
-        if (fixture.isCompleted &&
-            fixture.homeScore != null &&
-            fixture.awayScore != null) {
-          final homeEntry = ladder[fixture.homeTeamId];
-          final awayEntry = ladder[fixture.awayTeamId];
-
-          if (homeEntry != null && awayEntry != null) {
-            // Update played count
-            ladder[fixture.homeTeamId] = LadderEntry(
-              teamId: homeEntry.teamId,
-              teamName: homeEntry.teamName,
-              played: homeEntry.played + 1,
-              wins: homeEntry.wins +
-                  (fixture.homeScore! > fixture.awayScore! ? 1 : 0),
-              draws: homeEntry.draws +
-                  (fixture.homeScore! == fixture.awayScore! ? 1 : 0),
-              losses: homeEntry.losses +
-                  (fixture.homeScore! < fixture.awayScore! ? 1 : 0),
-              points: homeEntry.points +
-                  (fixture.homeScore! > fixture.awayScore!
-                      ? 3
-                      : (fixture.homeScore! == fixture.awayScore! ? 1 : 0)),
-              goalDifference: homeEntry.goalDifference +
-                  (fixture.homeScore! - fixture.awayScore!),
-              goalsFor: homeEntry.goalsFor + fixture.homeScore!,
-              goalsAgainst: homeEntry.goalsAgainst + fixture.awayScore!,
-            );
-
-            ladder[fixture.awayTeamId] = LadderEntry(
-              teamId: awayEntry.teamId,
-              teamName: awayEntry.teamName,
-              played: awayEntry.played + 1,
-              wins: awayEntry.wins +
-                  (fixture.awayScore! > fixture.homeScore! ? 1 : 0),
-              draws: awayEntry.draws +
-                  (fixture.awayScore! == fixture.homeScore! ? 1 : 0),
-              losses: awayEntry.losses +
-                  (fixture.awayScore! < fixture.homeScore! ? 1 : 0),
-              points: awayEntry.points +
-                  (fixture.awayScore! > fixture.homeScore!
-                      ? 3
-                      : (fixture.awayScore! == fixture.homeScore! ? 1 : 0)),
-              goalDifference: awayEntry.goalDifference +
-                  (fixture.awayScore! - fixture.homeScore!),
-              goalsFor: awayEntry.goalsFor + fixture.awayScore!,
-              goalsAgainst: awayEntry.goalsAgainst + fixture.homeScore!,
-            );
-          }
+      // Process each stage and extract ladder data
+      for (final stage in divisionDetails['stages']) {
+        if (stage['ladder_summary'] != null &&
+            (stage['ladder_summary'] as List).isNotEmpty) {
+          final ladderStage = LadderStage.fromJson(stage, teams: teams);
+          stages.add(ladderStage);
         }
       }
 
-      final sortedLadder = ladder.values.toList()
-        ..sort((a, b) {
-          // Sort by points first, then goal difference
-          if (a.points != b.points) {
-            return b.points.compareTo(a.points);
-          }
-          return b.goalDifference.compareTo(a.goalDifference);
-        });
-
-      return sortedLadder;
+      return stages;
     } catch (e) {
-      debugPrint('Failed to calculate ladder: $e');
+      debugPrint('Failed to fetch ladder from API: $e');
+      rethrow;
+    }
+  }
+
+  // Get ladder data from API (backward compatibility - returns first stage's ladder)
+  static Future<List<LadderEntry>> getLadder(String divisionId,
+      {String? eventId, String? season}) async {
+    try {
+      final ladderStages =
+          await getLadderStages(divisionId, eventId: eventId, season: season);
+
+      // Return the first stage's ladder for backward compatibility
+      if (ladderStages.isNotEmpty) {
+        return ladderStages.first.ladder;
+      }
+
+      // If no ladder data from API, return empty list
+      return [];
+    } catch (e) {
+      debugPrint('Failed to fetch ladder: $e');
       rethrow;
     }
   }
