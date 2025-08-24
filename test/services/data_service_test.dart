@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fit_mobile_app/services/data_service.dart';
+import 'package:fit_mobile_app/services/api_service.dart';
 import 'package:fit_mobile_app/services/database_service.dart';
 import 'package:fit_mobile_app/services/database.dart';
 import 'package:fit_mobile_app/models/event.dart' as models;
@@ -21,11 +22,13 @@ void main() {
 
       mockClient = MockClient();
       DataService.setHttpClient(mockClient);
+      ApiService.setHttpClient(mockClient);
       DataService.clearCache(); // Clear cache before each test
     });
 
     tearDown(() {
       DataService.resetHttpClient();
+      ApiService.resetHttpClient();
       DataService.clearCache(); // Clear cache after each test
       DatabaseService.clearTestDatabase();
       reset(mockClient);
@@ -205,6 +208,13 @@ void main() {
 
     group('getEvents', () {
       test('handles API failures gracefully', () async {
+        // Mock the competitions API call to return empty array
+        when(mockClient.get(
+          Uri.parse(
+              'https://www.internationaltouch.org/api/v1/competitions/?format=json'),
+          headers: anyNamed('headers'),
+        )).thenAnswer((_) async => http.Response('[]', 200));
+
         final events = await DataService.getEvents();
         expect(events, isA<List<models.Event>>());
       });
@@ -225,9 +235,18 @@ void main() {
         );
       });
 
-      test('getLadder throws exception for empty parameters', () async {
+      test('getLadder throws exception for missing required parameters',
+          () async {
         expect(
-          () => DataService.getLadder(''),
+          () => DataService.getLadder('test-division'),
+          throwsA(isA<Exception>()),
+        );
+      });
+
+      test('getLadderStages throws exception for missing required parameters',
+          () async {
+        expect(
+          () => DataService.getLadderStages('test-division'),
           throwsA(isA<Exception>()),
         );
       });

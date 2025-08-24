@@ -102,7 +102,7 @@ class LadderEntries extends Table {
   IntColumn get pointsFor => integer().named('points_for')();
   IntColumn get pointsAgainst => integer().named('points_against')();
   IntColumn get pointsDifference => integer().named('points_difference')();
-  IntColumn get points => integer().named('points')();
+  RealColumn get points => real().named('points')();
   IntColumn get createdAt => integer().named('created_at')();
 
   @override
@@ -166,13 +166,26 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON');
+      },
+      onUpgrade: (migrator, from, to) async {
+        if (from == 1 && to == 2) {
+          // Update points column from INTEGER to REAL
+          await migrator.alterTable(
+            TableMigration(
+              ladderEntries,
+              columnTransformer: {
+                ladderEntries.points: ladderEntries.points.cast<double>(),
+              },
+            ),
+          );
+        }
       },
     );
   }
