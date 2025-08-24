@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_view.dart';
 import 'competitions_view.dart';
 import 'my_touch_view.dart';
+import '../services/background_update_service.dart';
 
 class MainNavigationView extends StatefulWidget {
   final int initialSelectedIndex;
@@ -12,7 +13,8 @@ class MainNavigationView extends StatefulWidget {
   State<MainNavigationView> createState() => _MainNavigationViewState();
 }
 
-class _MainNavigationViewState extends State<MainNavigationView> {
+class _MainNavigationViewState extends State<MainNavigationView>
+    with WidgetsBindingObserver {
   late int _selectedIndex;
   late List<GlobalKey<NavigatorState>> _navigatorKeys;
   late List<Widget> _pages;
@@ -31,6 +33,50 @@ class _MainNavigationViewState extends State<MainNavigationView> {
       _buildCompetitionsNavigator(),
       _buildMyTouchNavigator(),
     ];
+
+    // Add app lifecycle observer
+    WidgetsBinding.instance.addObserver(this);
+
+    // Start background updates when app initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startBackgroundUpdates();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Remove app lifecycle observer
+    WidgetsBinding.instance.removeObserver(this);
+    
+    // Stop background updates when app is disposed
+    BackgroundUpdateService.stopPeriodicUpdates();
+    
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    // Start/stop background updates based on app state
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _startBackgroundUpdates();
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        BackgroundUpdateService.stopPeriodicUpdates();
+        break;
+    }
+  }
+
+  void _startBackgroundUpdates() {
+    if (!BackgroundUpdateService.isRunning) {
+      BackgroundUpdateService.startPeriodicUpdates();
+      debugPrint('🚀 [MainNavigation] 📱 Started background updates');
+    }
   }
 
   Widget _buildNewsNavigator() {
