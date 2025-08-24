@@ -970,4 +970,72 @@ class DataService {
     // If all parsing attempts fail, throw error
     throw FormatException('Unable to parse RSS date: $dateText');
   }
+
+  // Get all fixtures that have videos, sorted by most recent first (past matches only)
+  static Future<List<Fixture>> getFixturesWithVideos() async {
+    try {
+      final allFixtures = <Fixture>[];
+
+      // Get all events
+      final events = await getEvents();
+
+      // For each event, get seasons and divisions to fetch all fixtures
+      for (final event in events) {
+        try {
+          for (final season in event.seasons) {
+            try {
+              final divisions = await getDivisions(
+                  event.slug ?? event.id, season.slug);
+
+              for (final division in divisions) {
+                try {
+                  final fixtures = await getFixtures(
+                    division.slug ?? division.id,
+                    eventId: event.slug ?? event.id,
+                    season: season.slug,
+                  );
+
+                  // Filter fixtures that have videos
+                  final fixturesWithVideos = fixtures
+                      .where((fixture) => fixture.videos.isNotEmpty)
+                      .toList();
+
+                  allFixtures.addAll(fixturesWithVideos);
+                } catch (e) {
+                  debugPrint(
+                      '🎥 [Videos] ⚠️ Failed to load fixtures for division ${division.name}: $e');
+                  continue; // Continue with next division
+                }
+              }
+            } catch (e) {
+              debugPrint(
+                  '🎥 [Videos] ⚠️ Failed to load divisions for season ${season.title}: $e');
+              continue; // Continue with next season
+            }
+          }
+        } catch (e) {
+          debugPrint(
+              '🎥 [Videos] ⚠️ Failed to process event ${event.name}: $e');
+          continue; // Continue with next event
+        }
+      }
+
+      // Filter to only show past matches (matches that have started)
+      final now = DateTime.now();
+      final pastMatches = allFixtures
+          .where((fixture) => fixture.dateTime.isBefore(now))
+          .toList();
+
+      // Sort by date/time, most recent first
+      pastMatches.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+
+      debugPrint(
+          '🎥 [Videos] ✅ Found ${pastMatches.length} fixtures with videos');
+
+      return pastMatches;
+    } catch (e) {
+      debugPrint('🎥 [Videos] ❌ Failed to load fixtures with videos: $e');
+      rethrow;
+    }
+  }
 }

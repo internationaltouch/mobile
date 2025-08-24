@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_view.dart';
 import 'competitions_view.dart';
+import 'videos_view.dart';
 import 'my_touch_view.dart';
 
 class MainNavigationView extends StatefulWidget {
@@ -24,11 +25,13 @@ class _MainNavigationViewState extends State<MainNavigationView> {
     _navigatorKeys = [
       GlobalKey<NavigatorState>(), // News navigator
       GlobalKey<NavigatorState>(), // Competitions navigator
+      GlobalKey<NavigatorState>(), // Videos navigator
       GlobalKey<NavigatorState>(), // My Touch navigator
     ];
     _pages = [
       _buildNewsNavigator(),
       _buildCompetitionsNavigator(),
+      _buildVideosNavigator(),
       _buildMyTouchNavigator(),
     ];
   }
@@ -57,9 +60,21 @@ class _MainNavigationViewState extends State<MainNavigationView> {
     );
   }
 
-  Widget _buildMyTouchNavigator() {
+  Widget _buildVideosNavigator() {
     return Navigator(
       key: _navigatorKeys[2],
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const VideosView(),
+          settings: settings,
+        );
+      },
+    );
+  }
+
+  Widget _buildMyTouchNavigator() {
+    return Navigator(
+      key: _navigatorKeys[3],
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) => const MyTouchView(),
@@ -77,6 +92,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
         children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -91,6 +107,10 @@ class _MainNavigationViewState extends State<MainNavigationView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.sports),
             label: 'Events',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.videocam),
+            label: 'Videos',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.star),
