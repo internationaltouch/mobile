@@ -10,10 +10,10 @@ class FlagService {
     'hong kong': 'HK',
 
     // UK sub-countries
-    'england': 'GB-ENG',
-    'scotland': 'GB-SCT',
-    'wales': 'GB-WLS',
-    'northern ireland': 'GB-NIR',
+    'england': 'GB_ENG',
+    'scotland': 'GB_SCT',
+    'wales': 'GB_WLS',
+    'northern ireland': 'GB_NIR',
 
     // Other common variations
     'united states': 'US',
@@ -92,25 +92,12 @@ class FlagService {
     }
 
     try {
-      // Check if it's a sub-country flag (contains GB-)
-      if (flagCode.startsWith('GB-')) {
-        // For sub-countries like England, Scotland, etc.
-        // Note: The flag library may not support sub-regions directly
-        // We'll fall back to GB flag for now and can enhance later
-        return Flag.fromString(
-          'GB',
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-        );
-      } else {
-        return Flag.fromString(
-          flagCode,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-        );
-      }
+      return Flag.fromString(
+        flagCode,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+      );
     } catch (e) {
       // If flag code is not supported by the library, return null
       return null;
@@ -143,13 +130,13 @@ class FlagService {
         // Convert some common 3-letter codes to 2-letter
         switch (abbrevUpper) {
           case 'ENG':
-            return 'GB-ENG';
+            return 'GB_ENG';
           case 'SCO':
-            return 'GB-SCT';
+            return 'GB_SCT';
           case 'WAL':
-            return 'GB-WLS';
+            return 'GB_WLS';
           case 'NIR':
-            return 'GB-NIR';
+            return 'GB_NIR';
           case 'USA':
             return 'US';
           case 'NZL':
