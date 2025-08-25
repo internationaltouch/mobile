@@ -4,6 +4,7 @@ import '../models/season.dart';
 import '../services/data_service.dart';
 import '../utils/image_utils.dart';
 import '../theme/fit_colors.dart';
+import '../config/competition_config.dart';
 import 'divisions_view.dart';
 
 class EventDetailView extends StatefulWidget {
@@ -66,6 +67,59 @@ class _EventDetailViewState extends State<EventDetailView> {
     }
   }
 
+  Widget _getCompetitionIcon(Event event) {
+    final slug = event.slug;
+    if (slug != null && CompetitionConfig.competitionImages.containsKey(slug)) {
+      // Use static asset image
+      return Image.asset(
+        CompetitionConfig.competitionImages[slug]!,
+        height: 120,
+        width: 120,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildFallbackIcon(event);
+        },
+      );
+    }
+
+    // Try network image as fallback
+    if (event.logoUrl.isNotEmpty) {
+      return ImageUtils.buildImage(
+        event.logoUrl,
+        height: 120,
+        width: 120,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildFallbackIcon(event);
+        },
+      );
+    }
+
+    return _buildFallbackIcon(event);
+  }
+
+  Widget _buildFallbackIcon(Event event) {
+    return Container(
+      height: 120,
+      width: 120,
+      decoration: BoxDecoration(
+        color: Colors.blue[100],
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Center(
+        child: Text(
+          event.name.length >= 3
+              ? event.name.substring(0, 3).toUpperCase()
+              : event.name.toUpperCase(),
+          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                color: Colors.blue[800],
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,32 +134,7 @@ class _EventDetailViewState extends State<EventDetailView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: ImageUtils.buildImage(
-                widget.event.logoUrl,
-                height: 120,
-                width: 120,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 120,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      color: Colors.blue[100],
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Center(
-                      child: Text(
-                        widget.event.name.substring(0, 3).toUpperCase(),
-                        style:
-                            Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                  color: Colors.blue[800],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+              child: _getCompetitionIcon(widget.event),
             ),
             const SizedBox(height: 24),
             Text(
