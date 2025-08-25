@@ -211,14 +211,9 @@ class _EventDetailViewState extends State<EventDetailView> {
                           leading: CircleAvatar(
                             backgroundColor:
                                 Theme.of(context).colorScheme.primary,
-                            child: Text(
-                              season.title.length > 4
-                                  ? season.title.substring(0, 4)
-                                  : season.title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: const Icon(
+                              Icons.emoji_events,
+                              color: Colors.white,
                             ),
                           ),
                           title: Text(
