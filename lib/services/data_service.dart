@@ -927,4 +927,70 @@ class DataService {
     // If all parsing attempts fail, throw error
     throw FormatException('Unable to parse RSS date: $dateText');
   }
+
+  // Get all fixtures that have videos, sorted by most recent first (past matches only)
+  static Future<List<Fixture>> getFixturesWithVideos() async {
+    try {
+      debugPrint(
+          '🎥 [Videos] 🔍 Searching for fixtures with videos across all divisions');
+
+      // Get all events to search through their divisions
+      final events = await getEvents();
+      final allFixturesWithVideos = <Fixture>[];
+
+      for (final event in events) {
+        try {
+          // Load seasons for this event if not already loaded
+          final eventWithSeasons = await loadEventSeasons(event);
+
+          for (final season in eventWithSeasons.seasons) {
+            try {
+              // Get divisions for this event/season
+              final divisions = await getDivisions(event.id, season.slug);
+
+              for (final division in divisions) {
+                try {
+                  // Get fixtures for this division
+                  final fixtures = await getFixtures(division.id,
+                      eventId: event.id, season: season.slug);
+
+                  // Filter for completed fixtures with videos
+                  final fixturesWithVideos = fixtures
+                      .where((fixture) =>
+                          fixture.isCompleted && fixture.videos.isNotEmpty)
+                      .toList();
+
+                  allFixturesWithVideos.addAll(fixturesWithVideos);
+
+                  if (fixturesWithVideos.isNotEmpty) {
+                    debugPrint(
+                        '🎥 [Videos] ✅ Found ${fixturesWithVideos.length} fixtures with videos in ${division.name}');
+                  }
+                } catch (e) {
+                  debugPrint(
+                      '🎥 [Videos] ⚠️ Failed to load fixtures for division ${division.name}: $e');
+                }
+              }
+            } catch (e) {
+              debugPrint(
+                  '🎥 [Videos] ⚠️ Failed to load divisions for ${event.name}/${season.title}: $e');
+            }
+          }
+        } catch (e) {
+          debugPrint(
+              '🎥 [Videos] ⚠️ Failed to load seasons for ${event.name}: $e');
+        }
+      }
+
+      // Sort by most recent first
+      allFixturesWithVideos.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+
+      debugPrint(
+          '🎥 [Videos] ✅ Found ${allFixturesWithVideos.length} total fixtures with videos');
+      return allFixturesWithVideos;
+    } catch (e) {
+      debugPrint('🎥 [Videos] ❌ Failed to load fixtures with videos: $e');
+      rethrow;
+    }
+  }
 }
