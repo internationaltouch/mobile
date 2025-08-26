@@ -22,8 +22,7 @@ class FlagService {
     'south africa': 'ZA',
     'south korea': 'KR',
 
-    // Chinese Taipei (Olympic name for Taiwan)
-    'chinese taipei': 'TW',
+    // Chinese Taipei - removed flag mapping for diplomatic reasons
   };
 
   // Common country name variations to ISO codes
@@ -71,7 +70,6 @@ class FlagService {
     'philippines': 'PH',
     'vietnam': 'VN',
     'south korea': 'KR',
-    'taiwan': 'TW',
     'new zealand': 'NZ',
     'fiji': 'FJ',
     'papua new guinea': 'PG',
@@ -86,6 +84,26 @@ class FlagService {
     'guernsey': 'GG',
     'jersey': 'JE',
     'oman': 'OM',
+    'europe': 'EU',
+    'bulgaria': 'BG',
+    'catalonia': 'ES_CT',
+    'estonia': 'EE',
+    'iran': 'IR',
+    'kiribati': 'KI',
+    'luxembourg': 'LU',
+    'mauritius': 'MU',
+    'monaco': 'MC',
+    'niue': 'NU',
+    'norfolk island': 'NF',
+    'pakistan': 'PK',
+    'qatar': 'QA',
+    'seychelles': 'SC',
+    'sri lanka': 'LK',
+    'tokelau': 'TK',
+    'trinidad and tobago': 'TT',
+    'trinidad & tobago': 'TT',
+    'tuvalu': 'TV',
+    'ukraine': 'UA',
   };
 
   /// Get flag widget for a team name or club abbreviation
@@ -105,7 +123,7 @@ class FlagService {
         flagCode,
         width: size,
         height: size,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
       );
     } catch (e) {
       // If flag code is not supported by the library, return null
@@ -237,9 +255,6 @@ class FlagService {
             return 'VN';
           case 'KOR':
             return 'KR';
-          case 'TPE':
-          case 'TWN':
-            return 'TW';
           case 'FIJ':
             return 'FJ';
           case 'PNG':
@@ -266,6 +281,51 @@ class FlagService {
             return 'JE';
           case 'OMN':
             return 'OM';
+          case 'EUR':
+            return 'EU';
+          case 'BGR':
+          case 'BUL':
+            return 'BG';
+          case 'CAT':
+            return 'ES_CT';
+          case 'EST':
+            return 'EE';
+          case 'IRN':
+          case 'IRI':
+            return 'IR';
+          case 'KIR':
+            return 'KI';
+          case 'LUX':
+            return 'LU';
+          case 'MRI':
+          case 'MUS':
+            return 'MU';
+          case 'MON':
+          case 'MCO':
+            return 'MC';
+          case 'NIU':
+            return 'NU';
+          case 'NFK':
+            return 'NF';
+          case 'PAK':
+            return 'PK';
+          case 'QAT':
+            return 'QA';
+          case 'SEY':
+          case 'SYC':
+            return 'SC';
+          case 'SRI':
+          case 'LKA':
+            return 'LK';
+          case 'TKL':
+            return 'TK';
+          case 'TTO':
+          case 'TRI':
+            return 'TT';
+          case 'TUV':
+            return 'TV';
+          case 'UKR':
+            return 'UA';
         }
       }
     }

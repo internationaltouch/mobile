@@ -102,4 +102,23 @@ class ApiService {
       throw Exception('Failed to fetch division details: $e');
     }
   }
+
+  // Fetch clubs/member nations from the API
+  static Future<List<Map<String, dynamic>>> fetchClubs() async {
+    try {
+      final response = await httpClient.get(
+        Uri.parse('$baseUrl/clubs/?format=json'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> clubs = json.decode(response.body);
+        return clubs.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception('Failed to load clubs: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch clubs: $e');
+    }
+  }
 }

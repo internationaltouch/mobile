@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_view.dart';
+import 'members_view.dart';
 import 'competitions_view.dart';
 import 'my_touch_view.dart';
 
@@ -23,11 +24,13 @@ class _MainNavigationViewState extends State<MainNavigationView> {
     _selectedIndex = widget.initialSelectedIndex;
     _navigatorKeys = [
       GlobalKey<NavigatorState>(), // News navigator
+      GlobalKey<NavigatorState>(), // Members navigator
       GlobalKey<NavigatorState>(), // Competitions navigator
       GlobalKey<NavigatorState>(), // My Touch navigator
     ];
     _pages = [
       _buildNewsNavigator(),
+      _buildMembersNavigator(),
       _buildCompetitionsNavigator(),
       _buildMyTouchNavigator(),
     ];
@@ -45,9 +48,21 @@ class _MainNavigationViewState extends State<MainNavigationView> {
     );
   }
 
-  Widget _buildCompetitionsNavigator() {
+  Widget _buildMembersNavigator() {
     return Navigator(
       key: _navigatorKeys[1],
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const MembersView(),
+          settings: settings,
+        );
+      },
+    );
+  }
+
+  Widget _buildCompetitionsNavigator() {
+    return Navigator(
+      key: _navigatorKeys[2],
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) => const CompetitionsView(),
@@ -59,7 +74,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
 
   Widget _buildMyTouchNavigator() {
     return Navigator(
-      key: _navigatorKeys[2],
+      key: _navigatorKeys[3],
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) => const MyTouchView(),
@@ -77,6 +92,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
         children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -87,6 +103,10 @@ class _MainNavigationViewState extends State<MainNavigationView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.newspaper),
             label: 'News',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.public),
+            label: 'Members',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.sports),
