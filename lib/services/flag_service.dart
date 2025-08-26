@@ -21,6 +21,9 @@ class FlagService {
     'new zealand': 'NZ',
     'south africa': 'ZA',
     'south korea': 'KR',
+
+    // Chinese Taipei (Olympic name for Taiwan)
+    'chinese taipei': 'TW',
   };
 
   // Common country name variations to ISO codes
@@ -77,6 +80,12 @@ class FlagService {
     'vanuatu': 'VU',
     'solomon islands': 'SB',
     'cook islands': 'CK',
+    'chile': 'CL',
+    'cayman islands': 'KY',
+    'lebanon': 'LB',
+    'guernsey': 'GG',
+    'jersey': 'JE',
+    'oman': 'OM',
   };
 
   /// Get flag widget for a team name or club abbreviation
@@ -245,6 +254,18 @@ class FlagService {
             return 'SB';
           case 'COK':
             return 'CK';
+          case 'CHL':
+            return 'CL';
+          case 'CYM':
+            return 'KY';
+          case 'LBN':
+            return 'LB';
+          case 'GGY':
+            return 'GG';
+          case 'JEY':
+            return 'JE';
+          case 'OMN':
+            return 'OM';
         }
       }
     }
