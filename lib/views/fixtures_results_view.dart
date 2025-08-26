@@ -397,12 +397,13 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                     tooltip: 'Points'),
               ],
               rows: stage.ladder.map((ladderEntry) {
-                final isHighlighted = _selectedTeamId != null && 
+                final isHighlighted = _selectedTeamId != null &&
                     ladderEntry.teamId == _selectedTeamId;
-                
+
                 return DataRow(
-                  color: isHighlighted 
-                      ? WidgetStateProperty.all(FITColors.accentYellow.withValues(alpha: 0.25))
+                  color: isHighlighted
+                      ? WidgetStateProperty.all(
+                          FITColors.accentYellow.withValues(alpha: 0.25))
                       : null,
                   cells: [
                     DataCell(
