@@ -6,7 +6,6 @@ import '../theme/fit_colors.dart';
 import '../config/competition_config.dart';
 import 'event_detail_view.dart';
 
-
 class CompetitionsView extends StatefulWidget {
   const CompetitionsView({super.key});
 
@@ -16,7 +15,6 @@ class CompetitionsView extends StatefulWidget {
 
 class _CompetitionsViewState extends State<CompetitionsView> {
   late Future<List<Event>> _eventsFuture;
-
 
   @override
   void initState() {

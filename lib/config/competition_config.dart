@@ -4,14 +4,15 @@ class CompetitionConfig {
   static const Map<String, String> competitionImages = {
     'asia-pacific-youth-touch-cup': 'assets/images/competitions/APYTC.png',
     'atlantic-youth-touch-cup': 'assets/images/competitions/AYTC.png',
-    'european-junior-touch-championships': 'assets/images/competitions/EJTC.png',
+    'european-junior-touch-championships':
+        'assets/images/competitions/EJTC.png',
     'euros': 'assets/images/competitions/ETC.png',
     // Add more competition images here as needed
     // Format: 'slug': 'assets/images/competitions/filename.png'
   };
 
   // Competition filtering configuration
-  
+
   // MODE 1: INCLUDE - Only show competitions with these slugs (leave empty [] to show ALL)
   static const List<String> includeCompetitionSlugs = [
     // 'world-cup',
