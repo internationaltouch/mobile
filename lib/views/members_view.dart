@@ -77,11 +77,11 @@ class _MembersViewState extends State<MembersView> {
     }
 
     if (_error != null) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
               color: FITColors.errorRed,
