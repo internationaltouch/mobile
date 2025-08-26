@@ -25,16 +25,27 @@ class MemberDetailView extends StatelessWidget {
         iconTheme: const IconThemeData(color: FITColors.primaryBlack),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Flag and basic info
-            _buildHeaderSection(),
-            const SizedBox(height: 24),
+            // Flag and basic info with margin for balance
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: _buildHeaderSection(),
+            ),
 
-            // Social media and website links
-            _buildLinksSection(),
+            // Content with padding
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Social media and website links
+                  _buildLinksSection(),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -42,17 +53,28 @@ class MemberDetailView extends StatelessWidget {
   }
 
   Widget _buildHeaderSection() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(12),
+          bottomRight: Radius.circular(12),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
             // Large flag
-            Container(
+            SizedBox(
               height: 120,
               width: 160, // 4:3 aspect ratio
               child: FlagService.getFlagWidget(
@@ -173,10 +195,18 @@ class MemberDetailView extends StatelessWidget {
     }
 
     if (links.isEmpty) {
-      return Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
+      return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              offset: Offset(0, 2),
+              blurRadius: 4,
+            ),
+          ],
         ),
         child: const Padding(
           padding: EdgeInsets.all(20.0),
@@ -201,10 +231,18 @@ class MemberDetailView extends StatelessWidget {
       );
     }
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),

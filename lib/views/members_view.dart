@@ -140,7 +140,7 @@ class _MembersViewState extends State<MembersView> {
         padding: const EdgeInsets.all(16.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 1.2,
+          childAspectRatio: 1.1,
           crossAxisSpacing: 16.0,
           mainAxisSpacing: 16.0,
         ),
@@ -174,16 +174,16 @@ class _MembersViewState extends State<MembersView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Country flag using 4x3 aspect ratio
+              // Country flag with adequate space
               Expanded(
                 flex: 3,
                 child: Container(
                   width: double.infinity,
-                  constraints: const BoxConstraints(maxHeight: 60),
+                  constraints: const BoxConstraints(maxHeight: 80),
                   child: FlagService.getFlagWidget(
                         teamName: club.title,
                         clubAbbreviation: club.abbreviation,
-                        size: 60.0,
+                        size: 80.0,
                       ) ??
                       Container(
                         decoration: BoxDecoration(
