@@ -99,21 +99,24 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
   }
 
   void _filterFixtures() {
-    if (_selectedTeamId != null) {
-      // When filtering by team, filter by team only
-      _filteredFixtures = _allFixtures.where((fixture) {
-        return fixture.homeTeamId == _selectedTeamId ||
+    _filteredFixtures = _allFixtures.where((fixture) {
+      bool matchesTeam = true;
+      bool matchesPool = true;
+
+      // Apply team filter if selected
+      if (_selectedTeamId != null) {
+        matchesTeam = fixture.homeTeamId == _selectedTeamId ||
             fixture.awayTeamId == _selectedTeamId;
-      }).toList();
-    } else if (_selectedPoolId != null) {
-      // When filtering by pool, filter by pool only
-      _filteredFixtures = _allFixtures.where((fixture) {
-        return fixture.poolId?.toString() == _selectedPoolId;
-      }).toList();
-    } else {
-      // No filter selected
-      _filteredFixtures = _allFixtures;
-    }
+      }
+
+      // Apply pool filter if selected
+      if (_selectedPoolId != null) {
+        matchesPool = fixture.poolId?.toString() == _selectedPoolId;
+      }
+
+      // Fixture must match both filters (if they are applied)
+      return matchesTeam && matchesPool;
+    }).toList();
   }
 
   void _filterLadderStages() {
@@ -136,15 +139,30 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
           .where((stage) => stage.ladder.isNotEmpty)
           .toList();
     } else {
-      // No pool filter, show all ladder stages
-      _filteredLadderStages = _allLadderStages;
+      // No pool filter, create separate ladder stages for each pool
+      _filteredLadderStages = [];
+      
+      for (final stage in _allLadderStages) {
+        for (final pool in stage.pools) {
+          final poolLadder = stage.ladder.where((entry) {
+            return entry.poolId == pool.id;
+          }).toList();
+          
+          if (poolLadder.isNotEmpty) {
+            _filteredLadderStages.add(LadderStage(
+              title: pool.title, // Use pool name as title
+              ladder: poolLadder,
+              pools: [pool],
+            ));
+          }
+        }
+      }
     }
   }
 
   void _onTeamSelected(String? teamId) {
     setState(() {
       _selectedTeamId = teamId;
-      _selectedPoolId = null; // Clear pool selection when team is selected
       _filterFixtures();
       _filterLadderStages();
     });
@@ -152,8 +170,22 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
 
   void _onPoolSelected(String? poolId) {
     setState(() {
-      _selectedPoolId = poolId;
-      _selectedTeamId = null; // Clear team selection when pool is selected
+      _selectedPoolId = (poolId == 'all_pools') ? null : poolId;
+      // Only clear team selection when selecting a specific pool, not when unselecting
+      if (poolId != null && poolId != 'all_pools' && _selectedTeamId != null) {
+        // Check if the selected team has matches in the new pool
+        final teamHasMatchesInPool = _allFixtures.any((fixture) {
+          final isTeamMatch = fixture.homeTeamId == _selectedTeamId || 
+                             fixture.awayTeamId == _selectedTeamId;
+          final isInPool = fixture.poolId?.toString() == poolId;
+          return isTeamMatch && isInPool;
+        });
+        
+        // Only clear team selection if team has no matches in this pool
+        if (!teamHasMatchesInPool) {
+          _selectedTeamId = null;
+        }
+      }
       _filterFixtures();
       _filterLadderStages();
     });
@@ -203,9 +235,9 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
 
     for (final stage in _allLadderStages) {
       if (stage.pools.isNotEmpty) {
-        // Add stage header (non-selectable)
+        // Add stage header (non-selectable) with unique value
         items.add(DropdownMenuItem<String>(
-          value: null,
+          value: 'header_${stage.title}',
           enabled: false,
           child: Text(
             stage.title,
@@ -348,7 +380,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                   // Pool filter dropdown - only show if pools exist
                   if (_hasAnyPools()) ...[
                     DropdownButtonFormField<String>(
-                      value: _selectedPoolId,
+                      value: _selectedPoolId ?? 'all_pools',
                       decoration: const InputDecoration(
                         labelText: 'Filter by Pool',
                         border: OutlineInputBorder(),
@@ -357,7 +389,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                       ),
                       items: [
                         const DropdownMenuItem<String>(
-                          value: null,
+                          value: 'all_pools',
                           child: Text('All Pools'),
                         ),
                         ..._buildPoolDropdownItems(),
@@ -488,7 +520,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
               Container(
                 padding: const EdgeInsets.all(16.0),
                 child: DropdownButtonFormField<String>(
-                  value: _selectedPoolId,
+                  value: _selectedPoolId ?? 'all_pools',
                   decoration: const InputDecoration(
                     labelText: 'Filter by Pool',
                     border: OutlineInputBorder(),
@@ -497,7 +529,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                   ),
                   items: [
                     const DropdownMenuItem<String>(
-                      value: null,
+                      value: 'all_pools',
                       child: Text('All Pools'),
                     ),
                     ..._buildPoolDropdownItems(),
@@ -532,8 +564,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                               final stage = entry.value;
                               return _buildLadderStageSection(
                                 stage,
-                                showHeader: _filteredLadderStages.length > 1 ||
-                                    _selectedPoolId != null,
+                                showHeader: _filteredLadderStages.length > 1 &&
+                                    _selectedPoolId == null,
                                 isLast: stageIndex ==
                                     _filteredLadderStages.length - 1,
                               );

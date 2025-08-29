@@ -73,7 +73,7 @@ class Fixture {
       round: json['round'],
       isBye: json['is_bye'],
       videos: (json['videos'] as List<dynamic>?)?.cast<String>() ?? [],
-      poolId: json['pool_id'] as int?,
+      poolId: json['stage_group'] as int?,
     );
   }
 

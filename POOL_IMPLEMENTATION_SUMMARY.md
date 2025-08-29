@@ -169,7 +169,7 @@ Ready for API responses with this structure:
       "matches": [
         {
           "id": 1,
-          "pool_id": 122,
+          "stage_group": 122,
           "round": "Round 1",
           // ... other match data
         }
@@ -177,7 +177,7 @@ Ready for API responses with this structure:
       "ladder_summary": [
         {
           "team": "team1",
-          "pool_id": 122,
+          "stage_group": 122,
           // ... ladder data  
         }
       ]
