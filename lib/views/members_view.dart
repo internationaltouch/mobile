@@ -33,11 +33,15 @@ class _MembersViewState extends State<MembersView> {
       final clubsData = await ApiService.fetchClubs();
       final clubs = clubsData.map((json) => Club.fromJson(json)).toList();
 
+      // Filter clubs to only show those with 'active' status
+      final activeClubs =
+          clubs.where((club) => club.status == 'active').toList();
+
       // Sort clubs alphabetically by title
-      clubs.sort((a, b) => a.title.compareTo(b.title));
+      activeClubs.sort((a, b) => a.title.compareTo(b.title));
 
       setState(() {
-        _clubs = clubs;
+        _clubs = activeClubs;
         _isLoading = false;
       });
     } catch (e) {

@@ -8,6 +8,7 @@ class Club {
   final String? twitter;
   final String? youtube;
   final String? website;
+  final String? status;
 
   Club({
     required this.title,
@@ -19,6 +20,7 @@ class Club {
     this.twitter,
     this.youtube,
     this.website,
+    this.status,
   });
 
   factory Club.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class Club {
       twitter: json['twitter'] as String?,
       youtube: json['youtube'] as String?,
       website: json['website'] as String?,
+      status: json['status'] as String?,
     );
   }
 
@@ -46,6 +49,7 @@ class Club {
       'twitter': twitter,
       'youtube': youtube,
       'website': website,
+      'status': status,
     };
   }
 }
