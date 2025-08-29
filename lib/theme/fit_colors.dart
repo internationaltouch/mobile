@@ -20,6 +20,28 @@ class FITColors {
   static const Color surfaceVariant = Color(0xFFF3F3F3);
   static const Color outline = Color(0xFFE0E0E0);
 
+  // Pool colors for visual differentiation (8 colors rotating based on FIT palette)
+  static const List<Color> poolColors = [
+    primaryBlue, // Pool A - Primary blue
+    successGreen, // Pool B - Success green
+    accentYellow, // Pool C - Accent yellow
+    errorRed, // Pool D - Error red
+    Color(0xFF8E4B8A), // Pool E - Purple (complementary to green)
+    Color(0xFF4A90E2), // Pool F - Light blue (variation of primary)
+    Color(0xFFE67E22), // Pool G - Orange (complementary to blue)
+    Color(0xFF27AE60), // Pool H - Dark green (variation of success)
+  ];
+
+  /// Get pool color by index, rotating through available colors
+  static Color getPoolColor(int poolIndex) {
+    return poolColors[poolIndex % poolColors.length];
+  }
+
+  /// Get pool color with opacity for backgrounds
+  static Color getPoolColorWithOpacity(int poolIndex, double opacity) {
+    return getPoolColor(poolIndex).withValues(alpha: opacity);
+  }
+
   // Color scheme for Material 3 theming
   static const ColorScheme lightColorScheme = ColorScheme(
     brightness: Brightness.light,

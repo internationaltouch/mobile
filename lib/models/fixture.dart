@@ -15,6 +15,7 @@ class Fixture {
   final String? round; // Add round information from API
   final bool? isBye; // Add bye information from API
   final List<String> videos; // Add video URLs from API
+  final int? poolId; // Pool ID for pool-based matches
 
   Fixture({
     required this.id,
@@ -33,6 +34,7 @@ class Fixture {
     this.round,
     this.isBye,
     this.videos = const [],
+    this.poolId,
   });
 
   factory Fixture.fromJson(Map<String, dynamic> json) {
@@ -71,6 +73,7 @@ class Fixture {
       round: json['round'],
       isBye: json['is_bye'],
       videos: (json['videos'] as List<dynamic>?)?.cast<String>() ?? [],
+      poolId: json['pool_id'] as int?,
     );
   }
 
@@ -133,6 +136,7 @@ class Fixture {
       'round': round,
       'isBye': isBye,
       'videos': videos,
+      'poolId': poolId,
     };
   }
 
