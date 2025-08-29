@@ -734,6 +734,7 @@ class DataService {
             round: match['round'],
             isBye: match['is_bye'],
             videos: (match['videos'] as List<dynamic>?)?.cast<String>() ?? [],
+            poolId: match['pool_id'] as int?,
           );
 
           fixtures.add(fixture);
