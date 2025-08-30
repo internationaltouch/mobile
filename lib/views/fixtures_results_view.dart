@@ -141,13 +141,13 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
     } else {
       // No pool filter, create separate ladder stages for each pool
       _filteredLadderStages = [];
-      
+
       for (final stage in _allLadderStages) {
         for (final pool in stage.pools) {
           final poolLadder = stage.ladder.where((entry) {
             return entry.poolId == pool.id;
           }).toList();
-          
+
           if (poolLadder.isNotEmpty) {
             _filteredLadderStages.add(LadderStage(
               title: pool.title, // Use pool name as title
@@ -175,12 +175,12 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
       if (poolId != null && poolId != 'all_pools' && _selectedTeamId != null) {
         // Check if the selected team has matches in the new pool
         final teamHasMatchesInPool = _allFixtures.any((fixture) {
-          final isTeamMatch = fixture.homeTeamId == _selectedTeamId || 
-                             fixture.awayTeamId == _selectedTeamId;
+          final isTeamMatch = fixture.homeTeamId == _selectedTeamId ||
+              fixture.awayTeamId == _selectedTeamId;
           final isInPool = fixture.poolId?.toString() == poolId;
           return isTeamMatch && isInPool;
         });
-        
+
         // Only clear team selection if team has no matches in this pool
         if (!teamHasMatchesInPool) {
           _selectedTeamId = null;
