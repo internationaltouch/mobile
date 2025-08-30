@@ -201,7 +201,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                     }
 
                     return DropdownButtonFormField<String>(
-                      initialValue:
+                      value:
                           teams.any((team) => team.id == _selectedTeamId)
                               ? _selectedTeamId
                               : null,
