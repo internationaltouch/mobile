@@ -249,7 +249,7 @@ void main() {
 
       test('Single ladder stage when pool filter applied', () {
         // Simulate the logic from _filterLadderStages when _selectedPoolId == '1'
-        final selectedPoolId = '1';
+        const selectedPoolId = '1';
         final filteredLadderStages = testLadderStages
             .map((stage) {
               final filteredLadder = stage.ladder.where((entry) {
@@ -328,7 +328,7 @@ void main() {
           testLadderStages[0],
           testLadderStages[0]
         ]; // Simulate 2 stages
-        final selectedPoolId = null;
+        const selectedPoolId = null;
 
         final showHeader = multipleStages.length > 1 && selectedPoolId == null;
         expect(showHeader, isTrue);
@@ -336,7 +336,7 @@ void main() {
 
       test('Headers hidden when single stage and no pool filter', () {
         final singleStage = [testLadderStages[0]]; // 1 stage
-        final selectedPoolId = null;
+        const selectedPoolId = null;
 
         final showHeader = singleStage.length > 1 && selectedPoolId == null;
         expect(showHeader, isFalse);
@@ -347,7 +347,7 @@ void main() {
           testLadderStages[0],
           testLadderStages[0]
         ]; // 2 stages
-        final selectedPoolId = '1';
+        const selectedPoolId = '1';
 
         final showHeader = multipleStages.length > 1 && selectedPoolId == null;
         expect(showHeader, isFalse);
@@ -356,21 +356,21 @@ void main() {
 
     group('Pool Filter Reset Tests', () {
       test('All Pools selection converts to null internally', () {
-        final poolId = 'all_pools';
-        final selectedPoolId = (poolId == 'all_pools') ? null : poolId;
+        const poolId = 'all_pools';
+        const selectedPoolId = (poolId == 'all_pools') ? null : poolId;
 
         expect(selectedPoolId, isNull);
       });
 
       test('Specific pool selection preserves value', () {
-        final poolId = '1';
-        final selectedPoolId = (poolId == 'all_pools') ? null : poolId;
+        const poolId = '1';
+        const selectedPoolId = (poolId == 'all_pools') ? null : poolId;
 
         expect(selectedPoolId, equals('1'));
       });
 
       test('All fixtures shown when pool filter reset', () {
-        final selectedPoolId = null; // Simulates "All Pools" selection
+        const selectedPoolId = null; // Simulates "All Pools" selection
 
         final filteredFixtures = testFixtures.where((fixture) {
           bool matchesPool = true;
@@ -387,12 +387,12 @@ void main() {
     group('Team Selection Preservation Tests', () {
       test('Team selection preserved when unselecting pool', () {
         // Simulate: pool selected, then "All Pools" selected
-        final poolId = 'all_pools'; // User selects "All Pools"
-        final selectedTeamId = 'team1'; // Team was previously selected
+        const poolId = 'all_pools'; // User selects "All Pools"
+        const selectedTeamId = 'team1'; // Team was previously selected
 
         // Logic: only clear team when selecting specific pool, not when unselecting
         String? newTeamId = selectedTeamId;
-        if (poolId != null && poolId != 'all_pools') {
+        if (poolId != 'all_pools') {
           // Would check for matches and potentially clear, but not in this case
           newTeamId = null;
         }
@@ -401,8 +401,8 @@ void main() {
       });
 
       test('Team selection cleared when team has no matches in new pool', () {
-        final poolId = '2'; // Select pool 2
-        final selectedTeamId = 'team2'; // team2 has no matches in pool 2
+        const poolId = '2'; // Select pool 2
+        const selectedTeamId = 'team2'; // team2 has no matches in pool 2
 
         // Check if team has matches in the new pool
         final teamHasMatchesInPool = testFixtures.any((fixture) {
@@ -420,8 +420,8 @@ void main() {
       });
 
       test('Team selection preserved when team has matches in new pool', () {
-        final poolId = '1'; // Select pool 1
-        final selectedTeamId = 'team1'; // team1 has matches in pool 1
+        const poolId = '1'; // Select pool 1
+        const selectedTeamId = 'team1'; // team1 has matches in pool 1
 
         // Check if team has matches in the new pool
         final teamHasMatchesInPool = testFixtures.any((fixture) {

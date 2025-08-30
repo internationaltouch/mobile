@@ -4,7 +4,6 @@ import '../models/division.dart';
 import '../models/fixture.dart';
 import '../models/ladder_stage.dart';
 import '../models/team.dart';
-import '../models/pool.dart';
 import '../services/data_service.dart';
 import '../theme/fit_colors.dart';
 import '../widgets/match_score_card.dart';
@@ -191,23 +190,6 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
     });
   }
 
-  /// Get all available pools from ladder stages
-  List<Pool> _getAvailablePools() {
-    final pools = <Pool>[];
-    final poolIds = <int>{};
-
-    for (final stage in _allLadderStages) {
-      for (final pool in stage.pools) {
-        if (!poolIds.contains(pool.id)) {
-          pools.add(pool);
-          poolIds.add(pool.id);
-        }
-      }
-    }
-
-    return pools;
-  }
-
   /// Get teams available for the currently selected pool (or all teams if no pool selected)
   List<Team> _getAvailableTeams(List<Team> allTeams) {
     if (_selectedPoolId == null) return allTeams;
@@ -380,7 +362,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                   // Pool filter dropdown - only show if pools exist
                   if (_hasAnyPools()) ...[
                     DropdownButtonFormField<String>(
-                      value: _selectedPoolId ?? 'all_pools',
+                      initialValue: _selectedPoolId ?? 'all_pools',
                       decoration: const InputDecoration(
                         labelText: 'Filter by Pool',
                         border: OutlineInputBorder(),
@@ -423,7 +405,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                         }
 
                         return DropdownButtonFormField<String>(
-                          value: availableTeams
+                          initialValue: availableTeams
                                   .any((team) => team.id == _selectedTeamId)
                               ? _selectedTeamId
                               : null,
@@ -511,8 +493,6 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
           );
         }
 
-        final ladderStages = snapshot.data ?? [];
-
         return Column(
           children: [
             // Pool filter dropdown for ladder - only show if pools exist
@@ -520,7 +500,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
               Container(
                 padding: const EdgeInsets.all(16.0),
                 child: DropdownButtonFormField<String>(
-                  value: _selectedPoolId ?? 'all_pools',
+                  initialValue: _selectedPoolId ?? 'all_pools',
                   decoration: const InputDecoration(
                     labelText: 'Filter by Pool',
                     border: OutlineInputBorder(),
