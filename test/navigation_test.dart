@@ -4,19 +4,19 @@ import 'package:fit_mobile_app/views/main_navigation_view.dart';
 import 'package:fit_mobile_app/views/competitions_view.dart';
 import 'package:fit_mobile_app/views/event_detail_view.dart';
 import 'package:fit_mobile_app/views/divisions_view.dart';
-import 'package:fit_mobile_app/views/fixtures_results_view.dart';
 import 'package:fit_mobile_app/views/home_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/models/event.dart';
 import 'package:fit_mobile_app/models/season.dart';
-import 'package:fit_mobile_app/models/division.dart';
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
+import 'package:http/http.dart' as http;
 import 'package:fit_mobile_app/services/data_service.dart';
 import 'package:fit_mobile_app/services/api_service.dart';
 import 'package:fit_mobile_app/services/database_service.dart';
 import 'package:fit_mobile_app/services/database.dart' show createTestDatabase;
-import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
-import 'package:http/http.dart' as http;
+import 'package:fit_mobile_app/models/division.dart';
+import 'package:fit_mobile_app/views/fixtures_results_view.dart';
 
 @GenerateMocks([http.Client])
 import 'navigation_test.mocks.dart';
@@ -55,7 +55,7 @@ void main() {
       // Verify Events tab is selected
       final bottomNavBar =
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-      expect(bottomNavBar.currentIndex, equals(1));
+      expect(bottomNavBar.currentIndex, equals(2));
 
       // Verify Events content is visible
       expect(find.byType(CompetitionsView), findsOneWidget);
@@ -63,12 +63,12 @@ void main() {
 
     testWidgets('Should start with Events tab when specified',
         (WidgetTester tester) async {
-      await tester.pumpWidget(createTestApp(initialTab: 1));
+      await tester.pumpWidget(createTestApp(initialTab: 2));
 
       // Verify that Events tab is selected
       final bottomNavBar =
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-      expect(bottomNavBar.currentIndex, equals(1));
+      expect(bottomNavBar.currentIndex, equals(2));
 
       // Verify Events content is visible
       expect(find.byType(CompetitionsView), findsOneWidget);
@@ -93,7 +93,7 @@ void main() {
           tester
               .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
               .currentIndex,
-          equals(1));
+          equals(2));
 
       // Switch back to News
       await tester.tap(find.text('News'));
@@ -123,7 +123,7 @@ void main() {
       Widget createCompetitionApp() {
         return MaterialApp(
           theme: FITTheme.lightTheme,
-          home: const MainNavigationView(initialSelectedIndex: 1),
+          home: const MainNavigationView(initialSelectedIndex: 2),
           routes: {
             '/event-detail': (context) => EventDetailView(event: testEvent),
             '/divisions': (context) =>
@@ -142,7 +142,7 @@ void main() {
         // Mock navigation to event detail
         await tester.pumpWidget(MaterialApp(
           theme: FITTheme.lightTheme,
-          home: const MainNavigationView(initialSelectedIndex: 1),
+          home: const MainNavigationView(initialSelectedIndex: 2),
           builder: (context, child) {
             return Navigator(
               onGenerateRoute: (settings) {
@@ -221,7 +221,7 @@ void main() {
     group('Tab Switching with Navigation State', () {
       testWidgets('Should preserve navigation state when switching tabs',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(initialTab: 1));
+        await tester.pumpWidget(createTestApp(initialTab: 2));
 
         // Start on Events tab
         expect(find.byType(CompetitionsView), findsOneWidget);

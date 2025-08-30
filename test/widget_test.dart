@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fit_mobile_app/main.dart';
-import 'package:fit_mobile_app/services/data_service.dart';
-import 'package:fit_mobile_app/services/api_service.dart';
 import 'package:fit_mobile_app/services/database_service.dart';
 import 'package:fit_mobile_app/services/database.dart' show createTestDatabase;
 import 'package:fit_mobile_app/views/competitions_view.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
+import 'package:fit_mobile_app/services/data_service.dart';
+import 'package:fit_mobile_app/services/api_service.dart';
 
 @GenerateMocks([http.Client])
 import 'widget_test.mocks.dart';

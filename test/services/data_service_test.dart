@@ -1,13 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fit_mobile_app/services/data_service.dart';
-import 'package:fit_mobile_app/services/api_service.dart';
-import 'package:fit_mobile_app/services/database_service.dart';
-import 'package:fit_mobile_app/services/database.dart';
-import 'package:fit_mobile_app/models/event.dart' as models;
-import 'package:fit_mobile_app/models/news_item.dart' as models;
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
+import 'package:fit_mobile_app/services/data_service.dart';
+import 'package:fit_mobile_app/services/api_service.dart';
+import 'package:fit_mobile_app/services/database_service.dart';
+import 'package:fit_mobile_app/services/database.dart' show createTestDatabase;
+import 'package:fit_mobile_app/models/news_item.dart';
+import 'package:fit_mobile_app/models/event.dart';
+
 // Generate mocks
 @GenerateMocks([http.Client])
 import 'data_service_test.mocks.dart';
@@ -115,7 +116,7 @@ void main() {
 <body>Test content</body>
 </html>''';
 
-        final newsItem = models.NewsItem(
+        final newsItem = NewsItem(
           id: 'test',
           title: 'Test Item',
           summary: 'Test summary',
@@ -143,7 +144,7 @@ void main() {
 </html>''';
 
         const originalImageUrl = 'placeholder.jpg';
-        final newsItem = models.NewsItem(
+        final newsItem = NewsItem(
           id: 'test',
           title: 'Test Item',
           summary: 'Test summary',
@@ -163,7 +164,7 @@ void main() {
 
       test('handles HTTP errors when fetching image', () async {
         const originalImageUrl = 'placeholder.jpg';
-        final newsItem = models.NewsItem(
+        final newsItem = NewsItem(
           id: 'test',
           title: 'Test Item',
           summary: 'Test summary',
@@ -216,7 +217,7 @@ void main() {
         )).thenAnswer((_) async => http.Response('[]', 200));
 
         final events = await DataService.getEvents();
-        expect(events, isA<List<models.Event>>());
+        expect(events, isA<List<Event>>());
       });
     });
 

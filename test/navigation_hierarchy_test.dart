@@ -16,7 +16,7 @@ void main() {
 
     testWidgets('Should maintain navigation stack when switching tabs',
         (WidgetTester tester) async {
-      await tester.pumpWidget(createTestApp(initialTab: 1));
+      await tester.pumpWidget(createTestApp(initialTab: 2));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
@@ -79,14 +79,14 @@ void main() {
       await tester.tap(find.text('Events'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(getNavBar().currentIndex, equals(1));
+      expect(getNavBar().currentIndex, equals(2));
       expect(find.byType(CompetitionsView), findsOneWidget);
 
-      // Switch to My Touch (index 2)
+      // Switch to My Touch (index 3)
       await tester.tap(find.text('My Touch'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(getNavBar().currentIndex, equals(2));
+      expect(getNavBar().currentIndex, equals(3));
       expect(find.byType(MyTouchView), findsOneWidget);
 
       // Switch back to News (index 0)
@@ -98,21 +98,21 @@ void main() {
 
     testWidgets('Should start with correct tab based on initial index',
         (WidgetTester tester) async {
-      // Test starting with My Touch tab (index 2)
-      await tester.pumpWidget(createTestApp(initialTab: 2));
+      // Test starting with My Touch tab (index 3)
+      await tester.pumpWidget(createTestApp(initialTab: 3));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
       final navBar =
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-      expect(navBar.currentIndex, equals(2));
+      expect(navBar.currentIndex, equals(3));
       expect(find.byType(MyTouchView), findsOneWidget);
     });
 
     group('My Touch Navigation Integration', () {
       testWidgets('Should be able to switch from My Touch to Events tab',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(initialTab: 2));
+        await tester.pumpWidget(createTestApp(initialTab: 3));
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
 
@@ -128,7 +128,7 @@ void main() {
         expect(find.byType(CompetitionsView), findsOneWidget);
         final navBar = tester
             .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-        expect(navBar.currentIndex, equals(1));
+        expect(navBar.currentIndex, equals(2));
       });
     });
   });
@@ -156,13 +156,13 @@ void main() {
       await tester.tap(find.text('Events'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(getNavBar().currentIndex, equals(1));
+      expect(getNavBar().currentIndex, equals(2));
 
       // Switch to My Touch tab
       await tester.tap(find.text('My Touch'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(getNavBar().currentIndex, equals(2));
+      expect(getNavBar().currentIndex, equals(3));
 
       // Switch back to Events - should still be on CompetitionsView root
       await tester.tap(find.text('Events'));

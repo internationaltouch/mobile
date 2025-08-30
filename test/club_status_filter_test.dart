@@ -13,7 +13,7 @@ void main() {
         'url': 'https://example.com/active',
         'status': 'active',
       };
-      
+
       final activeClub = Club.fromJson(activeClubJson);
       expect(activeClub.status, equals('active'));
       expect(activeClub.title, equals('Test Club Active'));
@@ -27,7 +27,7 @@ void main() {
         'url': 'https://example.com/inactive',
         'status': 'inactive',
       };
-      
+
       final inactiveClub = Club.fromJson(inactiveClubJson);
       expect(inactiveClub.status, equals('inactive'));
 
@@ -39,7 +39,7 @@ void main() {
         'abbreviation': 'TCNS',
         'url': 'https://example.com/no-status',
       };
-      
+
       final nullStatusClub = Club.fromJson(nullStatusClubJson);
       expect(nullStatusClub.status, isNull);
     });
@@ -81,14 +81,16 @@ void main() {
       ];
 
       // Filter to only active clubs (same logic as MembersView)
-      final activeClubs = clubs.where((club) => club.status == 'active').toList();
+      final activeClubs =
+          clubs.where((club) => club.status == 'active').toList();
 
       expect(activeClubs.length, equals(2));
       expect(activeClubs[0].title, equals('Active Club 1'));
       expect(activeClubs[1].title, equals('Active Club 2'));
-      
+
       // Verify inactive and null status clubs are excluded
-      final inactiveClubs = clubs.where((club) => club.status != 'active').toList();
+      final inactiveClubs =
+          clubs.where((club) => club.status != 'active').toList();
       expect(inactiveClubs.length, equals(2));
     });
 
