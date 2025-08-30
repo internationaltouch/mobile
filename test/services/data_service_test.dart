@@ -1,15 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
-// Temporarily commented out Mockito imports due to dependency compatibility issues
-// import 'package:mockito/mockito.dart';
-// import 'package:mockito/annotations.dart';
-// import 'package:http/http.dart' as http;
-// Generate mocks
-// @GenerateMocks([http.Client])
-// import 'data_service_test.mocks.dart';
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
+import 'package:http/http.dart' as http;
+import 'package:fit_mobile_app/services/data_service.dart';
+import 'package:fit_mobile_app/services/api_service.dart';
+import 'package:fit_mobile_app/services/database_service.dart';
+import 'package:fit_mobile_app/services/database.dart' show createTestDatabase;
+import 'package:fit_mobile_app/models/news_item.dart';
+import 'package:fit_mobile_app/models/event.dart';
 
-// Temporarily commented out entire test suite due to Mockito dependency issues
-// Will be re-enabled when Mockito compatibility is resolved
-/*
+// Generate mocks
+@GenerateMocks([http.Client])
+import 'data_service_test.mocks.dart';
+
 void main() {
   group('DataService Tests', () {
     late MockClient mockClient;
@@ -113,7 +116,7 @@ void main() {
 <body>Test content</body>
 </html>''';
 
-        final newsItem = models.NewsItem(
+        final newsItem = NewsItem(
           id: 'test',
           title: 'Test Item',
           summary: 'Test summary',
@@ -141,7 +144,7 @@ void main() {
 </html>''';
 
         const originalImageUrl = 'placeholder.jpg';
-        final newsItem = models.NewsItem(
+        final newsItem = NewsItem(
           id: 'test',
           title: 'Test Item',
           summary: 'Test summary',
@@ -161,7 +164,7 @@ void main() {
 
       test('handles HTTP errors when fetching image', () async {
         const originalImageUrl = 'placeholder.jpg';
-        final newsItem = models.NewsItem(
+        final newsItem = NewsItem(
           id: 'test',
           title: 'Test Item',
           summary: 'Test summary',
@@ -214,7 +217,7 @@ void main() {
         )).thenAnswer((_) async => http.Response('[]', 200));
 
         final events = await DataService.getEvents();
-        expect(events, isA<List<models.Event>>());
+        expect(events, isA<List<Event>>());
       });
     });
 
@@ -249,16 +252,5 @@ void main() {
         );
       });
     });
-  });
-}
-*/
-
-// Simple placeholder to prevent empty file issues
-void main() {
-  // Placeholder test to keep file valid
-  test('DataService tests temporarily disabled', () {
-    // All tests temporarily disabled due to Mockito dependency issues
-    // Tests will be re-enabled when Mockito compatibility is resolved
-    expect(true, isTrue);
   });
 }
