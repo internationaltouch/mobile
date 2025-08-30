@@ -33,8 +33,11 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
   late Future<List<LadderStage>> _ladderStagesFuture;
   late Future<List<Team>> _teamsFuture;
   String? _selectedTeamId;
+  String? _selectedPoolId; // Selected pool for filtering
   List<Fixture> _allFixtures = [];
   List<Fixture> _filteredFixtures = [];
+  List<LadderStage> _allLadderStages = [];
+  List<LadderStage> _filteredLadderStages = [];
 
   @override
   void initState() {
@@ -58,7 +61,11 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
       widget.division.slug ?? widget.division.id,
       eventId: widget.event.slug ?? widget.event.id,
       season: widget.season,
-    );
+    ).then((ladderStages) {
+      _allLadderStages = ladderStages;
+      _filterLadderStages();
+      return ladderStages;
+    });
     _teamsFuture = DataService.getTeams(
       widget.division.slug ?? widget.division.id,
       eventId: widget.event.slug ?? widget.event.id,
@@ -91,13 +98,64 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
   }
 
   void _filterFixtures() {
-    if (_selectedTeamId == null) {
-      _filteredFixtures = _allFixtures;
-    } else {
-      _filteredFixtures = _allFixtures.where((fixture) {
-        return fixture.homeTeamId == _selectedTeamId ||
+    _filteredFixtures = _allFixtures.where((fixture) {
+      bool matchesTeam = true;
+      bool matchesPool = true;
+
+      // Apply team filter if selected
+      if (_selectedTeamId != null) {
+        matchesTeam = fixture.homeTeamId == _selectedTeamId ||
             fixture.awayTeamId == _selectedTeamId;
-      }).toList();
+      }
+
+      // Apply pool filter if selected
+      if (_selectedPoolId != null) {
+        matchesPool = fixture.poolId?.toString() == _selectedPoolId;
+      }
+
+      // Fixture must match both filters (if they are applied)
+      return matchesTeam && matchesPool;
+    }).toList();
+  }
+
+  void _filterLadderStages() {
+    if (_selectedPoolId != null) {
+      // When filtering by pool, create filtered ladder stages with only that pool's entries
+      _filteredLadderStages = _allLadderStages
+          .map((stage) {
+            final filteredLadder = stage.ladder.where((entry) {
+              return entry.poolId?.toString() == _selectedPoolId;
+            }).toList();
+
+            return LadderStage(
+              title: stage.title,
+              ladder: filteredLadder,
+              pools: stage.pools
+                  .where((pool) => pool.id.toString() == _selectedPoolId)
+                  .toList(),
+            );
+          })
+          .where((stage) => stage.ladder.isNotEmpty)
+          .toList();
+    } else {
+      // No pool filter, create separate ladder stages for each pool
+      _filteredLadderStages = [];
+
+      for (final stage in _allLadderStages) {
+        for (final pool in stage.pools) {
+          final poolLadder = stage.ladder.where((entry) {
+            return entry.poolId == pool.id;
+          }).toList();
+
+          if (poolLadder.isNotEmpty) {
+            _filteredLadderStages.add(LadderStage(
+              title: pool.title, // Use pool name as title
+              ladder: poolLadder,
+              pools: [pool],
+            ));
+          }
+        }
+      }
     }
   }
 
@@ -105,7 +163,125 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
     setState(() {
       _selectedTeamId = teamId;
       _filterFixtures();
+      _filterLadderStages();
     });
+  }
+
+  void _onPoolSelected(String? poolId) {
+    setState(() {
+      _selectedPoolId = (poolId == 'all_pools') ? null : poolId;
+      // Only clear team selection when selecting a specific pool, not when unselecting
+      if (poolId != null && poolId != 'all_pools' && _selectedTeamId != null) {
+        // Check if the selected team has matches in the new pool
+        final teamHasMatchesInPool = _allFixtures.any((fixture) {
+          final isTeamMatch = fixture.homeTeamId == _selectedTeamId ||
+              fixture.awayTeamId == _selectedTeamId;
+          final isInPool = fixture.poolId?.toString() == poolId;
+          return isTeamMatch && isInPool;
+        });
+
+        // Only clear team selection if team has no matches in this pool
+        if (!teamHasMatchesInPool) {
+          _selectedTeamId = null;
+        }
+      }
+      _filterFixtures();
+      _filterLadderStages();
+    });
+  }
+
+  /// Get teams available for the currently selected pool (or all teams if no pool selected)
+  List<Team> _getAvailableTeams(List<Team> allTeams) {
+    if (_selectedPoolId == null) return allTeams;
+
+    // Get team IDs that are in the selected pool based on fixtures
+    final teamIdsInPool = <String>{};
+    for (final fixture in _allFixtures) {
+      if (fixture.poolId?.toString() == _selectedPoolId) {
+        teamIdsInPool.add(fixture.homeTeamId);
+        teamIdsInPool.add(fixture.awayTeamId);
+      }
+    }
+
+    return allTeams.where((team) => teamIdsInPool.contains(team.id)).toList();
+  }
+
+  /// Check if any pools exist in the ladder stages
+  bool _hasAnyPools() {
+    return _allLadderStages.any((stage) => stage.pools.isNotEmpty);
+  }
+
+  /// Build pool dropdown items grouped by stage
+  List<DropdownMenuItem<String>> _buildPoolDropdownItems() {
+    final items = <DropdownMenuItem<String>>[];
+
+    for (final stage in _allLadderStages) {
+      if (stage.pools.isNotEmpty) {
+        // Add stage header (non-selectable) with unique value
+        items.add(DropdownMenuItem<String>(
+          value: 'header_${stage.title}',
+          enabled: false,
+          child: Text(
+            stage.title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: FITColors.darkGrey,
+            ),
+          ),
+        ));
+
+        // Add pools for this stage
+        for (final pool in stage.pools) {
+          items.add(DropdownMenuItem<String>(
+            value: pool.id.toString(),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: Text(pool.title),
+            ),
+          ));
+        }
+      }
+    }
+
+    return items;
+  }
+
+  /// Get pool title by pool ID
+  String? _getPoolTitle(int? poolId) {
+    if (poolId == null) return null;
+
+    for (final stage in _allLadderStages) {
+      for (final pool in stage.pools) {
+        if (pool.id == poolId) {
+          return pool.title;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Get all pool titles for color indexing
+  List<String> _getAllPoolTitles() {
+    final titles = <String>[];
+    for (final stage in _allLadderStages) {
+      for (final pool in stage.pools) {
+        if (!titles.contains(pool.title)) {
+          titles.add(pool.title);
+        }
+      }
+    }
+    return titles;
+  }
+
+  /// Get appropriate empty fixtures message based on current filter
+  String _getEmptyFixturesMessage() {
+    if (_selectedTeamId != null) {
+      return 'No fixtures for selected team';
+    } else if (_selectedPoolId != null) {
+      return 'No fixtures for selected pool';
+    } else {
+      return 'No fixtures available';
+    }
   }
 
   @override
@@ -178,55 +354,88 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
 
         return Column(
           children: [
-            // Team filter dropdown
+            // Filter dropdowns
             Container(
               padding: const EdgeInsets.all(16.0),
-              child: FutureBuilder<List<Team>>(
-                future: _teamsFuture,
-                builder: (context, teamsSnapshot) {
-                  if (teamsSnapshot.hasData) {
-                    final teams = teamsSnapshot.data!;
-
-                    // Reset selected team if it doesn't exist in current team list
-                    if (_selectedTeamId != null &&
-                        !teams.any((team) => team.id == _selectedTeamId)) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          setState(() {
-                            _selectedTeamId = null;
-                            _filterFixtures();
-                          });
-                        }
-                      });
-                    }
-
-                    return DropdownButtonFormField<String>(
-                      initialValue:
-                          teams.any((team) => team.id == _selectedTeamId)
-                              ? _selectedTeamId
-                              : null,
+              child: Column(
+                children: [
+                  // Pool filter dropdown - only show if pools exist
+                  if (_hasAnyPools()) ...[
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedPoolId ?? 'all_pools',
                       decoration: const InputDecoration(
-                        labelText: 'Filter by Team',
+                        labelText: 'Filter by Pool',
                         border: OutlineInputBorder(),
                         contentPadding:
                             EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       items: [
                         const DropdownMenuItem<String>(
-                          value: null,
-                          child: Text('All Teams'),
+                          value: 'all_pools',
+                          child: Text('All Pools'),
                         ),
-                        ...(teams..sort((a, b) => a.name.compareTo(b.name)))
-                            .map((team) => DropdownMenuItem<String>(
-                                  value: team.id,
-                                  child: Text(team.name),
-                                )),
+                        ..._buildPoolDropdownItems(),
                       ],
-                      onChanged: _onTeamSelected,
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
+                      onChanged: _onPoolSelected,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Team filter dropdown
+                  FutureBuilder<List<Team>>(
+                    future: _teamsFuture,
+                    builder: (context, teamsSnapshot) {
+                      if (teamsSnapshot.hasData) {
+                        final allTeams = teamsSnapshot.data!;
+                        final availableTeams = _getAvailableTeams(allTeams);
+
+                        // Reset selected team if it doesn't exist in current team list
+                        if (_selectedTeamId != null &&
+                            !availableTeams
+                                .any((team) => team.id == _selectedTeamId)) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              setState(() {
+                                _selectedTeamId = null;
+                                _filterFixtures();
+                                _filterLadderStages();
+                              });
+                            }
+                          });
+                        }
+
+                        return DropdownButtonFormField<String>(
+                          initialValue: availableTeams
+                                  .any((team) => team.id == _selectedTeamId)
+                              ? _selectedTeamId
+                              : null,
+                          decoration: InputDecoration(
+                            labelText: _selectedPoolId != null
+                                ? 'Filter by Team (in selected pool)'
+                                : 'Filter by Team',
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                          ),
+                          items: [
+                            const DropdownMenuItem<String>(
+                              value: null,
+                              child: Text('All Teams'),
+                            ),
+                            ...(availableTeams
+                                  ..sort((a, b) => a.name.compareTo(b.name)))
+                                .map((team) => DropdownMenuItem<String>(
+                                      value: team.id,
+                                      child: Text(team.name),
+                                    )),
+                          ],
+                          onChanged: _onTeamSelected,
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ],
               ),
             ),
             // Fixtures list
@@ -238,9 +447,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                 child: _filteredFixtures.isEmpty
                     ? Center(
                         child: Text(
-                          _selectedTeamId == null
-                              ? 'No fixtures available'
-                              : 'No fixtures for selected team',
+                          _getEmptyFixturesMessage(),
                           style:
                               const TextStyle(fontSize: 16, color: Colors.grey),
                         ),
@@ -250,11 +457,16 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                         itemCount: _filteredFixtures.length,
                         itemBuilder: (context, index) {
                           final fixture = _filteredFixtures[index];
+                          final poolTitle = _getPoolTitle(fixture.poolId);
+                          final allPoolTitles = _getAllPoolTitles();
+
                           return MatchScoreCard(
                             fixture: fixture,
                             venue:
                                 fixture.field.isNotEmpty ? fixture.field : null,
                             divisionName: widget.division.name,
+                            poolTitle: poolTitle,
+                            allPoolTitles: allPoolTitles,
                           );
                         },
                       ),
@@ -281,35 +493,69 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
           );
         }
 
-        final ladderStages = snapshot.data ?? [];
-
-        return RefreshIndicator(
-          onRefresh: () async {
-            setState(() => _loadData());
-          },
-          child: ladderStages.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No ladder data available',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+        return Column(
+          children: [
+            // Pool filter dropdown for ladder - only show if pools exist
+            if (_hasAnyPools()) ...[
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                child: DropdownButtonFormField<String>(
+                  initialValue: _selectedPoolId ?? 'all_pools',
+                  decoration: const InputDecoration(
+                    labelText: 'Filter by Pool',
+                    border: OutlineInputBorder(),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
-                )
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Build each stage's ladder table
-                      ...ladderStages.asMap().entries.map((entry) {
-                        final stageIndex = entry.key;
-                        final stage = entry.value;
-                        return _buildLadderStageSection(
-                          stage,
-                          showHeader: ladderStages.length > 1,
-                          isLast: stageIndex == ladderStages.length - 1,
-                        );
-                      }),
-                    ],
-                  ),
+                  items: [
+                    const DropdownMenuItem<String>(
+                      value: 'all_pools',
+                      child: Text('All Pools'),
+                    ),
+                    ..._buildPoolDropdownItems(),
+                  ],
+                  onChanged: _onPoolSelected,
                 ),
+              ),
+            ],
+
+            // Ladder content
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  setState(() => _loadData());
+                },
+                child: _filteredLadderStages.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No ladder data available',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            // Build each stage's ladder table
+                            ..._filteredLadderStages
+                                .asMap()
+                                .entries
+                                .map((entry) {
+                              final stageIndex = entry.key;
+                              final stage = entry.value;
+                              return _buildLadderStageSection(
+                                stage,
+                                showHeader: _filteredLadderStages.length > 1 &&
+                                    _selectedPoolId == null,
+                                isLast: stageIndex ==
+                                    _filteredLadderStages.length - 1,
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+              ),
+            ),
+          ],
         );
       },
     );

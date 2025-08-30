@@ -1,12 +1,15 @@
 import 'ladder_entry.dart';
+import 'pool.dart';
 
 class LadderStage {
   final String title;
   final List<LadderEntry> ladder;
+  final List<Pool> pools; // Pools available in this stage
 
   LadderStage({
     required this.title,
     required this.ladder,
+    this.pools = const [],
   });
 
   factory LadderStage.fromJson(Map<String, dynamic> json,
@@ -47,12 +50,20 @@ class LadderStage {
         goalsFor: ladderEntry.goalsFor,
         goalsAgainst: ladderEntry.goalsAgainst,
         percentage: ladderEntry.percentage,
+        poolId: ladderEntry.poolId,
       );
+    }).toList();
+
+    // Parse pools from stage data
+    final poolsData = json['pools'] as List<dynamic>? ?? [];
+    final pools = poolsData.map((poolJson) {
+      return Pool.fromJson(poolJson as Map<String, dynamic>);
     }).toList();
 
     return LadderStage(
       title: json['title'] ?? 'Stage',
       ladder: ladder,
+      pools: pools,
     );
   }
 
@@ -60,6 +71,7 @@ class LadderStage {
     return {
       'title': title,
       'ladder': ladder.map((entry) => entry.toJson()).toList(),
+      'pools': pools.map((pool) => pool.toJson()).toList(),
     };
   }
 }
