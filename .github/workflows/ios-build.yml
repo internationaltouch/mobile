@@ -1,0 +1,157 @@
+name: iOS Build
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.27.1'
+        channel: 'stable'
+        
+    - name: Install dependencies
+      run: flutter pub get
+      
+    - name: Setup iOS code signing
+      if: ${{ secrets.APPLE_CERTIFICATE_BASE64 != '' }}
+      env:
+        APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+        APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        # Create temporary keychain
+        security create-keychain -p "" build.keychain
+        security set-keychain-settings -t 3600 -l build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "" build.keychain
+        
+        # Import certificate
+        echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > certificate.p12
+        security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+        
+        # Install provisioning profile
+        echo "$APPLE_PROVISIONING_PROFILE_BASE64" | base64 --decode > profile.mobileprovision
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+        
+        # Set code signing identity
+        security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+        
+        # Clean up sensitive files
+        rm certificate.p12 profile.mobileprovision
+    
+    - name: Build iOS app (Signed)
+      if: ${{ secrets.APPLE_CERTIFICATE_BASE64 != '' }}
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        flutter build ios
+        
+    - name: Build iOS app (Unsigned)
+      if: ${{ secrets.APPLE_CERTIFICATE_BASE64 == '' }}
+      run: |
+        flutter build ios --no-codesign
+        echo "⚠️ Building unsigned IPA - Code signing secrets not configured"
+        
+    - name: Create IPA
+      run: |
+        mkdir -p build/ios/ipa
+        cp -r build/ios/iphoneos/Runner.app build/ios/ipa/
+        cd build/ios/ipa
+        zip -r ../Runner.ipa Runner.app/
+        
+    - name: Generate build report
+      run: |
+        echo "# 📱 iOS Build Report" > build_report.md
+        echo "" >> build_report.md
+        echo "## Build Information" >> build_report.md
+        echo "- **Date**: $(date)" >> build_report.md
+        echo "- **Flutter Version**: $(flutter --version | head -n 1)" >> build_report.md
+        echo "- **Build Mode**: Release" >> build_report.md
+        
+        if [ -n "${{ secrets.APPLE_CERTIFICATE_BASE64 }}" ]; then
+          echo "- **Code Signing**: ✅ Signed with Apple Developer Certificate" >> build_report.md
+          echo "- **Team ID**: ${{ secrets.APPLE_TEAM_ID }}" >> build_report.md
+          echo "" >> build_report.md
+          echo "## 📲 Installing on Device" >> build_report.md
+          echo "" >> build_report.md
+          echo "### Option 1: Xcode" >> build_report.md
+          echo "1. Download the \`ios-ipa\` artifact from this workflow run" >> build_report.md
+          echo "2. Extract the \`Runner.ipa\` file" >> build_report.md
+          echo "3. Open Xcode and go to **Window → Devices and Simulators**" >> build_report.md
+          echo "4. Connect your iOS device via USB" >> build_report.md
+          echo "5. Select your device and click the **+** button" >> build_report.md
+          echo "6. Browse and select the \`Runner.ipa\` file" >> build_report.md
+          echo "7. The app will install on your device" >> build_report.md
+          echo "" >> build_report.md
+          echo "### Option 2: 3uTools or iTunes" >> build_report.md
+          echo "1. Download the \`ios-ipa\` artifact" >> build_report.md
+          echo "2. Extract the \`Runner.ipa\` file" >> build_report.md
+          echo "3. Use 3uTools or iTunes to install the IPA file on your device" >> build_report.md
+          echo "" >> build_report.md
+          echo "### Option 3: TestFlight (if configured)" >> build_report.md
+          echo "- Upload the IPA to App Store Connect for TestFlight distribution" >> build_report.md
+          echo "- Share the TestFlight link with testers" >> build_report.md
+        else
+          echo "- **Code Signing**: ⚠️ Unsigned (Development/Testing only)" >> build_report.md
+          echo "" >> build_report.md
+          echo "## ⚠️ Unsigned Build Notice" >> build_report.md
+          echo "" >> build_report.md
+          echo "This is an **unsigned build** that can only be used for development purposes." >> build_report.md
+          echo "To install on devices, you need to configure code signing secrets." >> build_report.md
+          echo "" >> build_report.md
+          echo "### Required Secrets for Code Signing:" >> build_report.md
+          echo "- \`APPLE_CERTIFICATE_BASE64\`: Base64-encoded P12 certificate" >> build_report.md
+          echo "- \`APPLE_CERTIFICATE_PASSWORD\`: Password for the P12 certificate" >> build_report.md
+          echo "- \`APPLE_PROVISIONING_PROFILE_BASE64\`: Base64-encoded provisioning profile" >> build_report.md
+          echo "- \`APPLE_TEAM_ID\`: Apple Developer Team ID (10-character string)" >> build_report.md
+          echo "" >> build_report.md
+          echo "See the repository documentation for detailed setup instructions." >> build_report.md
+        fi
+        
+        echo "" >> build_report.md
+        echo "## 🔧 Technical Details" >> build_report.md
+        echo "" >> build_report.md
+        BUNDLE_ID=$(grep PRODUCT_BUNDLE_IDENTIFIER ios/Runner.xcodeproj/project.pbxproj | head -n 1 | cut -d= -f2 | tr -d '[:space:];')
+        IOS_VERSION=$(grep IPHONEOS_DEPLOYMENT_TARGET ios/Runner.xcodeproj/project.pbxproj | head -n 1 | cut -d= -f2 | tr -d '[:space:];')
+        echo "- **Bundle ID**: $BUNDLE_ID" >> build_report.md
+        echo "- **Build Configuration**: Release" >> build_report.md
+        echo "- **Architecture**: ARM64 (iOS devices)" >> build_report.md
+        echo "- **Minimum iOS Version**: $IOS_VERSION" >> build_report.md
+        
+        # Display file size
+        if [ -f "build/ios/Runner.ipa" ]; then
+          IPA_SIZE=$(ls -lh build/ios/Runner.ipa | awk '{print $5}')
+          echo "- **IPA Size**: $IPA_SIZE" >> build_report.md
+        fi
+        
+    - name: Upload iOS IPA
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-ipa
+        path: build/ios/Runner.ipa
+        retention-days: 30
+        
+    - name: Upload build report
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-build-report
+        path: build_report.md
+        retention-days: 30
+        
+    - name: Cleanup keychain
+      if: always()
+      run: |
+        if security list-keychains | grep -q "build.keychain"; then
+          security delete-keychain build.keychain
+        fi

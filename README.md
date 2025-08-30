@@ -108,17 +108,36 @@ The project includes GitHub Actions workflows for:
 - 🧪 **Testing**: Automated test suite execution
 - 📦 **Build Artifacts**: 
   - Android APK and App Bundle
-  - iOS IPA (unsigned for testing)
+  - iOS IPA (signed/unsigned for testing)
 
-### Workflow Triggers
-- Push to `main` or `develop` branches
-- Pull requests to `main` branch
+### Workflows
+
+#### Main CI/CD (`flutter.yml`)
+- **Triggers**: Push to `main`/`develop` branches, PRs to `main`
+- **Runs**: Tests, analysis, Android builds, iOS builds
+- **Artifacts**: `android-apk`, `android-aab`, `ios-ipa`
+
+#### iOS Build (`ios-build.yml`)
+- **Triggers**: Pull requests only
+- **Runs**: iOS-specific builds with code signing support
+- **Artifacts**: `ios-ipa`, `ios-build-report`
+- **Features**: Automatic device installation instructions
 
 ### Artifacts
 Download build artifacts from GitHub Actions runs:
 - `android-apk`: Android APK for direct installation
 - `android-aab`: Android App Bundle for Play Store
-- `ios-ipa`: iOS IPA for testing (requires developer provisioning)
+- `ios-ipa`: iOS IPA for testing (signed if secrets configured)
+- `ios-build-report`: Device installation instructions and build details
+
+### iOS Code Signing
+For signed iOS builds, configure the following repository secrets:
+- `APPLE_CERTIFICATE_BASE64`: Base64-encoded P12 certificate
+- `APPLE_CERTIFICATE_PASSWORD`: Certificate password
+- `APPLE_PROVISIONING_PROFILE_BASE64`: Base64-encoded provisioning profile
+- `APPLE_TEAM_ID`: Apple Developer Team ID
+
+See [IOS_CODE_SIGNING.md](IOS_CODE_SIGNING.md) for detailed setup instructions.
 
 ## Development
 
