@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_view.dart';
 import 'members_view.dart';
 import 'competitions_view.dart';
+import 'videos_view.dart';
 import 'my_touch_view.dart';
 
 class MainNavigationView extends StatefulWidget {
@@ -26,12 +27,14 @@ class _MainNavigationViewState extends State<MainNavigationView> {
       GlobalKey<NavigatorState>(), // News navigator
       GlobalKey<NavigatorState>(), // Members navigator
       GlobalKey<NavigatorState>(), // Competitions navigator
+      GlobalKey<NavigatorState>(), // Videos navigator
       GlobalKey<NavigatorState>(), // My Touch navigator
     ];
     _pages = [
       _buildNewsNavigator(),
       _buildMembersNavigator(),
       _buildCompetitionsNavigator(),
+      _buildVideosNavigator(),
       _buildMyTouchNavigator(),
     ];
   }
@@ -66,6 +69,18 @@ class _MainNavigationViewState extends State<MainNavigationView> {
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) => const CompetitionsView(),
+          settings: settings,
+        );
+      },
+    );
+  }
+
+  Widget _buildVideosNavigator() {
+    return Navigator(
+      key: _navigatorKeys[3],
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const VideosView(),
           settings: settings,
         );
       },
@@ -111,6 +126,10 @@ class _MainNavigationViewState extends State<MainNavigationView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.sports),
             label: 'Events',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.videocam),
+            label: 'Videos',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.star),
