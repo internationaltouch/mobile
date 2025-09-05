@@ -1,11 +1,11 @@
+import 'config_service.dart';
+
 class AppConfig {
-  // API Configuration
-  static const String apiBaseUrl = 'https://www.internationaltouch.org/api/v1';
+  // API Configuration - now uses ConfigService
+  static String get apiBaseUrl => ConfigService.config.api.baseUrl;
+  static String get imageBaseUrl => ConfigService.config.api.imageBaseUrl;
 
-  // Image placeholder base URL (same domain as API)
-  static const String imageBaseUrl = 'https://www.internationaltouch.org';
-
-  // Fallback placeholder URL generator - now returns FIT logo asset
+  // Fallback placeholder URL generator - now returns configured logo
   static String getPlaceholderImageUrl({
     required int width,
     required int height,
@@ -13,18 +13,15 @@ class AppConfig {
     required String textColor,
     required String text,
   }) {
-    // Return FIT vertical logo instead of placeholder URL
-    return 'assets/images/LOGO_FIT-VERT.png';
+    return ConfigService.config.branding.logoVertical;
   }
 
-  // Predefined placeholder URLs for common use cases - now return FIT logo
+  // Predefined placeholder URLs for common use cases - now return configured logo
   static String getCompetitionImageUrl(String text) {
-    // Return FIT vertical logo instead of generated placeholder
-    return 'assets/images/LOGO_FIT-VERT.png';
+    return ConfigService.config.branding.logoVertical;
   }
 
   static String getCompetitionLogoUrl(String text) {
-    // Return FIT vertical logo instead of generated placeholder
-    return 'assets/images/LOGO_FIT-VERT.png';
+    return ConfigService.config.branding.logoVertical;
   }
 }

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'views/main_navigation_view.dart';
-import 'theme/fit_theme.dart';
+import 'theme/configurable_theme.dart';
+import 'config/config_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize configuration
+  await ConfigService.initialize();
 
   // Lock orientation to portrait mode
   await SystemChrome.setPreferredOrientations([
@@ -20,9 +24,10 @@ class FITMobileApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final config = ConfigService.config;
     return MaterialApp(
-      title: 'FIT',
-      theme: FITTheme.lightTheme,
+      title: config.displayName,
+      theme: ConfigurableTheme.lightTheme,
       initialRoute: '/',
       routes: {
         '/': (context) {

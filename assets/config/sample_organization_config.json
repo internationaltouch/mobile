@@ -1,0 +1,73 @@
+{
+  "app": {
+    "name": "SampleOrg",
+    "displayName": "Sample Organization",
+    "description": "Sample Organization - Sports tournaments and events",
+    "identifier": {
+      "android": "org.sampleorg.app",
+      "ios": "org.sampleorg.app"
+    },
+    "version": "1.0.0+1"
+  },
+  "api": {
+    "baseUrl": "https://api.sampleorg.org/v1",
+    "imageBaseUrl": "https://api.sampleorg.org"
+  },
+  "branding": {
+    "primaryColor": "#1976D2",
+    "secondaryColor": "#FFC107",
+    "accentColor": "#4CAF50",
+    "errorColor": "#F44336",
+    "backgroundColor": "#FFFFFF",
+    "textColor": "#212121",
+    "logoVertical": "assets/images/LOGO_FIT-VERT.png",
+    "logoHorizontal": "assets/images/LOGO_FIT-HZ.png",
+    "appIcon": "assets/images/icon.png",
+    "splashScreen": {
+      "backgroundColor": "#1976D2",
+      "image": "assets/images/LOGO_FIT-VERT.png",
+      "imageBackgroundColor": "#1976D2"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "id": "news",
+        "label": "Updates",
+        "icon": "newspaper",
+        "enabled": true,
+        "backgroundColor": "#1976D2"
+      },
+      {
+        "id": "clubs",
+        "label": "Teams",
+        "icon": "public",
+        "enabled": true,
+        "backgroundColor": "#1976D2"
+      },
+      {
+        "id": "events",
+        "label": "Competitions",
+        "icon": "sports",
+        "enabled": true,
+        "backgroundColor": "#1976D2",
+        "variant": "favorites"
+      },
+      {
+        "id": "my_sport",
+        "label": "My Events",
+        "icon": "star",
+        "enabled": false,
+        "backgroundColor": "#1976D2"
+      }
+    ]
+  },
+  "features": {
+    "flagsModule": "fit",
+    "eventsVariant": "favorites"
+  },
+  "assets": {
+    "competitionImages": "assets/images/competitions/",
+    "flagsPath": "lib/config/flags/fit_flags.dart"
+  }
+}

@@ -3,6 +3,7 @@ import 'home_view.dart';
 import 'members_view.dart';
 import 'competitions_view.dart';
 import 'my_touch_view.dart';
+import '../config/config_service.dart';
 
 class MainNavigationView extends StatefulWidget {
   final int initialSelectedIndex;
@@ -17,71 +18,59 @@ class _MainNavigationViewState extends State<MainNavigationView> {
   late int _selectedIndex;
   late List<GlobalKey<NavigatorState>> _navigatorKeys;
   late List<Widget> _pages;
+  late List<TabConfig> _enabledTabs;
 
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialSelectedIndex;
-    _navigatorKeys = [
-      GlobalKey<NavigatorState>(), // News navigator
-      GlobalKey<NavigatorState>(), // Members navigator
-      GlobalKey<NavigatorState>(), // Competitions navigator
-      GlobalKey<NavigatorState>(), // My Touch navigator
-    ];
-    _pages = [
-      _buildNewsNavigator(),
-      _buildMembersNavigator(),
-      _buildCompetitionsNavigator(),
-      _buildMyTouchNavigator(),
-    ];
+    _enabledTabs = ConfigService.config.navigation.enabledTabs;
+    _selectedIndex = widget.initialSelectedIndex.clamp(0, _enabledTabs.length - 1);
+    
+    _navigatorKeys = List.generate(
+      _enabledTabs.length,
+      (index) => GlobalKey<NavigatorState>(),
+    );
+    
+    _pages = _enabledTabs.map((tab) => _buildNavigatorForTab(tab)).toList();
   }
 
-  Widget _buildNewsNavigator() {
+  Widget _buildNavigatorForTab(TabConfig tab) {
+    final tabIndex = _enabledTabs.indexOf(tab);
     return Navigator(
-      key: _navigatorKeys[0],
+      key: _navigatorKeys[tabIndex],
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
-          builder: (context) => const HomeView(showOnlyNews: true),
+          builder: (context) => _getViewForTab(tab),
           settings: settings,
         );
       },
     );
   }
 
-  Widget _buildMembersNavigator() {
-    return Navigator(
-      key: _navigatorKeys[1],
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute(
-          builder: (context) => const MembersView(),
-          settings: settings,
-        );
-      },
-    );
+  Widget _getViewForTab(TabConfig tab) {
+    switch (tab.id) {
+      case 'news':
+        return const HomeView(showOnlyNews: true);
+      case 'clubs':
+        return const MembersView();
+      case 'events':
+        return _getEventsView(tab);
+      case 'my_sport':
+        return const MyTouchView();
+      default:
+        return const Placeholder();
+    }
   }
 
-  Widget _buildCompetitionsNavigator() {
-    return Navigator(
-      key: _navigatorKeys[2],
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute(
-          builder: (context) => const CompetitionsView(),
-          settings: settings,
-        );
-      },
-    );
-  }
-
-  Widget _buildMyTouchNavigator() {
-    return Navigator(
-      key: _navigatorKeys[3],
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute(
-          builder: (context) => const MyTouchView(),
-          settings: settings,
-        );
-      },
-    );
+  Widget _getEventsView(TabConfig tab) {
+    final variant = tab.variant ?? 'standard';
+    switch (variant) {
+      case 'favorites':
+        return const MyTouchView(); // Use MyTouchView for favorites variant
+      case 'standard':
+      default:
+        return const CompetitionsView();
+    }
   }
 
   @override
@@ -99,24 +88,10 @@ class _MainNavigationViewState extends State<MainNavigationView> {
             _selectedIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.newspaper),
-            label: 'News',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.public),
-            label: 'Members',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.sports),
-            label: 'Events',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star),
-            label: 'My Touch',
-          ),
-        ],
+        items: _enabledTabs.map((tab) => BottomNavigationBarItem(
+          icon: Icon(tab.iconData),
+          label: tab.label,
+        )).toList(),
       ),
     );
   }

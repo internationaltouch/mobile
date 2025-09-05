@@ -46,12 +46,15 @@ flutter:
   assets:
     - assets/images/
     - assets/images/competitions/
+    - assets/config/
 
 flutter_native_splash:
   color: "#FFFFFF"
   image: assets/images/LOGO_FIT-VERT.png
   color_dark: "#FFFFFF"
   image_dark: assets/images/LOGO_FIT-VERT.png
+  # Note: To update splash screen with different config, run:
+  # flutter packages pub run flutter_native_splash:create --config=path/to/splash_config.yaml
 
 flutter_launcher_icons:
   android: true
