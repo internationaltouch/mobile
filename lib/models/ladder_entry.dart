@@ -10,6 +10,7 @@ class LadderEntry {
   final int goalsFor;
   final int goalsAgainst;
   final double? percentage;
+  final int? poolId; // Pool ID for pool-based ladder entries
 
   LadderEntry({
     required this.teamId,
@@ -23,6 +24,7 @@ class LadderEntry {
     required this.goalsFor,
     required this.goalsAgainst,
     this.percentage,
+    this.poolId,
   });
 
   factory LadderEntry.fromJson(Map<String, dynamic> json) {
@@ -69,6 +71,7 @@ class LadderEntry {
       goalsFor: scoreFor,
       goalsAgainst: scoreAgainst,
       percentage: parseDoubleSafely(json['percentage']),
+      poolId: json['stage_group'] as int?,
     );
   }
 
@@ -85,6 +88,7 @@ class LadderEntry {
       'goalsFor': goalsFor,
       'goalsAgainst': goalsAgainst,
       'percentage': percentage,
+      'poolId': poolId,
     };
   }
 

@@ -27,6 +27,8 @@ class CompetitionConfig {
     'asian-cup',
     'test-matches',
     'pacific-games',
+    'cardiff-touch-superleague',
+    'jersey-touch-superleague',
     // Add specific slugs here to HIDE these competitions
   ];
 }

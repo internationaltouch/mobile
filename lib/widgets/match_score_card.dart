@@ -11,6 +11,8 @@ class MatchScoreCard extends StatelessWidget {
   final String? venue;
   final String? venueLocation;
   final String? divisionName;
+  final String? poolTitle; // Pool title for display
+  final List<String> allPoolTitles; // All pool titles for color indexing
 
   const MatchScoreCard({
     super.key,
@@ -20,6 +22,8 @@ class MatchScoreCard extends StatelessWidget {
     this.venue,
     this.venueLocation,
     this.divisionName,
+    this.poolTitle,
+    this.allPoolTitles = const [],
   });
 
   @override
@@ -293,22 +297,22 @@ class MatchScoreCard extends StatelessWidget {
               ],
             ],
 
-            // Round information
+            // Round information with optional pool display
             if (fixture.round != null) ...[
               const SizedBox(height: 8),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: FITColors.primaryBlue.withValues(alpha: 0.1),
+                  color: _getRoundBackgroundColor().withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: FITColors.primaryBlue.withValues(alpha: 0.3)),
+                      color: _getRoundBackgroundColor().withValues(alpha: 0.3)),
                 ),
                 child: Text(
-                  fixture.round!,
+                  _formatRoundText(),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: FITColors.primaryBlue,
+                        color: _getRoundBackgroundColor(),
                         fontWeight: FontWeight.w600,
                         fontSize: 11,
                       ),
@@ -381,6 +385,32 @@ class MatchScoreCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatRoundText() {
+    if (fixture.round == null) return '';
+
+    // If pool title is provided, format as "Round X - Pool Y"
+    if (poolTitle != null && poolTitle!.isNotEmpty) {
+      return '${fixture.round!} - $poolTitle';
+    }
+
+    return fixture.round!;
+  }
+
+  Color _getRoundBackgroundColor() {
+    // If pool title is provided and we have pool titles for indexing, use pool color
+    if (poolTitle != null &&
+        poolTitle!.isNotEmpty &&
+        allPoolTitles.isNotEmpty) {
+      final poolIndex = allPoolTitles.indexOf(poolTitle!);
+      if (poolIndex >= 0) {
+        return FITColors.getPoolColor(poolIndex);
+      }
+    }
+
+    // Default to primary blue
+    return FITColors.primaryBlue;
   }
 
   String _generateFallbackAbbreviation(String teamName) {
