@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../models/division.dart';
 import '../services/data_service.dart';
-import '../theme/fit_colors.dart';
 import 'fixtures_results_view.dart';
 
 class DivisionsView extends StatefulWidget {
@@ -46,11 +45,9 @@ class _DivisionsViewState extends State<DivisionsView> {
             ),
           ],
         ),
-        backgroundColor: FITColors.successGreen,
-        foregroundColor: FITColors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,57 +112,45 @@ class _DivisionsViewState extends State<DivisionsView> {
                             widget.season);
                       });
                     },
-                    child: GridView.builder(
+                    child: ListView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 1.5,
-                        crossAxisSpacing: 16.0,
-                        mainAxisSpacing: 16.0,
-                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
                       itemCount: divisions.length,
                       itemBuilder: (context, index) {
                         final division = divisions[index];
                         final color = _parseHexColor(division.color);
 
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FixturesResultsView(
-                                  event: widget.event,
-                                  season: widget.season,
-                                  division: division,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Card(
-                            elevation: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12.0),
-                                color: color,
-                              ),
-                              child: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Text(
-                                    division.name,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12.0),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8.0),
+                            leading: CircleAvatar(
+                              backgroundColor: color,
+                              child: const Icon(
+                                Icons.category,
+                                color: Colors.white,
                               ),
                             ),
+                            title: Text(
+                              division.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            trailing: const Icon(Icons.arrow_forward_ios),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FixturesResultsView(
+                                    event: widget.event,
+                                    season: widget.season,
+                                    division: division,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         );
                       },

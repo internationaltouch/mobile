@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../services/data_service.dart';
 import '../utils/image_utils.dart';
-import '../theme/fit_colors.dart';
 import '../config/competition_config.dart';
+import '../config/config_service.dart';
 import 'event_detail_view.dart';
+import 'divisions_view.dart';
 
 class CompetitionsView extends StatefulWidget {
   const CompetitionsView({super.key});
@@ -19,7 +20,65 @@ class _CompetitionsViewState extends State<CompetitionsView> {
   @override
   void initState() {
     super.initState();
-    _eventsFuture = _loadFilteredEvents();
+    _checkConfiguredCompetition();
+  }
+
+  void _checkConfiguredCompetition() {
+    final config = ConfigService.config;
+    if (config.api.competition != null && config.api.season != null) {
+      // Navigate directly to configured competition and season
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToConfiguredCompetition(config.api.competition!, config.api.season!);
+      });
+    } else {
+      // Show normal competition selection
+      _eventsFuture = _loadFilteredEvents();
+    }
+  }
+
+  Future<void> _navigateToConfiguredCompetition(String competitionSlug, String season) async {
+    try {
+      // Load the specific competition
+      final allEvents = await DataService.getEvents();
+      final targetEvent = allEvents.where((event) => event.slug == competitionSlug).firstOrNull;
+      
+      if (targetEvent == null) {
+        throw Exception('Competition "$competitionSlug" not found');
+      }
+
+      // Load seasons for the event
+      final eventWithSeasons = await DataService.loadEventSeasons(targetEvent);
+      final targetSeason = eventWithSeasons.seasons.where((s) => s.title == season).firstOrNull;
+      
+      if (targetSeason == null) {
+        throw Exception('Season "$season" not found for competition "$competitionSlug"');
+      }
+
+      // Navigate directly to divisions
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => DivisionsView(
+              event: eventWithSeasons,
+              season: season,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load configured competition: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        // Fallback to normal competition selection
+        setState(() {
+          _eventsFuture = _loadFilteredEvents();
+        });
+      }
+    }
   }
 
   Future<List<Event>> _loadFilteredEvents() async {
@@ -127,11 +186,23 @@ class _CompetitionsViewState extends State<CompetitionsView> {
 
   @override
   Widget build(BuildContext context) {
+    final config = ConfigService.config;
+    
+    // If we have a configured competition, show loading while navigating
+    if (config.api.competition != null && config.api.season != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Events'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Events'),
-        backgroundColor: FITColors.successGreen,
-        foregroundColor: FITColors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),

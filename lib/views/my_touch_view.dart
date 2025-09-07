@@ -783,7 +783,7 @@ class _MyTouchViewState extends State<MyTouchView> {
   }
 
   void _pushToCompetitionsAndNavigate(Widget destinationView) {
-    // Use the new extension method to switch to Competitions tab (index 2) and navigate
-    context.switchToTabAndNavigate(2, destinationView);
+    // Use the new extension method to switch to Events tab (index 0) and navigate
+    context.switchToTabAndNavigate(0, destinationView);
   }
 }

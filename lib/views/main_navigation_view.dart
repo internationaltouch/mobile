@@ -75,6 +75,14 @@ class _MainNavigationViewState extends State<MainNavigationView> {
 
   @override
   Widget build(BuildContext context) {
+    // If only one tab, show it directly without bottom navigation bar
+    if (_enabledTabs.length == 1) {
+      return Scaffold(
+        body: _pages[0],
+      );
+    }
+
+    // Multiple tabs - show with bottom navigation bar
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
@@ -83,6 +91,9 @@ class _MainNavigationViewState extends State<MainNavigationView> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
+        backgroundColor: ConfigService.config.branding.backgroundColor,
+        selectedItemColor: ConfigService.config.branding.primaryColor,
+        unselectedItemColor: ConfigService.config.branding.textColor.withValues(alpha: 0.6),
         onTap: (index) {
           setState(() {
             _selectedIndex = index;

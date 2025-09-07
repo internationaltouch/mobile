@@ -46,16 +46,22 @@ class AppConfigData {
 class ApiConfig {
   final String baseUrl;
   final String imageBaseUrl;
+  final String? competition;
+  final String? season;
 
   ApiConfig({
     required this.baseUrl,
     required this.imageBaseUrl,
+    this.competition,
+    this.season,
   });
 
   factory ApiConfig.fromJson(Map<String, dynamic> json) {
     return ApiConfig(
       baseUrl: json['baseUrl'] as String,
       imageBaseUrl: json['imageBaseUrl'] as String,
+      competition: json['competition'] as String?,
+      season: json['season'] as String?,
     );
   }
 }

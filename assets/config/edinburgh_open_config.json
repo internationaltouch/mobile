@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "Touch Superleague",
-    "displayName": "Touch Superleague",
-    "description": "Touch Superleague",
+    "name": "EdinOpen",
+    "displayName": "Edinburgh Open",
+    "description": "Edinburgh Open - Touch rugby tournament",
     "identifier": {
       "android": "uk.org.touchsuperleague.mobile",
       "ios": "uk.org.touchsuperleague.mobile"
@@ -11,7 +11,9 @@
   },
   "api": {
     "baseUrl": "https://www.touchsuperleague.org.uk/api/v1",
-    "imageBaseUrl": "https://www.touchsuperleague.org.uk"
+    "imageBaseUrl": "https://www.touchsuperleague.org.uk",
+    "competition": "edinburgh-open",
+    "season": "2012"
   },
   "branding": {
     "primaryColor": "#0993b8",
@@ -38,13 +40,6 @@
         "enabled": true,
         "backgroundColor": "#0993b8",
         "variant": "standard"
-      },
-      {
-        "id": "my_sport",
-        "label": "Favorites",
-        "icon": "star",
-        "enabled": true,
-        "backgroundColor": "#0993b8"
       }
     ]
   },

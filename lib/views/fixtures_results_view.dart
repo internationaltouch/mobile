@@ -5,7 +5,6 @@ import '../models/fixture.dart';
 import '../models/ladder_stage.dart';
 import '../models/team.dart';
 import '../services/data_service.dart';
-import '../theme/fit_colors.dart';
 import '../widgets/match_score_card.dart';
 
 class FixturesResultsView extends StatefulWidget {
@@ -131,8 +130,6 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
             ),
           ],
         ),
-        backgroundColor: FITColors.successGreen,
-        foregroundColor: FITColors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -142,9 +139,9 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: FITColors.white,
-          unselectedLabelColor: FITColors.white.withValues(alpha: 0.7),
-          indicatorColor: FITColors.white,
+          labelColor: Theme.of(context).colorScheme.onPrimary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
+          indicatorColor: Theme.of(context).colorScheme.onPrimary,
           tabs: const [
             Tab(text: 'Fixtures', icon: Icon(Icons.schedule)),
             Tab(text: 'Ladder', icon: Icon(Icons.leaderboard)),
@@ -328,7 +325,6 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: FITColors.primaryBlack,
               ),
             ),
           ),
@@ -402,7 +398,7 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
                 return DataRow(
                   color: isHighlighted
                       ? WidgetStateProperty.all(
-                          FITColors.accentYellow.withValues(alpha: 0.25))
+                          Theme.of(context).colorScheme.secondary.withValues(alpha: 0.25))
                       : null,
                   cells: [
                     DataCell(
