@@ -15,6 +15,7 @@ import 'package:fit_mobile_app/services/data_service.dart';
 import 'package:fit_mobile_app/services/api_service.dart';
 import 'package:fit_mobile_app/services/database_service.dart';
 import 'package:fit_mobile_app/services/database.dart' show createTestDatabase;
+import 'package:fit_mobile_app/config/config_service.dart';
 import 'package:fit_mobile_app/models/division.dart';
 import 'package:fit_mobile_app/views/fixtures_results_view.dart';
 
@@ -23,6 +24,11 @@ import 'navigation_test.mocks.dart';
 
 void main() {
   group('Navigation Tests', () {
+    setUp(() {
+      // Initialize ConfigService for all navigation tests
+      ConfigService.setTestConfig();
+    });
+
     Widget createTestApp({int initialTab = 0}) {
       return MaterialApp(
         theme: FITTheme.lightTheme,
@@ -301,6 +307,9 @@ void main() {
       setUp(() {
         // Set up test database
         DatabaseService.setTestDatabase(createTestDatabase());
+
+        // Set up mock config for testing
+        ConfigService.setTestConfig();
 
         // Mock HTTP client to avoid real API calls
         mockClient = MockClient();
