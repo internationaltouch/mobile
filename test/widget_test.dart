@@ -28,7 +28,30 @@ void main() {
     ApiService.setHttpClient(mockClient);
     DataService.clearCache();
 
-    // Mock all API calls to return empty/valid data
+    // Mock RSS feed requests
+    when(mockClient.get(
+      Uri.parse('https://test.example.com/news/rss'),
+      headers: anyNamed('headers'),
+    )).thenAnswer((_) async => http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Test News</title>
+    <item>
+      <title>Test News Item</title>
+      <link>https://example.com/test</link>
+      <description>Test description</description>
+      <pubDate>Mon, 01 Jan 2024 12:00:00 +0000</pubDate>
+    </item>
+  </channel>
+</rss>''', 200));
+
+    // Mock API calls to return empty/valid data
+    when(mockClient.get(
+      argThat(predicate((Uri uri) => uri.path.contains('/api/'))),
+      headers: anyNamed('headers'),
+    )).thenAnswer((_) async => http.Response('[]', 200));
+    
+    // Fallback for any other requests
     when(mockClient.get(any, headers: anyNamed('headers')))
         .thenAnswer((_) async => http.Response('[]', 200));
   });

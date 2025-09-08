@@ -347,8 +347,22 @@ class ConfigService {
         ),
         TabConfig(
           id: 'clubs',
-          label: 'Clubs',
+          label: 'Members',
           icon: 'public',
+          enabled: true,
+          backgroundColor: BrandingConfig._parseColor('#1976D2'),
+        ),
+        TabConfig(
+          id: 'events',
+          label: 'Events',
+          icon: 'sports',
+          enabled: true,
+          backgroundColor: BrandingConfig._parseColor('#1976D2'),
+        ),
+        TabConfig(
+          id: 'mytouch',
+          label: 'My Touch',
+          icon: 'star',
           enabled: true,
           backgroundColor: BrandingConfig._parseColor('#1976D2'),
         ),

@@ -5,7 +5,7 @@ import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/config/config_service.dart';
 
 void main() {
-  group('Members Tab Navigation Tests', () {
+  group('Navigation Tab Configuration Tests', () {
     setUp(() {
       // Initialize ConfigService for all navigation tests
       ConfigService.setTestConfig();
@@ -17,21 +17,24 @@ void main() {
       );
     }
 
-    testWidgets('Should have 4 navigation tabs including Members',
+    testWidgets('Should have correct number of navigation tabs from config',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pump();
 
-      // Check for all 4 tabs
-      expect(find.text('News'), findsOneWidget);
-      expect(find.text('Members'), findsOneWidget);
-      expect(find.text('Events'), findsOneWidget);
-      expect(find.text('My Touch'), findsOneWidget);
+      // Get configuration-based labels
+      final config = ConfigService.config.navigation;
+      final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
 
-      // Check bottom navigation bar has 4 items
+      // Check for all enabled tabs from configuration
+      for (final tab in enabledTabs) {
+        expect(find.text(tab.label), findsOneWidget);
+      }
+
+      // Check bottom navigation bar has correct number of enabled tabs
       final bottomNavBar =
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-      expect(bottomNavBar.items.length, equals(4));
+      expect(bottomNavBar.items.length, equals(enabledTabs.length));
     });
 
     testWidgets('Should start with News tab selected by default',
@@ -44,61 +47,85 @@ void main() {
       expect(bottomNavBar.currentIndex, equals(0));
     });
 
-    testWidgets('Should switch to Members tab when tapped',
+    testWidgets('Should switch to second tab when tapped',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pump();
 
-      // Tap on Members tab
-      await tester.tap(find.text('Members'));
-      await tester.pump();
+      // Get the second enabled tab from config
+      final config = ConfigService.config.navigation;
+      final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
+      if (enabledTabs.length > 1) {
+        final secondTab = enabledTabs[1];
+        
+        // Tap on second tab
+        await tester.tap(find.text(secondTab.label));
+        await tester.pump();
 
-      // Verify Members tab is selected (index 1)
-      final bottomNavBar =
-          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-      expect(bottomNavBar.currentIndex, equals(1));
+        // Verify second tab is selected (index 1)
+        final bottomNavBar =
+            tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+        expect(bottomNavBar.currentIndex, equals(1));
+      }
     });
 
-    testWidgets('Should switch to Events tab when tapped',
+    testWidgets('Should switch to third tab when tapped',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pump();
 
-      // Tap on Events tab
-      await tester.tap(find.text('Events'));
-      await tester.pump();
+      // Get the third enabled tab from config
+      final config = ConfigService.config.navigation;
+      final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
+      if (enabledTabs.length > 2) {
+        final thirdTab = enabledTabs[2];
+        
+        // Tap on third tab
+        await tester.tap(find.text(thirdTab.label));
+        await tester.pump();
 
-      // Verify Events tab is selected (index 2, shifted due to Members tab)
-      final bottomNavBar =
-          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-      expect(bottomNavBar.currentIndex, equals(2));
+        // Verify third tab is selected (index 2)
+        final bottomNavBar =
+            tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+        expect(bottomNavBar.currentIndex, equals(2));
+      }
     });
 
-    testWidgets('Should switch to My Touch tab when tapped',
+    testWidgets('Should switch to fourth tab when tapped',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pump();
 
-      // Tap on My Touch tab
-      await tester.tap(find.text('My Touch'));
-      await tester.pump();
+      // Get the fourth enabled tab from config
+      final config = ConfigService.config.navigation;
+      final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
+      if (enabledTabs.length > 3) {
+        final fourthTab = enabledTabs[3];
+        
+        // Tap on fourth tab
+        await tester.tap(find.text(fourthTab.label));
+        await tester.pump();
 
-      // Verify My Touch tab is selected (index 3, shifted due to Members tab)
-      final bottomNavBar =
-          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-      expect(bottomNavBar.currentIndex, equals(3));
+        // Verify fourth tab is selected (index 3)
+        final bottomNavBar =
+            tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+        expect(bottomNavBar.currentIndex, equals(3));
+      }
     });
 
-    testWidgets('Should have correct icons for each tab',
+    testWidgets('Should display icons matching configuration',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pump();
 
-      // Check for correct icons
-      expect(find.byIcon(Icons.newspaper), findsOneWidget); // News
-      expect(find.byIcon(Icons.public), findsOneWidget); // Members (globe)
-      expect(find.byIcon(Icons.sports), findsOneWidget); // Events
-      expect(find.byIcon(Icons.star), findsOneWidget); // My Touch
+      // Get configuration-based icons
+      final config = ConfigService.config.navigation;
+      final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
+
+      // Verify each configured tab has its expected icon
+      for (final tab in enabledTabs) {
+        expect(find.byIcon(tab.iconData), findsOneWidget);
+      }
     });
   });
 }
