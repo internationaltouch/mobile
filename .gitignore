@@ -46,6 +46,7 @@ android/gradlew.bat
 android/gradle/wrapper/gradle-wrapper.jar
 android/local.properties
 android/**/GeneratedPluginRegistrant.java
+android/key.properties
 
 # iOS specific
 ios/Flutter/flutter_assets/

@@ -86,7 +86,7 @@ lib/
 ```
 touch-mobile-framework/            # Root mono-repo
 ├── packages/                      # Reusable Flutter packages (touchtechnology.app namespace)
-│   ├── app_touchtechnology_core/  # Core services and utilities
+│   ├── touchtech_core/            # Core services and utilities
 │   │   ├── lib/
 │   │   │   ├── config/            # Configuration services
 │   │   │   ├── services/          # Data services, API clients
@@ -94,48 +94,48 @@ touch-mobile-framework/            # Root mono-repo
 │   │   │   ├── utils/             # Utility functions
 │   │   │   └── theme/             # Base theming system
 │   │   ├── test/
-│   │   └── pubspec.yaml           # name: app_touchtechnology_core
-│   ├── app_touchtechnology_news/  # News module package
+│   │   └── pubspec.yaml           # name: touchtech_core
+│   ├── touchtech_news/            # News module package
 │   │   ├── lib/
 │   │   │   ├── models/            # News-specific models
 │   │   │   ├── services/          # RSS parsing, news API
 │   │   │   ├── widgets/           # News UI components
 │   │   │   └── views/             # NewsView and screens
 │   │   ├── test/
-│   │   └── pubspec.yaml           # name: app_touchtechnology_news
-│   ├── app_touchtechnology_clubs/ # Clubs module package
+│   │   └── pubspec.yaml           # name: touchtech_news
+│   ├── touchtech_clubs/           # Clubs module package
 │   │   ├── lib/
 │   │   │   ├── models/
 │   │   │   ├── services/
 │   │   │   ├── widgets/
 │   │   │   └── views/
 │   │   ├── test/
-│   │   └── pubspec.yaml           # name: app_touchtechnology_clubs
-│   ├── app_touchtechnology_competitions/ # Competitions module package
+│   │   └── pubspec.yaml           # name: touchtech_clubs
+│   ├── touchtech_competitions/    # Competitions module package
 │   │   ├── lib/
 │   │   │   ├── models/
 │   │   │   ├── services/
 │   │   │   ├── widgets/
 │   │   │   └── views/
 │   │   ├── test/
-│   │   └── pubspec.yaml           # name: app_touchtechnology_competitions
-│   └── app_touchtechnology_favorites/    # Favorites module package
+│   │   └── pubspec.yaml           # name: touchtech_competitions
+│   └── touchtech_favorites/       # Favorites module package
 │       ├── lib/
 │       ├── test/
-│       └── pubspec.yaml           # name: app_touchtechnology_favorites
+│       └── pubspec.yaml           # name: touchtech_favorites
 ├── apps/                          # Individual organization apps
-│   ├── fit_international_touch/   # FIT International Touch
+│   ├── internationaltouch/        # FIT International Touch
 │   │   ├── lib/
 │   │   │   ├── main.dart          # App entry point
 │   │   │   └── config/            # FIT-specific configuration
 │   │   ├── assets/                # FIT-specific assets (logos, etc.)
 │   │   ├── config/                # JSON configuration files
 │   │   ├── test/                  # App integration tests
-│   │   ├── pubspec.yaml           # Dependencies + touchtechnology packages
+│   │   ├── pubspec.yaml           # Dependencies + touchtech packages
 │   │   ├── android/app/build.gradle # applicationId "org.internationaltouch.mobile"
 │   │   ├── ios/Runner.xcodeproj   # Bundle ID: org.internationaltouch.mobile
 │   │   └── Makefile               # FIT app build commands
-│   ├── touch_superleague/         # Touch Superleague
+│   ├── touch_superleague_uk/      # Touch Superleague UK
 │   │   ├── lib/
 │   │   ├── assets/
 │   │   ├── config/
@@ -143,15 +143,6 @@ touch-mobile-framework/            # Root mono-repo
 │   │   ├── pubspec.yaml
 │   │   ├── android/app/build.gradle # applicationId "uk.org.touchsuperleague.mobile"
 │   │   ├── ios/Runner.xcodeproj   # Bundle ID: uk.org.touchsuperleague.mobile
-│   │   └── Makefile
-│   ├── example_foobar/            # Example third-party app
-│   │   ├── lib/
-│   │   ├── assets/
-│   │   ├── config/
-│   │   ├── test/
-│   │   ├── pubspec.yaml
-│   │   ├── android/app/build.gradle # applicationId "com.foobar.mobile"
-│   │   ├── ios/Runner.xcodeproj   # Bundle ID: com.foobar.mobile
 │   │   └── Makefile
 │   └── template/                  # Template for new apps
 │       ├── lib/
@@ -175,13 +166,21 @@ touch-mobile-framework/            # Root mono-repo
 ```
 
 **App Dependencies:**
-Each app's `pubspec.yaml` references the core library:
+Each app's `pubspec.yaml` references the touchtech packages:
 ```yaml
 dependencies:
   flutter:
     sdk: flutter
-  core:
-    path: ../../core
+  touchtech_core:
+    path: ../../packages/touchtech_core
+  touchtech_news:
+    path: ../../packages/touchtech_news
+  touchtech_clubs:
+    path: ../../packages/touchtech_clubs
+  touchtech_competitions:
+    path: ../../packages/touchtech_competitions
+  touchtech_favorites:
+    path: ../../packages/touchtech_favorites
   # App-specific dependencies
 ```
 
@@ -240,7 +239,7 @@ dependencies:
    - **Reorganize into Touch Technology Framework** (app.touchtechnology.* namespace)
      - Move reusable components to separate packages with proper namespacing
      - Restructure mono-repo with packages/ and apps/ directories
-     - Update package names: app_touchtechnology_core, app_touchtechnology_news, etc.
+     - Update package names: touchtech_core, touchtech_news, touchtech_clubs, etc.
      - Configure proper reverse domain name identifiers for each app
    - **Implement Comprehensive Testing Strategy**
      - Root-level `make test` validates all packages and apps in harmony
@@ -475,7 +474,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [fit-touch, touch-superleague]
+        app:
+          - internationaltouch
+          - touch_superleague_uk
     steps:
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v1
