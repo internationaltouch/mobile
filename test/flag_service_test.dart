@@ -1,9 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fit_mobile_app/services/flag_service.dart';
+import 'package:fit_mobile_app/config/config_service.dart';
 
 void main() {
   group('FlagService Tests', () {
+    setUp(() {
+      // Initialize ConfigService for all flag service tests
+      ConfigService.setTestConfig();
+    });
     test('should return flag widget for direct country names', () {
       // Test with direct country name
       final franceFlagWidget = FlagService.getFlagWidget(
