@@ -4,7 +4,8 @@ import '../models/season.dart';
 import '../models/division.dart';
 
 class CompetitionFilterService {
-  static final CompetitionConfig _config = ConfigService.config.features.competitions;
+  /// Get competition configuration dynamically
+  static CompetitionConfig get _config => ConfigService.config.features.competitions;
   
   /// Filter events (competitions) based on configuration exclusions
   static List<Event> filterEvents(List<Event> events) {

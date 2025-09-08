@@ -62,6 +62,15 @@
       "allowedStatuses": ["active"],
       "excludedSlugs": [],
       "slugImageMapping": {}
+    },
+    "competitions": {
+      "excludedSlugs": [
+        "cardiff-touch-superleague",
+        "jersey-touch-superleague"
+      ],
+      "excludedSeasonCombos": [],
+      "excludedDivisionCombos": [],
+      "slugImageMapping": {}
     }
   },
   "assets": {

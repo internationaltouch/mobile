@@ -151,10 +151,10 @@ dependencies:
    - ✅ Implement slug exclusion list in config
    - ✅ Add slug-to-image mapping configuration
    - ✅ Update `ClubView` to apply all filters and image mappings
-3. **Competition Filtering**: Implement comprehensive competition exclusion
-   - Add exclusion by competition slug, competition+season, competition+season+division
-   - Update competition views to respect exclusion filters
-   - Ensure filtering works at all navigation levels
+3. **Competition Filtering**: ✅ COMPLETED Implement comprehensive competition exclusion
+   - ✅ Add exclusion by competition slug, competition+season, competition+season+division
+   - ✅ Update competition views to respect exclusion filters
+   - ✅ Ensure filtering works at all navigation levels
 
 ### Phase 2: Library Integration & Architecture
 1. **State Management Libraries**: Integrate recommended libraries
