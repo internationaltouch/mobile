@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fit_mobile_app/main.dart';
 import 'package:fit_mobile_app/services/database_service.dart';
-import 'package:fit_mobile_app/services/database.dart' show createTestDatabase;
+import 'package:fit_mobile_app/services/database.dart' show createTestDatabase, AppDatabase;
 import 'package:fit_mobile_app/views/competitions_view.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -15,14 +15,18 @@ import 'widget_test.mocks.dart';
 
 void main() {
   late MockClient mockClient;
+  late AppDatabase testDb;
 
-  setUp(() {
-    // Set up test database and mock HTTP client
-    DatabaseService.setTestDatabase(createTestDatabase());
+  setUpAll(() {
+    // Create a single test database instance for all tests
+    testDb = createTestDatabase();
+    DatabaseService.setTestDatabase(testDb);
     
     // Initialize ConfigService with test config
     ConfigService.setTestConfig();
+  });
 
+  setUp(() {
     mockClient = MockClient();
     DataService.setHttpClient(mockClient);
     ApiService.setHttpClient(mockClient);
@@ -60,8 +64,11 @@ void main() {
     DataService.resetHttpClient();
     ApiService.resetHttpClient();
     DataService.clearCache();
-    DatabaseService.clearTestDatabase();
     reset(mockClient);
+  });
+
+  tearDownAll(() {
+    DatabaseService.clearTestDatabase();
   });
 
   testWidgets('FIT Mobile App smoke test', (WidgetTester tester) async {

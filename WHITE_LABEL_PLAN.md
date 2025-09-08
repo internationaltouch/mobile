@@ -206,15 +206,33 @@ dependencies:
    - ✅ Ensure filtering works at all navigation levels
 
 ### Phase 2: Library Integration & Architecture
-1. **State Management Libraries**: Integrate recommended libraries
+1. **Entity Image System Refactor**: Restructure entity image handling as app-specific specialization
+   - **Create Abstract Entity Image Interface**: Define `EntityImageServiceInterface` in core with standardized methods
+     - `Widget? getEntityImageWidget({required String entityName, String? entityAbbreviation, double size})` 
+     - `bool hasImageForEntity(String entityName, String? entityAbbreviation)`
+     - `Set<String> getSupportedEntities()` for validation/autocomplete
+   - **No-Op Default Implementation**: Core provides `NoEntityImageService` that returns null/false/empty
+     - Most white-label apps don't need entity images, so core doesn't include image assets or logic
+     - Clean separation - entity image functionality is purely opt-in specialization
+   - **FIT App Specialization**: Move current flag implementation to FIT app as entity image provider
+     - Rename `FlagService` to `FITEntityImageService` in `apps/internationaltouch/lib/services/fit_entity_image_service.dart`
+     - Keep existing `flag` library integration - FIT uses country flags for nations/teams
+     - Maintain all current mappings and specializations (Chinese Taipei, regional flags, etc.)
+     - Register FIT entity image service during app initialization via dependency injection
+   - **Other App Specializations**: Apps can implement their own entity image providers as needed
+     - Asset-based providers for team logos, club emblems, organization badges
+     - API-based providers for remote entity image fetching
+     - Mixed providers that handle clubs, teams, leagues, and other entities appropriately
+     - Each app declares its entity image service matching their domain model
+2. **State Management Libraries**: Integrate recommended libraries
    - Add `bloc` and `flutter_bloc` for business logic separation
    - Integrate `riverpod` for reactive data caching and async handling
    - Migrate existing state management to use these patterns
-2. **Device & Connectivity**: Add device awareness capabilities
+3. **Device & Connectivity**: Add device awareness capabilities
    - Integrate `connectivity_plus` for network state monitoring
    - Add `device_info_plus` for device-specific feature enabling/disabling
    - Implement adaptive behavior based on connectivity and device capabilities
-3. **Data Persistence**: Implement local storage
+4. **Data Persistence**: Implement local storage
    - Add `shared_preferences` for simple key-value storage
    - Move user preferences and settings to device storage
    - Implement offline capability where appropriate

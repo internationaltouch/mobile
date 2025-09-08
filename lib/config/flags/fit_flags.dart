@@ -6,6 +6,7 @@ class FITFlags extends FlagsInterface {
   static const Map<String, String> _clubToFlagMapping = {
     'hong kong china': 'HK',
     'hong kong': 'HK',
+    'chinese taipei': 'TW',
     'england': 'GB_ENG',
     'scotland': 'GB_SCT',
     'wales': 'GB_WLS',
@@ -102,6 +103,7 @@ class FITFlags extends FlagsInterface {
     'SCO': 'GB_SCT',
     'WAL': 'GB_WLS',
     'NIR': 'GB_NIR',
+    'TPE': 'TW',
     'USA': 'US',
     'NZL': 'NZ',
     'AUS': 'AU',
