@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../services/data_service.dart';
+import '../services/competition_filter_service.dart';
 import '../utils/image_utils.dart';
-import '../config/competition_config.dart';
 import '../config/config_service.dart';
 import 'event_detail_view.dart';
 import 'divisions_view.dart';
@@ -83,38 +83,15 @@ class _CompetitionsViewState extends State<CompetitionsView> {
 
   Future<List<Event>> _loadFilteredEvents() async {
     final allEvents = await DataService.getEvents();
-
-    // Validate configuration: only one filtering mode should be used
-    if (CompetitionConfig.includeCompetitionSlugs.isNotEmpty &&
-        CompetitionConfig.excludeCompetitionSlugs.isNotEmpty) {
-      throw Exception(
-          'Configuration Error: Cannot use both include and exclude filtering simultaneously. '
-          'Use either includeCompetitionSlugs OR excludeCompetitionSlugs, not both.');
-    }
-
-    // Apply filtering based on the active mode
-    if (CompetitionConfig.includeCompetitionSlugs.isNotEmpty) {
-      // INCLUDE mode: Only show competitions with specified slugs
-      return allEvents.where((event) {
-        return event.slug != null &&
-            CompetitionConfig.includeCompetitionSlugs.contains(event.slug);
-      }).toList();
-    } else if (CompetitionConfig.excludeCompetitionSlugs.isNotEmpty) {
-      // EXCLUDE mode: Hide competitions with specified slugs
-      return allEvents.where((event) {
-        return event.slug == null ||
-            !CompetitionConfig.excludeCompetitionSlugs.contains(event.slug);
-      }).toList();
-    } else {
-      // No filtering: show all competitions
-      return allEvents;
-    }
+    // Apply competition filtering using the new service
+    return CompetitionFilterService.filterEvents(allEvents);
   }
 
   Widget _getCompetitionIcon(Event event) {
     final slug = event.slug;
-    if (slug != null && CompetitionConfig.competitionImages.containsKey(slug)) {
-      // Use static asset image
+    final competitionImage = slug != null ? CompetitionFilterService.getCompetitionImage(slug) : null;
+    if (competitionImage != null) {
+      // Use configured asset image
       return Container(
         width: 64,
         height: 64,
@@ -126,7 +103,7 @@ class _CompetitionsViewState extends State<CompetitionsView> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: Image.asset(
-            CompetitionConfig.competitionImages[slug]!,
+            competitionImage,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) =>
                 _buildFallbackIcon(event),

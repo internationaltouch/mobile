@@ -238,17 +238,42 @@ class ClubConfig {
   }
 }
 
+class CompetitionConfig {
+  final List<String> excludedSlugs;
+  final List<String> excludedSeasonCombos;  // Format: "slug:season"
+  final List<String> excludedDivisionCombos;  // Format: "slug:season:division"
+  final Map<String, String> slugImageMapping;
+
+  CompetitionConfig({
+    this.excludedSlugs = const [],
+    this.excludedSeasonCombos = const [],
+    this.excludedDivisionCombos = const [],
+    this.slugImageMapping = const {},
+  });
+
+  factory CompetitionConfig.fromJson(Map<String, dynamic> json) {
+    return CompetitionConfig(
+      excludedSlugs: List<String>.from(json['excludedSlugs'] ?? []),
+      excludedSeasonCombos: List<String>.from(json['excludedSeasonCombos'] ?? []),
+      excludedDivisionCombos: List<String>.from(json['excludedDivisionCombos'] ?? []),
+      slugImageMapping: Map<String, String>.from(json['slugImageMapping'] ?? {}),
+    );
+  }
+}
+
 class FeaturesConfig {
   final String flagsModule;
   final String eventsVariant;
   final NewsConfig news;
   final ClubConfig clubs;
+  final CompetitionConfig competitions;
 
   FeaturesConfig({
     required this.flagsModule,
     required this.eventsVariant,
     required this.news,
     required this.clubs,
+    required this.competitions,
   });
 
   factory FeaturesConfig.fromJson(Map<String, dynamic> json) {
@@ -257,6 +282,7 @@ class FeaturesConfig {
       eventsVariant: json['eventsVariant'] as String,
       news: NewsConfig.fromJson(json['news'] ?? {}),
       clubs: ClubConfig.fromJson(json['clubs'] ?? {}),
+      competitions: CompetitionConfig.fromJson(json['competitions'] ?? {}),
     );
   }
 }
@@ -381,6 +407,31 @@ class ConfigService {
           allowedStatuses: ['active'],
           excludedSlugs: [],
           slugImageMapping: {},
+        ),
+        competitions: CompetitionConfig(
+          excludedSlugs: [
+            'home-nations',
+            'mainland-cup',
+            'asian-cup',
+            'test-matches',
+            'pacific-games',
+            'cardiff-touch-superleague',
+            'jersey-touch-superleague',
+          ],
+          excludedSeasonCombos: [
+            'world-cup:2018',
+            'euros:2016',
+          ],
+          excludedDivisionCombos: [
+            'world-cup:2022:womens-30',
+            'euros:2023:mens-40',
+          ],
+          slugImageMapping: {
+            'asia-pacific-youth-touch-cup': 'assets/images/competitions/APYTC.png',
+            'atlantic-youth-touch-cup': 'assets/images/competitions/AYTC.png',
+            'european-junior-touch-championships': 'assets/images/competitions/EJTC.png',
+            'euros': 'assets/images/competitions/ETC.png',
+          },
         ),
       ),
       assets: AssetsConfig(

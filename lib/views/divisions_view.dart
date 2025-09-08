@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../models/division.dart';
 import '../services/data_service.dart';
+import '../services/competition_filter_service.dart';
 import 'fixtures_results_view.dart';
 
 class DivisionsView extends StatefulWidget {
@@ -24,8 +25,14 @@ class _DivisionsViewState extends State<DivisionsView> {
   @override
   void initState() {
     super.initState();
-    _divisionsFuture = DataService.getDivisions(
+    _divisionsFuture = _loadFilteredDivisions();
+  }
+  
+  Future<List<Division>> _loadFilteredDivisions() async {
+    final allDivisions = await DataService.getDivisions(
         widget.event.slug ?? widget.event.id, widget.season);
+    // Apply division filtering
+    return CompetitionFilterService.filterDivisions(widget.event, widget.season, allDivisions);
   }
 
   @override

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../models/season.dart';
 import '../services/data_service.dart';
+import '../services/competition_filter_service.dart';
 import '../utils/image_utils.dart';
-import '../config/competition_config.dart';
 import 'divisions_view.dart';
 
 class EventDetailView extends StatefulWidget {
@@ -27,29 +27,36 @@ class _EventDetailViewState extends State<EventDetailView> {
   }
 
   Future<Event> _loadEventSeasons() async {
+    Event eventToFilter;
+    
     if (widget.event.seasonsLoaded) {
-      // Auto-select if only one season and already loaded
-      if (widget.event.seasons.length == 1) {
-        selectedSeason = widget.event.seasons.first;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _navigateToDivisions();
-        });
-      }
-      return widget.event;
+      eventToFilter = widget.event;
+    } else {
+      // Load seasons lazily
+      eventToFilter = await DataService.loadEventSeasons(widget.event);
     }
 
-    // Load seasons lazily
-    final updatedEvent = await DataService.loadEventSeasons(widget.event);
+    // Apply season filtering
+    final filteredSeasons = CompetitionFilterService.filterSeasons(eventToFilter, eventToFilter.seasons);
+    final filteredEvent = Event(
+      id: eventToFilter.id,
+      name: eventToFilter.name,
+      logoUrl: eventToFilter.logoUrl,
+      seasons: filteredSeasons,
+      description: eventToFilter.description,
+      slug: eventToFilter.slug,
+      seasonsLoaded: true,
+    );
 
-    // Auto-select if only one season after loading
-    if (updatedEvent.seasons.length == 1) {
-      selectedSeason = updatedEvent.seasons.first;
+    // Auto-select if only one season after filtering
+    if (filteredEvent.seasons.length == 1) {
+      selectedSeason = filteredEvent.seasons.first;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _navigateToDivisions();
       });
     }
 
-    return updatedEvent;
+    return filteredEvent;
   }
 
   void _navigateToDivisions() {
@@ -68,10 +75,11 @@ class _EventDetailViewState extends State<EventDetailView> {
 
   Widget _getCompetitionIcon(Event event) {
     final slug = event.slug;
-    if (slug != null && CompetitionConfig.competitionImages.containsKey(slug)) {
-      // Use static asset image
+    final competitionImage = slug != null ? CompetitionFilterService.getCompetitionImage(slug) : null;
+    if (competitionImage != null) {
+      // Use configured asset image
       return Image.asset(
-        CompetitionConfig.competitionImages[slug]!,
+        competitionImage,
         height: 120,
         width: 120,
         fit: BoxFit.contain,
