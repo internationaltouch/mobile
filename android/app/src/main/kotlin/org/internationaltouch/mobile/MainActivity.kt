@@ -1,4 +1,4 @@
-package com.fit.mobile
+package org.internationaltouch.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 
