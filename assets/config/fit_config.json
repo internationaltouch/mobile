@@ -1,17 +1,17 @@
 {
   "app": {
-    "name": "SampleOrg",
-    "displayName": "Sample Organization",
-    "description": "Sample Organization - Sports tournaments and events",
+    "name": "FIT International Touch",
+    "displayName": "FIT International Touch",
+    "description": "FIT International Touch - Official app",
     "identifier": {
-      "android": "org.sampleorg.app",
-      "ios": "org.sampleorg.app"
+      "android": "org.internationaltouch.mobile",
+      "ios": "org.internationaltouch.mobile"
     },
     "version": "1.0.0+1"
   },
   "api": {
-    "baseUrl": "https://api.sampleorg.org/v1",
-    "imageBaseUrl": "https://api.sampleorg.org"
+    "baseUrl": "https://www.internationaltouch.org/api/v1",
+    "imageBaseUrl": "https://www.internationaltouch.org"
   },
   "branding": {
     "primaryColor": "#1976D2",
@@ -33,49 +33,45 @@
     "tabs": [
       {
         "id": "news",
-        "label": "Updates",
+        "label": "News",
         "icon": "newspaper",
         "enabled": true,
         "backgroundColor": "#1976D2"
       },
       {
         "id": "clubs",
-        "label": "Teams",
+        "label": "Members",
         "icon": "public",
         "enabled": true,
         "backgroundColor": "#1976D2"
       },
       {
         "id": "events",
-        "label": "Competitions",
+        "label": "Events",
         "icon": "sports",
         "enabled": true,
         "backgroundColor": "#1976D2",
-        "variant": "favorites"
-      },
-      {
-        "id": "my_sport",
-        "label": "My Events",
-        "icon": "star",
-        "enabled": false,
-        "backgroundColor": "#1976D2"
+        "variant": "standard"
       }
     ]
   },
   "features": {
     "flagsModule": "fit",
-    "eventsVariant": "favorites",
+    "eventsVariant": "standard",
     "news": {
-      "rssUrl": "https://api.sampleorg.org/news/rss",
-      "initialItemsCount": 10,
-      "infiniteScrollBatchSize": 5
+      "rssUrl": "https://www.internationaltouch.org/news/feeds/rss/",
+      "initialItemsCount": 12,
+      "infiniteScrollBatchSize": 6
     },
     "clubs": {
-      "navigationLabel": "Teams",
-      "titleBarText": "Teams",
-      "allowedStatuses": ["active"],
-      "excludedSlugs": [],
-      "slugImageMapping": {}
+      "navigationLabel": "Members",
+      "titleBarText": "Member Nations",
+      "allowedStatuses": ["active", "pending"],
+      "excludedSlugs": ["test-club", "inactive-member"],
+      "slugImageMapping": {
+        "australia": "assets/images/flags/australia.png",
+        "new-zealand": "assets/images/flags/new-zealand.png"
+      }
     }
   },
   "assets": {

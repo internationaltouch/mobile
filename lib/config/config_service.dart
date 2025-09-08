@@ -212,15 +212,43 @@ class NewsConfig {
   }
 }
 
+class ClubConfig {
+  final String navigationLabel;
+  final String titleBarText;
+  final List<String> allowedStatuses;
+  final List<String> excludedSlugs;
+  final Map<String, String> slugImageMapping;
+
+  ClubConfig({
+    this.navigationLabel = 'Clubs',
+    this.titleBarText = 'Clubs',
+    this.allowedStatuses = const ['active'],
+    this.excludedSlugs = const [],
+    this.slugImageMapping = const {},
+  });
+
+  factory ClubConfig.fromJson(Map<String, dynamic> json) {
+    return ClubConfig(
+      navigationLabel: json['navigationLabel'] as String? ?? 'Clubs',
+      titleBarText: json['titleBarText'] as String? ?? 'Clubs',
+      allowedStatuses: List<String>.from(json['allowedStatuses'] ?? ['active']),
+      excludedSlugs: List<String>.from(json['excludedSlugs'] ?? []),
+      slugImageMapping: Map<String, String>.from(json['slugImageMapping'] ?? {}),
+    );
+  }
+}
+
 class FeaturesConfig {
   final String flagsModule;
   final String eventsVariant;
   final NewsConfig news;
+  final ClubConfig clubs;
 
   FeaturesConfig({
     required this.flagsModule,
     required this.eventsVariant,
     required this.news,
+    required this.clubs,
   });
 
   factory FeaturesConfig.fromJson(Map<String, dynamic> json) {
@@ -228,6 +256,7 @@ class FeaturesConfig {
       flagsModule: json['flagsModule'] as String,
       eventsVariant: json['eventsVariant'] as String,
       news: NewsConfig.fromJson(json['news'] ?? {}),
+      clubs: ClubConfig.fromJson(json['clubs'] ?? {}),
     );
   }
 }

@@ -138,19 +138,19 @@ dependencies:
 ## Implementation Plan
 
 ### Phase 1: Core Component Configuration
-1. **News RSS Configuration**: Update `NewsView` (rename from `HomeView`) to use configurable RSS feed URLs
-   - Rename `HomeView` to `NewsView` to clarify its purpose as news component (not necessarily home screen)
-   - Add RSS URL (absolute or relative to base URL) to config schema
-   - Add pagination settings: initial items (default 10), infinite scroll items (default 5)
-   - Implement infinite scroll with configurable batch sizes
-   - Modify news loading to respect configuration
-2. **Club Filtering & Images**: Enhance club configuration system
-   - Rename `MembersView` to `ClubView` to use generic terminology
-   - Add configurable UI labels (navigation label, title bar text) - e.g., FIT uses "Members"/"Member Nations"
-   - Add status filters: allow inactive/hidden clubs per-app
-   - Implement slug exclusion list in config
-   - Add slug-to-image mapping configuration
-   - Update `ClubView` to apply all filters and image mappings
+1. **News RSS Configuration**: ✅ COMPLETED Update `NewsView` (rename from `HomeView`) to use configurable RSS feed URLs
+   - ✅ Rename `HomeView` to `NewsView` to clarify its purpose as news component (not necessarily home screen)
+   - ✅ Add RSS URL (absolute or relative to base URL) to config schema
+   - ✅ Add pagination settings: initial items (default 10), infinite scroll items (default 5)
+   - ✅ Implement infinite scroll with configurable batch sizes
+   - ✅ Modify news loading to respect configuration
+2. **Club Filtering & Images**: ✅ COMPLETED Enhance club configuration system
+   - ✅ Rename `MembersView` to `ClubView` to use generic terminology
+   - ✅ Add configurable UI labels (navigation label, title bar text) - e.g., FIT uses "Members"/"Member Nations"
+   - ✅ Add status filters: allow inactive/hidden clubs per-app
+   - ✅ Implement slug exclusion list in config
+   - ✅ Add slug-to-image mapping configuration
+   - ✅ Update `ClubView` to apply all filters and image mappings
 3. **Competition Filtering**: Implement comprehensive competition exclusion
    - Add exclusion by competition slug, competition+season, competition+season+division
    - Update competition views to respect exclusion filters

@@ -3,16 +3,17 @@ import '../models/club.dart';
 import '../services/api_service.dart';
 import '../services/flag_service.dart';
 import '../theme/fit_colors.dart';
-import 'member_detail_view.dart';
+import '../config/config_service.dart';
+import 'club_detail_view.dart';
 
-class MembersView extends StatefulWidget {
-  const MembersView({super.key});
+class ClubView extends StatefulWidget {
+  const ClubView({super.key});
 
   @override
-  State<MembersView> createState() => _MembersViewState();
+  State<ClubView> createState() => _ClubViewState();
 }
 
-class _MembersViewState extends State<MembersView> {
+class _ClubViewState extends State<ClubView> {
   List<Club> _clubs = [];
   bool _isLoading = true;
   String? _error;
@@ -33,20 +34,25 @@ class _MembersViewState extends State<MembersView> {
       final clubsData = await ApiService.fetchClubs();
       final clubs = clubsData.map((json) => Club.fromJson(json)).toList();
 
-      // Filter clubs to only show those with 'active' status
-      final activeClubs =
-          clubs.where((club) => club.status == 'active').toList();
+      // Filter clubs based on configuration
+      final clubConfig = ConfigService.config.features.clubs;
+      final filteredClubs = clubs.where((club) => 
+        // Include if status is allowed
+        clubConfig.allowedStatuses.contains(club.status) &&
+        // Exclude if slug is in exclusion list
+        !clubConfig.excludedSlugs.contains(club.slug)
+      ).toList();
 
       // Sort clubs alphabetically by title
-      activeClubs.sort((a, b) => a.title.compareTo(b.title));
+      filteredClubs.sort((a, b) => a.title.compareTo(b.title));
 
       setState(() {
-        _clubs = activeClubs;
+        _clubs = filteredClubs;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _error = 'Failed to load member nations: $e';
+        _error = 'Failed to load ${ConfigService.config.features.clubs.navigationLabel.toLowerCase()}: $e';
         _isLoading = false;
       });
     }
@@ -56,9 +62,9 @@ class _MembersViewState extends State<MembersView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Member Nations',
-          style: TextStyle(
+        title: Text(
+          ConfigService.config.features.clubs.titleBarText,
+          style: const TextStyle(
             color: FITColors.primaryBlack,
             fontWeight: FontWeight.bold,
           ),
@@ -125,8 +131,8 @@ class _MembersViewState extends State<MembersView> {
             ),
             SizedBox(height: 16),
             Text(
-              'No member nations found',
-              style: TextStyle(
+              'No ${ConfigService.config.features.clubs.navigationLabel.toLowerCase()} found',
+              style: const TextStyle(
                 fontSize: 16,
                 color: FITColors.darkGrey,
               ),
@@ -168,7 +174,7 @@ class _MembersViewState extends State<MembersView> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => MemberDetailView(club: club),
+              builder: (context) => ClubDetailView(club: club),
             ),
           );
         },

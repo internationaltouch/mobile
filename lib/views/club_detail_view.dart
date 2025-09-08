@@ -4,10 +4,10 @@ import '../models/club.dart';
 import '../services/flag_service.dart';
 import '../theme/fit_colors.dart';
 
-class MemberDetailView extends StatelessWidget {
+class ClubDetailView extends StatelessWidget {
   final Club club;
 
-  const MemberDetailView({super.key, required this.club});
+  const ClubDetailView({super.key, required this.club});
 
   @override
   Widget build(BuildContext context) {

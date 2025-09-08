@@ -55,6 +55,13 @@
       "rssUrl": "https://www.touchsuperleague.org.uk/news/feeds/rss/",
       "initialItemsCount": 10,
       "infiniteScrollBatchSize": 5
+    },
+    "clubs": {
+      "navigationLabel": "Clubs",
+      "titleBarText": "Clubs", 
+      "allowedStatuses": ["active"],
+      "excludedSlugs": [],
+      "slugImageMapping": {}
     }
   },
   "assets": {
