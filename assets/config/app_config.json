@@ -50,7 +50,12 @@
   },
   "features": {
     "flagsModule": "fit",
-    "eventsVariant": "standard"
+    "eventsVariant": "standard",
+    "news": {
+      "rssUrl": "https://www.touchsuperleague.org.uk/news/feeds/rss/",
+      "initialItemsCount": 10,
+      "infiniteScrollBatchSize": 5
+    }
   },
   "assets": {
     "competitionImages": "assets/images/competitions/",

@@ -64,7 +64,12 @@
   },
   "features": {
     "flagsModule": "fit",
-    "eventsVariant": "favorites"
+    "eventsVariant": "favorites",
+    "news": {
+      "rssUrl": "https://api.sampleorg.org/news/rss",
+      "initialItemsCount": 10,
+      "infiniteScrollBatchSize": 5
+    }
   },
   "assets": {
     "competitionImages": "assets/images/competitions/",

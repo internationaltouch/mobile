@@ -192,19 +192,42 @@ class TabConfig {
   }
 }
 
+class NewsConfig {
+  final String rssUrl;
+  final int initialItemsCount;
+  final int infiniteScrollBatchSize;
+
+  NewsConfig({
+    required this.rssUrl,
+    this.initialItemsCount = 10,
+    this.infiniteScrollBatchSize = 5,
+  });
+
+  factory NewsConfig.fromJson(Map<String, dynamic> json) {
+    return NewsConfig(
+      rssUrl: json['rssUrl'] as String? ?? 'https://www.internationaltouch.org/news/feeds/rss/',
+      initialItemsCount: json['initialItemsCount'] as int? ?? 10,
+      infiniteScrollBatchSize: json['infiniteScrollBatchSize'] as int? ?? 5,
+    );
+  }
+}
+
 class FeaturesConfig {
   final String flagsModule;
   final String eventsVariant;
+  final NewsConfig news;
 
   FeaturesConfig({
     required this.flagsModule,
     required this.eventsVariant,
+    required this.news,
   });
 
   factory FeaturesConfig.fromJson(Map<String, dynamic> json) {
     return FeaturesConfig(
       flagsModule: json['flagsModule'] as String,
       eventsVariant: json['eventsVariant'] as String,
+      news: NewsConfig.fromJson(json['news'] ?? {}),
     );
   }
 }

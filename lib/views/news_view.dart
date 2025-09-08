@@ -4,25 +4,26 @@ import '../models/news_item.dart';
 import '../services/data_service.dart';
 import '../theme/fit_colors.dart';
 import '../utils/image_utils.dart';
+import '../config/config_service.dart';
 import 'competitions_view.dart';
 import 'news_detail_view.dart';
 
-class HomeView extends StatefulWidget {
+class NewsView extends StatefulWidget {
   final int initialSelectedIndex;
   final bool showOnlyNews;
 
-  const HomeView(
+  const NewsView(
       {super.key, this.initialSelectedIndex = 0, this.showOnlyNews = false});
 
   @override
-  State<HomeView> createState() => _HomeViewState();
+  State<NewsView> createState() => _NewsViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _NewsViewState extends State<NewsView> {
   late int _selectedIndex;
   late Future<List<NewsItem>> _newsFuture;
   List<NewsItem> _allNewsItems = [];
-  int _visibleItemsCount = 10;
+  late int _visibleItemsCount;
   ScrollController? _scrollController;
   bool _showReturnToTop = false;
 
@@ -30,6 +31,7 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialSelectedIndex;
+    _visibleItemsCount = ConfigService.config.features.news.initialItemsCount;
     _testConnectivityAndLoadNews();
   }
 
@@ -249,8 +251,9 @@ class _HomeViewState extends State<HomeView> {
 
   void _showMoreItems() {
     setState(() {
-      _visibleItemsCount =
-          (_visibleItemsCount + 5).clamp(0, _allNewsItems.length);
+      _visibleItemsCount = (_visibleItemsCount + 
+          ConfigService.config.features.news.infiniteScrollBatchSize)
+          .clamp(0, _allNewsItems.length);
     });
   }
 

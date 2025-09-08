@@ -12,6 +12,7 @@ import '../models/ladder_entry.dart';
 import '../models/ladder_stage.dart';
 import '../models/news_item.dart';
 import '../config/app_config.dart';
+import '../config/config_service.dart';
 import 'api_service.dart';
 import 'database_service.dart';
 
@@ -128,7 +129,7 @@ class DataService {
     }
 
     try {
-      const rssUrl = 'https://www.internationaltouch.org/news/feeds/rss/';
+      final rssUrl = ConfigService.config.features.news.rssUrl;
       debugPrint('📰 [RSS] 🌐 Fetching RSS feed from: $rssUrl');
 
       // Add timeout and headers for better Android compatibility

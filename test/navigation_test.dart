@@ -4,7 +4,7 @@ import 'package:fit_mobile_app/views/main_navigation_view.dart';
 import 'package:fit_mobile_app/views/competitions_view.dart';
 import 'package:fit_mobile_app/views/event_detail_view.dart';
 import 'package:fit_mobile_app/views/divisions_view.dart';
-import 'package:fit_mobile_app/views/home_view.dart';
+import 'package:fit_mobile_app/views/news_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/models/event.dart';
 import 'package:fit_mobile_app/models/season.dart';
@@ -39,8 +39,8 @@ void main() {
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(bottomNavBar.currentIndex, equals(0));
 
-      // Verify News content is visible (should show HomeView with news)
-      expect(find.byType(HomeView), findsOneWidget);
+      // Verify News content is visible (should show NewsView with news)
+      expect(find.byType(NewsView), findsOneWidget);
     });
 
     testWidgets('Should switch to Events tab when tapped',
@@ -230,7 +230,7 @@ void main() {
         await tester.tap(find.text('News'));
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
-        expect(find.byType(HomeView), findsOneWidget);
+        expect(find.byType(NewsView), findsOneWidget);
 
         // Switch back to Events tab
         await tester.tap(find.text('Events'));
