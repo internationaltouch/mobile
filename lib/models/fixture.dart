@@ -52,6 +52,25 @@ class Fixture {
 
     final homeAbbreviation = _extractTeamAbbreviation(json, 'home_team');
     final awayAbbreviation = _extractTeamAbbreviation(json, 'away_team');
+    
+    // Extract team names safely
+    String homeTeamName = json['homeTeamName'] ?? '';
+    if (homeTeamName.isEmpty) {
+      if (json['home_team'] is Map) {
+        homeTeamName = json['home_team']?['name'] ?? '';
+      } else {
+        homeTeamName = json['home_team_name'] ?? '';
+      }
+    }
+    
+    String awayTeamName = json['awayTeamName'] ?? '';
+    if (awayTeamName.isEmpty) {
+      if (json['away_team'] is Map) {
+        awayTeamName = json['away_team']?['name'] ?? '';
+      } else {
+        awayTeamName = json['away_team_name'] ?? '';
+      }
+    }
 
     return Fixture(
       id: json['id']?.toString() ?? '',
@@ -59,8 +78,8 @@ class Fixture {
           json['homeTeamId']?.toString() ?? json['home_team']?.toString() ?? '',
       awayTeamId:
           json['awayTeamId']?.toString() ?? json['away_team']?.toString() ?? '',
-      homeTeamName: json['homeTeamName'] ?? json['home_team']?['name'] ?? '',
-      awayTeamName: json['awayTeamName'] ?? json['away_team']?['name'] ?? '',
+      homeTeamName: homeTeamName,
+      awayTeamName: awayTeamName,
       homeTeamAbbreviation: homeAbbreviation,
       awayTeamAbbreviation: awayAbbreviation,
       dateTime: parsedDateTime,
@@ -73,7 +92,7 @@ class Fixture {
       round: json['round'],
       isBye: json['is_bye'],
       videos: (json['videos'] as List<dynamic>?)?.cast<String>() ?? [],
-      poolId: json['stage_group'] as int?,
+      poolId: json['stage_group'] is int ? json['stage_group'] as int : int.tryParse(json['stage_group']?.toString() ?? ''),
     );
   }
 

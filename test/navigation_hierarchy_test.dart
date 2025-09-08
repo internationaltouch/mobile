@@ -4,9 +4,14 @@ import 'package:fit_mobile_app/views/main_navigation_view.dart';
 import 'package:fit_mobile_app/views/competitions_view.dart';
 import 'package:fit_mobile_app/views/my_touch_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
+import 'package:fit_mobile_app/config/config_service.dart';
 
 void main() {
   group('Navigation Hierarchy Tests', () {
+    setUp(() {
+      // Initialize ConfigService for all navigation tests
+      ConfigService.setTestConfig();
+    });
     Widget createTestApp({int initialTab = 0}) {
       return MaterialApp(
         theme: FITTheme.lightTheme,

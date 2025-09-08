@@ -8,6 +8,7 @@ import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
 import 'package:fit_mobile_app/services/data_service.dart';
 import 'package:fit_mobile_app/services/api_service.dart';
+import 'package:fit_mobile_app/config/config_service.dart';
 
 @GenerateMocks([http.Client])
 import 'widget_test.mocks.dart';
@@ -18,6 +19,9 @@ void main() {
   setUp(() {
     // Set up test database and mock HTTP client
     DatabaseService.setTestDatabase(createTestDatabase());
+    
+    // Initialize ConfigService with test config
+    ConfigService.setTestConfig();
 
     mockClient = MockClient();
     DataService.setHttpClient(mockClient);
