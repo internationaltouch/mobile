@@ -120,16 +120,16 @@ class _ClubViewState extends State<ClubView> {
     }
 
     if (_clubs.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.public_off,
               size: 64,
               color: FITColors.mediumGrey,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'No ${ConfigService.config.features.clubs.navigationLabel.toLowerCase()} found',
               style: const TextStyle(

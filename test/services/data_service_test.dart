@@ -6,6 +6,7 @@ import 'package:fit_mobile_app/services/data_service.dart';
 import 'package:fit_mobile_app/services/api_service.dart';
 import 'package:fit_mobile_app/services/database_service.dart';
 import 'package:fit_mobile_app/services/database.dart' show createTestDatabase;
+import 'package:fit_mobile_app/config/config_service.dart';
 import 'package:fit_mobile_app/models/news_item.dart';
 import 'package:fit_mobile_app/models/event.dart';
 
@@ -20,6 +21,9 @@ void main() {
     setUp(() {
       // Set up test database
       DatabaseService.setTestDatabase(createTestDatabase());
+
+      // Set up mock config for testing
+      ConfigService.setTestConfig();
 
       mockClient = MockClient();
       DataService.setHttpClient(mockClient);

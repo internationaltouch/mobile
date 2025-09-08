@@ -308,4 +308,72 @@ class ConfigService {
     _initialized = false;
     await initialize(configPath: configPath);
   }
+
+  // Method for setting up test configuration
+  static void setTestConfig() {
+    _config = AppConfigData(
+      name: 'Test App',
+      displayName: 'Test App',
+      description: 'Test App Description',
+      identifier: {'android': 'com.test.app', 'ios': 'com.test.app'},
+      version: '1.0.0',
+      api: ApiConfig(
+        baseUrl: 'https://test.example.com/api/v1',
+        imageBaseUrl: 'https://test.example.com',
+      ),
+      branding: BrandingConfig(
+        primaryColor: BrandingConfig._parseColor('#1976D2'),
+        secondaryColor: BrandingConfig._parseColor('#FFC107'),
+        accentColor: BrandingConfig._parseColor('#4CAF50'),
+        errorColor: BrandingConfig._parseColor('#F44336'),
+        backgroundColor: BrandingConfig._parseColor('#FFFFFF'),
+        textColor: BrandingConfig._parseColor('#212121'),
+        logoVertical: 'assets/images/test-logo.png',
+        logoHorizontal: 'assets/images/test-logo.png',
+        appIcon: 'assets/images/test-icon.png',
+        splashScreen: SplashScreenConfig(
+          backgroundColor: BrandingConfig._parseColor('#1976D2'),
+          image: 'assets/images/test-logo.png',
+          imageBackgroundColor: BrandingConfig._parseColor('#1976D2'),
+        ),
+      ),
+      navigation: NavigationConfig(tabs: [
+        TabConfig(
+          id: 'news',
+          label: 'News',
+          icon: 'newspaper',
+          enabled: true,
+          backgroundColor: BrandingConfig._parseColor('#1976D2'),
+        ),
+        TabConfig(
+          id: 'clubs',
+          label: 'Clubs',
+          icon: 'public',
+          enabled: true,
+          backgroundColor: BrandingConfig._parseColor('#1976D2'),
+        ),
+      ]),
+      features: FeaturesConfig(
+        flagsModule: 'test',
+        eventsVariant: 'standard',
+        news: NewsConfig(
+          rssUrl: 'https://test.example.com/news/rss',
+          initialItemsCount: 10,
+          infiniteScrollBatchSize: 5,
+        ),
+        clubs: ClubConfig(
+          navigationLabel: 'Clubs',
+          titleBarText: 'Test Clubs',
+          allowedStatuses: ['active'],
+          excludedSlugs: [],
+          slugImageMapping: {},
+        ),
+      ),
+      assets: AssetsConfig(
+        competitionImages: 'assets/images/competitions/',
+        flagsPath: 'lib/config/flags/test_flags.dart',
+      ),
+    );
+    _initialized = true;
+  }
 }
