@@ -81,46 +81,96 @@ lib/
 
 ### Project Organization
 
+**Touch Technology Framework** (app.touchtechnology.* namespace)
+
 ```
-fit-mobile-apps/                   # Root mono-repo
-├── core/                          # Shared Flutter package
-│   ├── lib/                       # Core library code (as described above)
-│   ├── test/                      # Core library tests
-│   └── pubspec.yaml               # Core dependencies
-├── apps/                          # Individual app builds
-│   ├── fit-touch/                 # FIT International Touch app
+touch-mobile-framework/            # Root mono-repo
+├── packages/                      # Reusable Flutter packages (touchtechnology.app namespace)
+│   ├── app_touchtechnology_core/  # Core services and utilities
+│   │   ├── lib/
+│   │   │   ├── config/            # Configuration services
+│   │   │   ├── services/          # Data services, API clients
+│   │   │   ├── models/            # Shared data models
+│   │   │   ├── utils/             # Utility functions
+│   │   │   └── theme/             # Base theming system
+│   │   ├── test/
+│   │   └── pubspec.yaml           # name: app_touchtechnology_core
+│   ├── app_touchtechnology_news/  # News module package
+│   │   ├── lib/
+│   │   │   ├── models/            # News-specific models
+│   │   │   ├── services/          # RSS parsing, news API
+│   │   │   ├── widgets/           # News UI components
+│   │   │   └── views/             # NewsView and screens
+│   │   ├── test/
+│   │   └── pubspec.yaml           # name: app_touchtechnology_news
+│   ├── app_touchtechnology_clubs/ # Clubs module package
+│   │   ├── lib/
+│   │   │   ├── models/
+│   │   │   ├── services/
+│   │   │   ├── widgets/
+│   │   │   └── views/
+│   │   ├── test/
+│   │   └── pubspec.yaml           # name: app_touchtechnology_clubs
+│   ├── app_touchtechnology_competitions/ # Competitions module package
+│   │   ├── lib/
+│   │   │   ├── models/
+│   │   │   ├── services/
+│   │   │   ├── widgets/
+│   │   │   └── views/
+│   │   ├── test/
+│   │   └── pubspec.yaml           # name: app_touchtechnology_competitions
+│   └── app_touchtechnology_favorites/    # Favorites module package
+│       ├── lib/
+│       ├── test/
+│       └── pubspec.yaml           # name: app_touchtechnology_favorites
+├── apps/                          # Individual organization apps
+│   ├── fit_international_touch/   # FIT International Touch
 │   │   ├── lib/
 │   │   │   ├── main.dart          # App entry point
 │   │   │   └── config/            # FIT-specific configuration
 │   │   ├── assets/                # FIT-specific assets (logos, etc.)
 │   │   ├── config/                # JSON configuration files
-│   │   ├── test/                  # App-specific tests
-│   │   ├── pubspec.yaml           # App dependencies (includes core)
+│   │   ├── test/                  # App integration tests
+│   │   ├── pubspec.yaml           # Dependencies + touchtechnology packages
+│   │   ├── android/app/build.gradle # applicationId "org.internationaltouch.mobile"
+│   │   ├── ios/Runner.xcodeproj   # Bundle ID: org.internationaltouch.mobile
 │   │   └── Makefile               # FIT app build commands
-│   ├── touch-superleague/         # Touch Superleague app
+│   ├── touch_superleague/         # Touch Superleague
 │   │   ├── lib/
-│   │   │   ├── main.dart
-│   │   │   └── config/
 │   │   ├── assets/
 │   │   ├── config/
 │   │   ├── test/
 │   │   ├── pubspec.yaml
+│   │   ├── android/app/build.gradle # applicationId "uk.org.touchsuperleague.mobile"
+│   │   ├── ios/Runner.xcodeproj   # Bundle ID: uk.org.touchsuperleague.mobile
+│   │   └── Makefile
+│   ├── example_foobar/            # Example third-party app
+│   │   ├── lib/
+│   │   ├── assets/
+│   │   ├── config/
+│   │   ├── test/
+│   │   ├── pubspec.yaml
+│   │   ├── android/app/build.gradle # applicationId "com.foobar.mobile"
+│   │   ├── ios/Runner.xcodeproj   # Bundle ID: com.foobar.mobile
 │   │   └── Makefile
 │   └── template/                  # Template for new apps
 │       ├── lib/
 │       ├── assets/
 │       ├── config/
 │       ├── pubspec.yaml.template
+│       ├── android/app/build.gradle.template
+│       ├── ios/Runner.xcodeproj.template
 │       └── Makefile.template
 ├── scripts/                       # Build and deployment scripts
 │   ├── new-app.sh                 # Create new app from template
-│   ├── test-all.sh                # Run tests across all apps
+│   ├── test-all.sh                # Run tests across all packages + apps
 │   └── build-all.sh               # Build all apps
 ├── docs/                          # Documentation
 │   ├── configuration-guide.md
 │   ├── new-app-setup.md
+│   ├── namespace-conventions.md
 │   └── architecture.md
-├── Makefile                       # Root-level commands
+├── Makefile                       # Root-level commands (make test, make build-all)
 └── README.md
 ```
 
@@ -183,6 +233,20 @@ dependencies:
    - Review and eliminate cross-component state dependencies
    - Implement proper state management isolation between modules
    - Ensure switching components doesn't affect others (except intentional coupling)
+   - **Extract Historical Configurations**: One-time migration to extract FIT and Touch Superleague configs from git history
+     - Review git history to recover original FIT configuration state
+     - Capture current Touch Superleague configuration
+     - Create separate configuration files for both organizations in their respective app directories
+   - **Reorganize into Touch Technology Framework** (app.touchtechnology.* namespace)
+     - Move reusable components to separate packages with proper namespacing
+     - Restructure mono-repo with packages/ and apps/ directories
+     - Update package names: app_touchtechnology_core, app_touchtechnology_news, etc.
+     - Configure proper reverse domain name identifiers for each app
+   - **Implement Comprehensive Testing Strategy**
+     - Root-level `make test` validates all packages and apps in harmony
+     - Package-level tests validate individual component functionality
+     - App-level integration tests validate configuration and assembly
+     - Cross-app compatibility tests ensure framework works for different organizations
 
 ### Phase 4: Advanced Theming & Debug Features
 1. **Enhanced Theming System**: Implement comprehensive color schemes
@@ -220,12 +284,16 @@ The project uses `Makefile` at multiple levels for consistent build and test ope
 
 #### Root-Level Makefile (`./Makefile`)
 ```makefile
-# Test all components and apps
-test-all:
-	@echo "Testing core library..."
-	cd core && make test
-	@echo "Testing all apps..."
-	./scripts/test-all.sh
+# Test all packages and apps - validates framework integrity
+test:
+	@echo "🧪 Testing Touch Technology Framework..."
+	@for dir in packages/* apps/*; do \
+		if [ -f "$$dir/Makefile" ]; then \
+			echo "📦 Testing $$dir..."; \
+			$(MAKE) -C "$$dir" test; \
+		fi \
+	done
+	@echo "✅ All tests passed! Framework validated."
 
 # Build all apps
 build-all:
