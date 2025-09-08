@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'news_view.dart';
 import 'club_view.dart';
 import 'competitions_view.dart';
+import 'competitions_view_riverpod.dart';
 import 'my_touch_view.dart';
 import '../config/config_service.dart';
 
@@ -69,7 +70,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
         return const MyTouchView(); // Use MyTouchView for favorites variant
       case 'standard':
       default:
-        return const CompetitionsView();
+        return const CompetitionsViewRiverpod(); // Use Riverpod version with real caching
     }
   }
 

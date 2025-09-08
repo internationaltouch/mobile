@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'views/main_navigation_view.dart';
 import 'theme/configurable_theme.dart';
 import 'config/config_service.dart';
@@ -16,7 +17,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(const FITMobileApp());
+  runApp(const ProviderScope(child: FITMobileApp()));
 }
 
 class FITMobileApp extends StatelessWidget {
