@@ -1,67 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fit_mobile_app/views/main_navigation_view.dart';
+import 'package:fit_mobile_app/theme/fit_theme.dart';
+import 'package:fit_mobile_app/config/config_service.dart';
 
 void main() {
-  group('Members Tab Basic UI Test', () {
-    testWidgets('Should render basic navigation structure',
+  group('Navigation UI Configuration Tests', () {
+    setUp(() {
+      // Initialize ConfigService for all navigation tests
+      ConfigService.setTestConfig();
+    });
+
+    testWidgets('Should render navigation with configuration-based labels and icons',
         (WidgetTester tester) async {
-      // Create a minimal navigation structure to test our changes
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            bottomNavigationBar: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: 1, // Members tab selected
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.newspaper),
-                  label: 'News',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.public),
-                  label: 'Members',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.sports),
-                  label: 'Events',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.star),
-                  label: 'My Touch',
-                ),
-              ],
-            ),
-            appBar: AppBar(
-              title: const Text('Member Nations'),
-              backgroundColor: const Color(0xFFF6CF3F), // FIT Yellow
-            ),
-            body: const Center(
-              child: Text('Members View - Grid layout here'),
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(MaterialApp(
+        theme: FITTheme.lightTheme,
+        home: const MainNavigationView(initialSelectedIndex: 1), // Second tab selected
+      ));
 
-      // Verify all navigation items are present
-      expect(find.text('News'), findsOneWidget);
-      expect(find.text('Members'), findsOneWidget);
-      expect(find.text('Events'), findsOneWidget);
-      expect(find.text('My Touch'), findsOneWidget);
+      await tester.pump();
 
-      // Verify correct icons
-      expect(find.byIcon(Icons.newspaper), findsOneWidget);
-      expect(find.byIcon(Icons.public), findsOneWidget);
-      expect(find.byIcon(Icons.sports), findsOneWidget);
-      expect(find.byIcon(Icons.star), findsOneWidget);
+      // Get configuration-based labels
+      final config = ConfigService.config.navigation;
+      final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
 
-      // Verify app bar and yellow color
-      expect(find.text('Member Nations'), findsOneWidget);
+      // Verify all configured navigation items are present
+      for (final tab in enabledTabs) {
+        expect(find.text(tab.label), findsOneWidget);
+        expect(find.byIcon(tab.iconData), findsOneWidget);
+      }
 
-      // Verify 4 tabs in navigation bar
+      // Verify correct number of tabs in navigation bar
       final bottomNavBar =
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-      expect(bottomNavBar.items.length, equals(4));
-      expect(bottomNavBar.currentIndex, equals(1)); // Members tab selected
+      expect(bottomNavBar.items.length, equals(enabledTabs.length));
+      expect(bottomNavBar.currentIndex, equals(1)); // Second tab selected
     });
   });
 }

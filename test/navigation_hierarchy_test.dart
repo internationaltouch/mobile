@@ -59,8 +59,11 @@ void main() {
       // Bottom navigation should still be visible
       expect(find.byType(BottomNavigationBar), findsOneWidget);
 
-      // Switch to My Touch tab
-      await tester.tap(find.text('My Touch'));
+      // Switch to My Sport tab
+      final config = ConfigService.config.navigation;
+      final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
+      final mySportTab = enabledTabs[3]; // Fourth tab (My Sport)
+      await tester.tap(find.text(mySportTab.label));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
@@ -87,8 +90,11 @@ void main() {
       expect(getNavBar().currentIndex, equals(2));
       expect(find.byType(CompetitionsView), findsOneWidget);
 
-      // Switch to My Touch (index 3)
-      await tester.tap(find.text('My Touch'));
+      // Switch to My Sport (index 3)
+      final config2 = ConfigService.config.navigation;
+      final enabledTabs2 = config2.tabs.where((tab) => tab.enabled).toList();
+      final mySportTab2 = enabledTabs2[3]; // Fourth tab (My Sport)
+      await tester.tap(find.text(mySportTab2.label));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       expect(getNavBar().currentIndex, equals(3));
@@ -103,7 +109,7 @@ void main() {
 
     testWidgets('Should start with correct tab based on initial index',
         (WidgetTester tester) async {
-      // Test starting with My Touch tab (index 3)
+      // Test starting with My Sport tab (index 3)
       await tester.pumpWidget(createTestApp(initialTab: 3));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
@@ -114,14 +120,14 @@ void main() {
       expect(find.byType(MyTouchView), findsOneWidget);
     });
 
-    group('My Touch Navigation Integration', () {
-      testWidgets('Should be able to switch from My Touch to Events tab',
+    group('My Sport Navigation Integration', () {
+      testWidgets('Should be able to switch from My Sport to Events tab',
           (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(initialTab: 3));
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
 
-        // Start on My Touch tab
+        // Start on My Sport tab
         expect(find.byType(MyTouchView), findsOneWidget);
 
         // Simulate user tapping a favorite (which should switch to Events tab)
@@ -163,8 +169,11 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       expect(getNavBar().currentIndex, equals(2));
 
-      // Switch to My Touch tab
-      await tester.tap(find.text('My Touch'));
+      // Switch to My Sport tab
+      final config3 = ConfigService.config.navigation;
+      final enabledTabs3 = config3.tabs.where((tab) => tab.enabled).toList();
+      final mySportTab3 = enabledTabs3[3]; // Fourth tab (My Sport)
+      await tester.tap(find.text(mySportTab3.label));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       expect(getNavBar().currentIndex, equals(3));

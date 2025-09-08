@@ -360,8 +360,8 @@ class ConfigService {
           backgroundColor: BrandingConfig._parseColor('#1976D2'),
         ),
         TabConfig(
-          id: 'mytouch',
-          label: 'My Touch',
+          id: 'my_sport',
+          label: 'My Sport',
           icon: 'star',
           enabled: true,
           backgroundColor: BrandingConfig._parseColor('#1976D2'),
