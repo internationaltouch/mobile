@@ -52,7 +52,7 @@ class Fixture {
 
     final homeAbbreviation = _extractTeamAbbreviation(json, 'home_team');
     final awayAbbreviation = _extractTeamAbbreviation(json, 'away_team');
-    
+
     // Extract team names safely
     String homeTeamName = json['homeTeamName'] ?? '';
     if (homeTeamName.isEmpty) {
@@ -62,7 +62,7 @@ class Fixture {
         homeTeamName = json['home_team_name'] ?? '';
       }
     }
-    
+
     String awayTeamName = json['awayTeamName'] ?? '';
     if (awayTeamName.isEmpty) {
       if (json['away_team'] is Map) {
@@ -92,7 +92,9 @@ class Fixture {
       round: json['round'],
       isBye: json['is_bye'],
       videos: (json['videos'] as List<dynamic>?)?.cast<String>() ?? [],
-      poolId: json['stage_group'] is int ? json['stage_group'] as int : int.tryParse(json['stage_group']?.toString() ?? ''),
+      poolId: json['stage_group'] is int
+          ? json['stage_group'] as int
+          : int.tryParse(json['stage_group']?.toString() ?? ''),
     );
   }
 

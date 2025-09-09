@@ -316,7 +316,8 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
         bottom: TabBar(
           controller: _tabController,
           labelColor: Theme.of(context).colorScheme.onPrimary,
-          unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
+          unselectedLabelColor:
+              Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
           indicatorColor: Theme.of(context).colorScheme.onPrimary,
           tabs: const [
             Tab(text: 'Fixtures', icon: Icon(Icons.schedule)),
@@ -644,8 +645,10 @@ class _FixturesResultsViewState extends State<FixturesResultsView>
 
                 return DataRow(
                   color: isHighlighted
-                      ? WidgetStateProperty.all(
-                          Theme.of(context).colorScheme.secondary.withValues(alpha: 0.25))
+                      ? WidgetStateProperty.all(Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withValues(alpha: 0.25))
                       : null,
                   cells: [
                     DataCell(

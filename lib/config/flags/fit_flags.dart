@@ -234,7 +234,8 @@ class FITFlags extends FlagsInterface {
 
       if (abbrevUpper.length == 2) {
         return abbrevUpper;
-      } else if (abbrevUpper.length == 3 && _abbreviationToISO.containsKey(abbrevUpper)) {
+      } else if (abbrevUpper.length == 3 &&
+          _abbreviationToISO.containsKey(abbrevUpper)) {
         return _abbreviationToISO[abbrevUpper];
       }
     }

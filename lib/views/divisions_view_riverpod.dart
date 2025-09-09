@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/pure_riverpod_providers.dart';
 import '../models/event.dart';
+import '../models/favorite.dart';
+import '../widgets/favorite_button.dart';
 import 'fixtures_results_view_riverpod.dart';
 
 class DivisionsViewRiverpod extends ConsumerWidget {
@@ -17,8 +19,9 @@ class DivisionsViewRiverpod extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Find the season slug - for now using season title as slug
-    final seasonSlug = season; // This should be converted to slug format if needed
-    
+    final seasonSlug =
+        season; // This should be converted to slug format if needed
+
     // Use Riverpod provider for divisions - no DataService!
     final divisionsAsync = ref.watch(divisionsProvider((
       eventId: event.id,
@@ -27,7 +30,36 @@ class DivisionsViewRiverpod extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${event.name} - $season'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              season,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+            Text(
+              event.name,
+              style:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ],
+        ),
+        actions: [
+          FavoriteButton(
+            favorite: Favorite.fromSeason(
+              event.id,
+              event.slug ?? event.id,
+              event.name,
+              season,
+            ),
+            favoriteColor: Colors.white,
+          ),
+        ],
       ),
       body: divisionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -92,7 +124,8 @@ class DivisionsViewRiverpod extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 8.0),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Color(int.parse(division.color.replaceFirst('#', '0xFF'))),
+                      backgroundColor: Color(
+                          int.parse(division.color.replaceFirst('#', '0xFF'))),
                       child: const Icon(
                         Icons.category,
                         color: Colors.white,

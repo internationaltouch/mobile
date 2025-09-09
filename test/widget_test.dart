@@ -2,7 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fit_mobile_app/main.dart';
 import 'package:fit_mobile_app/services/database_service.dart';
-import 'package:fit_mobile_app/services/database.dart' show createTestDatabase, AppDatabase;
+import 'package:fit_mobile_app/services/database.dart'
+    show createTestDatabase, AppDatabase;
 import 'package:fit_mobile_app/views/competitions_view_riverpod.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -22,7 +23,7 @@ void main() {
     // Create a single test database instance for all tests
     testDb = createTestDatabase();
     DatabaseService.setTestDatabase(testDb);
-    
+
     // Initialize ConfigService with test config
     ConfigService.setTestConfig();
   });
@@ -37,7 +38,8 @@ void main() {
     when(mockClient.get(
       Uri.parse('https://test.example.com/news/rss'),
       headers: anyNamed('headers'),
-    )).thenAnswer((_) async => http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+    )).thenAnswer(
+        (_) async => http.Response('''<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
     <title>Test News</title>
@@ -55,7 +57,7 @@ void main() {
       argThat(predicate((Uri uri) => uri.path.contains('/api/'))),
       headers: anyNamed('headers'),
     )).thenAnswer((_) async => http.Response('[]', 200));
-    
+
     // Fallback for any other requests
     when(mockClient.get(any, headers: anyNamed('headers')))
         .thenAnswer((_) async => http.Response('[]', 200));

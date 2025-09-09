@@ -13,6 +13,7 @@ class MatchScoreCard extends StatelessWidget {
   final String? divisionName;
   final String? poolTitle; // Pool title for display
   final List<String> allPoolTitles; // All pool titles for color indexing
+  final String? highlightedTeamId; // Team to highlight
 
   const MatchScoreCard({
     super.key,
@@ -24,7 +25,12 @@ class MatchScoreCard extends StatelessWidget {
     this.divisionName,
     this.poolTitle,
     this.allPoolTitles = const [],
+    this.highlightedTeamId,
   });
+
+  bool _isTeamHighlighted(String teamId) {
+    return highlightedTeamId != null && highlightedTeamId == teamId;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,11 +78,16 @@ class MatchScoreCard extends StatelessWidget {
                         height: 28, // Fixed height for up to 2 lines of text
                         child: Text(
                           fixture.homeTeamName,
-                          style:
-                              Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: _isTeamHighlighted(fixture.homeTeamId)
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                              ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.visible,
@@ -246,11 +257,16 @@ class MatchScoreCard extends StatelessWidget {
                         height: 28, // Fixed height for up to 2 lines of text
                         child: Text(
                           fixture.awayTeamName,
-                          style:
-                              Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: _isTeamHighlighted(fixture.awayTeamId)
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                              ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.visible,

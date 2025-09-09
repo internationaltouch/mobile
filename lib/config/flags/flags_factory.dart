@@ -9,7 +9,7 @@ class FlagsFactory {
     double size = 45.0,
   }) {
     final flagsModule = ConfigService.config.features.flagsModule;
-    
+
     switch (flagsModule) {
       case 'fit':
         return FITFlags.getFlagWidget(
@@ -28,7 +28,7 @@ class FlagsFactory {
 
   static bool hasFlagForTeam(String teamName, String? clubAbbreviation) {
     final flagsModule = ConfigService.config.features.flagsModule;
-    
+
     switch (flagsModule) {
       case 'fit':
         return FITFlags.hasFlagForTeam(teamName, clubAbbreviation);

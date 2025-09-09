@@ -12,12 +12,14 @@ void main() {
       ConfigService.setTestConfig();
     });
 
-    testWidgets('Should render navigation with configuration-based labels and icons',
+    testWidgets(
+        'Should render navigation with configuration-based labels and icons',
         (WidgetTester tester) async {
       await tester.pumpWidget(ProviderScope(
         child: MaterialApp(
           theme: FITTheme.lightTheme,
-          home: const MainNavigationView(initialSelectedIndex: 1), // Second tab selected
+          home: const MainNavigationView(
+              initialSelectedIndex: 1), // Second tab selected
         ),
       ));
 

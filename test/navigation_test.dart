@@ -15,7 +15,8 @@ import 'package:http/http.dart' as http;
 import 'package:fit_mobile_app/services/data_service.dart';
 import 'package:fit_mobile_app/services/api_service.dart';
 import 'package:fit_mobile_app/services/database_service.dart';
-import 'package:fit_mobile_app/services/database.dart' show createTestDatabase, AppDatabase;
+import 'package:fit_mobile_app/services/database.dart'
+    show createTestDatabase, AppDatabase;
 import 'package:fit_mobile_app/config/config_service.dart';
 import 'package:fit_mobile_app/models/division.dart';
 import 'package:fit_mobile_app/views/fixtures_results_view_riverpod.dart';
@@ -135,7 +136,8 @@ void main() {
             theme: FITTheme.lightTheme,
             home: const MainNavigationView(initialSelectedIndex: 2),
             routes: {
-              '/event-detail': (context) => EventDetailViewRiverpod(event: testEvent),
+              '/event-detail': (context) =>
+                  EventDetailViewRiverpod(event: testEvent),
               '/divisions': (context) =>
                   DivisionsViewRiverpod(event: testEvent, season: '2024'),
             },
@@ -156,14 +158,15 @@ void main() {
             theme: FITTheme.lightTheme,
             home: const MainNavigationView(initialSelectedIndex: 2),
             builder: (context, child) {
-            return Navigator(
-              onGenerateRoute: (settings) {
-                return MaterialPageRoute(
-                  builder: (context) => EventDetailViewRiverpod(event: testEvent),
-                );
-              },
-            );
-          },
+              return Navigator(
+                onGenerateRoute: (settings) {
+                  return MaterialPageRoute(
+                    builder: (context) =>
+                        EventDetailViewRiverpod(event: testEvent),
+                  );
+                },
+              );
+            },
           ),
         ));
         await tester.pump();
@@ -211,21 +214,22 @@ void main() {
             theme: FITTheme.lightTheme,
             home: Scaffold(
               body: Navigator(
-              onGenerateRoute: (settings) {
-                switch (settings.name) {
-                  case '/divisions':
-                    return MaterialPageRoute(
-                      builder: (context) =>
-                          DivisionsViewRiverpod(event: testEvent, season: '2024'),
-                    );
-                  default:
-                    return MaterialPageRoute(
-                      builder: (context) => EventDetailViewRiverpod(event: testEvent),
-                    );
-                }
-              },
+                onGenerateRoute: (settings) {
+                  switch (settings.name) {
+                    case '/divisions':
+                      return MaterialPageRoute(
+                        builder: (context) => DivisionsViewRiverpod(
+                            event: testEvent, season: '2024'),
+                      );
+                    default:
+                      return MaterialPageRoute(
+                        builder: (context) =>
+                            EventDetailViewRiverpod(event: testEvent),
+                      );
+                  }
+                },
+              ),
             ),
-          ),
           ),
         ));
 
@@ -320,7 +324,7 @@ void main() {
         // Create a single test database instance for the entire group
         testDb = createTestDatabase();
         DatabaseService.setTestDatabase(testDb);
-        
+
         // Set up mock config for testing
         ConfigService.setTestConfig();
       });

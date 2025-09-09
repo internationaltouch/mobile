@@ -12,11 +12,12 @@ class CompetitionsViewRiverpod extends ConsumerStatefulWidget {
   const CompetitionsViewRiverpod({super.key});
 
   @override
-  ConsumerState<CompetitionsViewRiverpod> createState() => _CompetitionsViewRiverpodState();
+  ConsumerState<CompetitionsViewRiverpod> createState() =>
+      _CompetitionsViewRiverpodState();
 }
 
-class _CompetitionsViewRiverpodState extends ConsumerState<CompetitionsViewRiverpod> {
-  
+class _CompetitionsViewRiverpodState
+    extends ConsumerState<CompetitionsViewRiverpod> {
   @override
   void initState() {
     super.initState();
@@ -26,13 +27,14 @@ class _CompetitionsViewRiverpodState extends ConsumerState<CompetitionsViewRiver
   Future<void> _navigateToConfiguredCompetition(
       List<Event> events, String competitionSlug, String season) async {
     try {
-      final targetEvent = events.where((event) => event.slug == competitionSlug).firstOrNull;
-      
+      final targetEvent =
+          events.where((event) => event.slug == competitionSlug).firstOrNull;
+
       if (targetEvent == null) {
         throw Exception('Competition "$competitionSlug" not found');
       }
 
-      // In Riverpod version, we can directly navigate to divisions 
+      // In Riverpod version, we can directly navigate to divisions
       // since seasons are loaded on-demand by the DivisionsViewRiverpod
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -58,7 +60,9 @@ class _CompetitionsViewRiverpodState extends ConsumerState<CompetitionsViewRiver
 
   Widget _getCompetitionIcon(Event event) {
     final slug = event.slug;
-    final competitionImage = slug != null ? CompetitionFilterService.getCompetitionImage(slug) : null;
+    final competitionImage = slug != null
+        ? CompetitionFilterService.getCompetitionImage(slug)
+        : null;
     if (competitionImage != null) {
       // Use configured asset image
       return Container(
@@ -133,11 +137,12 @@ class _CompetitionsViewRiverpodState extends ConsumerState<CompetitionsViewRiver
   @override
   Widget build(BuildContext context) {
     final config = ConfigService.config;
-    final hasConfiguredCompetition = config.api.competition != null && config.api.season != null;
-    
+    final hasConfiguredCompetition =
+        config.api.competition != null && config.api.season != null;
+
     // Use pure Riverpod provider - no custom state management needed!
     final eventsAsync = ref.watch(eventsProvider);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Events'),
@@ -182,8 +187,8 @@ class _CompetitionsViewRiverpodState extends ConsumerState<CompetitionsViewRiver
             if (hasConfiguredCompetition) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _navigateToConfiguredCompetition(
-                  events, 
-                  config.api.competition!, 
+                  events,
+                  config.api.competition!,
                   config.api.season!,
                 );
               });
@@ -220,7 +225,8 @@ class _CompetitionsViewRiverpodState extends ConsumerState<CompetitionsViewRiver
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EventDetailViewRiverpod(event: event),
+                            builder: (context) =>
+                                EventDetailViewRiverpod(event: event),
                           ),
                         );
                       },

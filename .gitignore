@@ -40,6 +40,7 @@ android/app/profile
 android/app/release
 android/app/.cxx/
 android/.gradle/
+android/.kotlin/
 android/captures/
 android/gradlew
 android/gradlew.bat

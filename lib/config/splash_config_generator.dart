@@ -8,7 +8,7 @@ class SplashConfigGenerator {
   }) async {
     final config = ConfigService.config;
     final splash = config.branding.splashScreen;
-    
+
     final splashConfigContent = '''
 flutter_native_splash:
   color: "${_colorToHex(splash.backgroundColor)}"
@@ -24,9 +24,12 @@ flutter_native_splash:
   }
 
   static String _colorToHex(Color color) {
-    final r = ((color.r * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
-    final g = ((color.g * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
-    final b = ((color.b * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+    final r =
+        ((color.r * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+    final g =
+        ((color.g * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+    final b =
+        ((color.b * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
     return '#$r$g$b';
   }
 }
@@ -34,9 +37,12 @@ flutter_native_splash:
 // Extension to convert Color to hex string
 extension ColorToHex on Color {
   String toHex() {
-    final r = ((this.r * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
-    final g = ((this.g * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
-    final b = ((this.b * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+    final r =
+        ((this.r * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+    final g =
+        ((this.g * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+    final b =
+        ((this.b * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
     return '#$r$g$b';
   }
 }

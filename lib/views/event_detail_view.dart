@@ -28,7 +28,7 @@ class _EventDetailViewState extends State<EventDetailView> {
 
   Future<Event> _loadEventSeasons() async {
     Event eventToFilter;
-    
+
     if (widget.event.seasonsLoaded) {
       eventToFilter = widget.event;
     } else {
@@ -37,7 +37,8 @@ class _EventDetailViewState extends State<EventDetailView> {
     }
 
     // Apply season filtering
-    final filteredSeasons = CompetitionFilterService.filterSeasons(eventToFilter, eventToFilter.seasons);
+    final filteredSeasons = CompetitionFilterService.filterSeasons(
+        eventToFilter, eventToFilter.seasons);
     final filteredEvent = Event(
       id: eventToFilter.id,
       name: eventToFilter.name,
@@ -75,7 +76,9 @@ class _EventDetailViewState extends State<EventDetailView> {
 
   Widget _getCompetitionIcon(Event event) {
     final slug = event.slug;
-    final competitionImage = slug != null ? CompetitionFilterService.getCompetitionImage(slug) : null;
+    final competitionImage = slug != null
+        ? CompetitionFilterService.getCompetitionImage(slug)
+        : null;
     if (competitionImage != null) {
       // Use configured asset image
       return Image.asset(

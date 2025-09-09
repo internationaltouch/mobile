@@ -127,9 +127,11 @@ class SplashScreenConfig {
 
   factory SplashScreenConfig.fromJson(Map<String, dynamic> json) {
     return SplashScreenConfig(
-      backgroundColor: BrandingConfig._parseColor(json['backgroundColor'] as String),
+      backgroundColor:
+          BrandingConfig._parseColor(json['backgroundColor'] as String),
       image: json['image'] as String,
-      imageBackgroundColor: BrandingConfig._parseColor(json['imageBackgroundColor'] as String),
+      imageBackgroundColor:
+          BrandingConfig._parseColor(json['imageBackgroundColor'] as String),
     );
   }
 }
@@ -171,7 +173,8 @@ class TabConfig {
       label: json['label'] as String,
       icon: json['icon'] as String,
       enabled: json['enabled'] as bool,
-      backgroundColor: BrandingConfig._parseColor(json['backgroundColor'] as String),
+      backgroundColor:
+          BrandingConfig._parseColor(json['backgroundColor'] as String),
       variant: json['variant'] as String?,
     );
   }
@@ -205,7 +208,8 @@ class NewsConfig {
 
   factory NewsConfig.fromJson(Map<String, dynamic> json) {
     return NewsConfig(
-      rssUrl: json['rssUrl'] as String? ?? 'https://www.internationaltouch.org/news/feeds/rss/',
+      rssUrl: json['rssUrl'] as String? ??
+          'https://www.internationaltouch.org/news/feeds/rss/',
       initialItemsCount: json['initialItemsCount'] as int? ?? 10,
       infiniteScrollBatchSize: json['infiniteScrollBatchSize'] as int? ?? 5,
     );
@@ -233,15 +237,16 @@ class ClubConfig {
       titleBarText: json['titleBarText'] as String? ?? 'Clubs',
       allowedStatuses: List<String>.from(json['allowedStatuses'] ?? ['active']),
       excludedSlugs: List<String>.from(json['excludedSlugs'] ?? []),
-      slugImageMapping: Map<String, String>.from(json['slugImageMapping'] ?? {}),
+      slugImageMapping:
+          Map<String, String>.from(json['slugImageMapping'] ?? {}),
     );
   }
 }
 
 class CompetitionConfig {
   final List<String> excludedSlugs;
-  final List<String> excludedSeasonCombos;  // Format: "slug:season"
-  final List<String> excludedDivisionCombos;  // Format: "slug:season:division"
+  final List<String> excludedSeasonCombos; // Format: "slug:season"
+  final List<String> excludedDivisionCombos; // Format: "slug:season:division"
   final Map<String, String> slugImageMapping;
 
   CompetitionConfig({
@@ -254,9 +259,12 @@ class CompetitionConfig {
   factory CompetitionConfig.fromJson(Map<String, dynamic> json) {
     return CompetitionConfig(
       excludedSlugs: List<String>.from(json['excludedSlugs'] ?? []),
-      excludedSeasonCombos: List<String>.from(json['excludedSeasonCombos'] ?? []),
-      excludedDivisionCombos: List<String>.from(json['excludedDivisionCombos'] ?? []),
-      slugImageMapping: Map<String, String>.from(json['slugImageMapping'] ?? {}),
+      excludedSeasonCombos:
+          List<String>.from(json['excludedSeasonCombos'] ?? []),
+      excludedDivisionCombos:
+          List<String>.from(json['excludedDivisionCombos'] ?? []),
+      slugImageMapping:
+          Map<String, String>.from(json['slugImageMapping'] ?? {}),
     );
   }
 }
@@ -308,7 +316,8 @@ class ConfigService {
   static AppConfigData? _config;
   static bool _initialized = false;
 
-  static Future<void> initialize({String configPath = 'assets/config/app_config.json'}) async {
+  static Future<void> initialize(
+      {String configPath = 'assets/config/app_config.json'}) async {
     if (_initialized) return;
 
     try {
@@ -323,7 +332,8 @@ class ConfigService {
 
   static AppConfigData get config {
     if (!_initialized || _config == null) {
-      throw Exception('ConfigService not initialized. Call ConfigService.initialize() first.');
+      throw Exception(
+          'ConfigService not initialized. Call ConfigService.initialize() first.');
     }
     return _config!;
   }
@@ -427,9 +437,11 @@ class ConfigService {
             'euros:2023:mens-40',
           ],
           slugImageMapping: {
-            'asia-pacific-youth-touch-cup': 'assets/images/competitions/APYTC.png',
+            'asia-pacific-youth-touch-cup':
+                'assets/images/competitions/APYTC.png',
             'atlantic-youth-touch-cup': 'assets/images/competitions/AYTC.png',
-            'european-junior-touch-championships': 'assets/images/competitions/EJTC.png',
+            'european-junior-touch-championships':
+                'assets/images/competitions/EJTC.png',
             'euros': 'assets/images/competitions/ETC.png',
           },
         ),

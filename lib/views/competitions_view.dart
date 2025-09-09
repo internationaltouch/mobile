@@ -28,7 +28,8 @@ class _CompetitionsViewState extends State<CompetitionsView> {
     if (config.api.competition != null && config.api.season != null) {
       // Navigate directly to configured competition and season
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _navigateToConfiguredCompetition(config.api.competition!, config.api.season!);
+        _navigateToConfiguredCompetition(
+            config.api.competition!, config.api.season!);
       });
     } else {
       // Show normal competition selection
@@ -36,22 +37,26 @@ class _CompetitionsViewState extends State<CompetitionsView> {
     }
   }
 
-  Future<void> _navigateToConfiguredCompetition(String competitionSlug, String season) async {
+  Future<void> _navigateToConfiguredCompetition(
+      String competitionSlug, String season) async {
     try {
       // Load the specific competition
       final allEvents = await DataService.getEvents();
-      final targetEvent = allEvents.where((event) => event.slug == competitionSlug).firstOrNull;
-      
+      final targetEvent =
+          allEvents.where((event) => event.slug == competitionSlug).firstOrNull;
+
       if (targetEvent == null) {
         throw Exception('Competition "$competitionSlug" not found');
       }
 
       // Load seasons for the event
       final eventWithSeasons = await DataService.loadEventSeasons(targetEvent);
-      final targetSeason = eventWithSeasons.seasons.where((s) => s.title == season).firstOrNull;
-      
+      final targetSeason =
+          eventWithSeasons.seasons.where((s) => s.title == season).firstOrNull;
+
       if (targetSeason == null) {
-        throw Exception('Season "$season" not found for competition "$competitionSlug"');
+        throw Exception(
+            'Season "$season" not found for competition "$competitionSlug"');
       }
 
       // Navigate directly to divisions
@@ -89,7 +94,9 @@ class _CompetitionsViewState extends State<CompetitionsView> {
 
   Widget _getCompetitionIcon(Event event) {
     final slug = event.slug;
-    final competitionImage = slug != null ? CompetitionFilterService.getCompetitionImage(slug) : null;
+    final competitionImage = slug != null
+        ? CompetitionFilterService.getCompetitionImage(slug)
+        : null;
     if (competitionImage != null) {
       // Use configured asset image
       return Container(
@@ -164,7 +171,7 @@ class _CompetitionsViewState extends State<CompetitionsView> {
   @override
   Widget build(BuildContext context) {
     final config = ConfigService.config;
-    
+
     // If we have a configured competition, show loading while navigating
     if (config.api.competition != null && config.api.season != null) {
       return Scaffold(

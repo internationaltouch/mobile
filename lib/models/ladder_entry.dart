@@ -71,7 +71,9 @@ class LadderEntry {
       goalsFor: scoreFor,
       goalsAgainst: scoreAgainst,
       percentage: parseDoubleSafely(json['percentage']),
-      poolId: json['stage_group'] is int ? json['stage_group'] as int : int.tryParse(json['stage_group']?.toString() ?? ''),
+      poolId: json['stage_group'] is int
+          ? json['stage_group'] as int
+          : int.tryParse(json['stage_group']?.toString() ?? ''),
     );
   }
 

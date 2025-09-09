@@ -36,12 +36,13 @@ class _ClubViewState extends State<ClubView> {
 
       // Filter clubs based on configuration
       final clubConfig = ConfigService.config.features.clubs;
-      final filteredClubs = clubs.where((club) => 
-        // Include if status is allowed
-        clubConfig.allowedStatuses.contains(club.status) &&
-        // Exclude if slug is in exclusion list
-        !clubConfig.excludedSlugs.contains(club.slug)
-      ).toList();
+      final filteredClubs = clubs
+          .where((club) =>
+              // Include if status is allowed
+              clubConfig.allowedStatuses.contains(club.status) &&
+              // Exclude if slug is in exclusion list
+              !clubConfig.excludedSlugs.contains(club.slug))
+          .toList();
 
       // Sort clubs alphabetically by title
       filteredClubs.sort((a, b) => a.title.compareTo(b.title));
@@ -52,7 +53,8 @@ class _ClubViewState extends State<ClubView> {
       });
     } catch (e) {
       setState(() {
-        _error = 'Failed to load ${ConfigService.config.features.clubs.navigationLabel.toLowerCase()}: $e';
+        _error =
+            'Failed to load ${ConfigService.config.features.clubs.navigationLabel.toLowerCase()}: $e';
         _isLoading = false;
       });
     }

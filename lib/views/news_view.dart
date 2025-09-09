@@ -251,8 +251,8 @@ class _NewsViewState extends State<NewsView> {
 
   void _showMoreItems() {
     setState(() {
-      _visibleItemsCount = (_visibleItemsCount + 
-          ConfigService.config.features.news.infiniteScrollBatchSize)
+      _visibleItemsCount = (_visibleItemsCount +
+              ConfigService.config.features.news.infiniteScrollBatchSize)
           .clamp(0, _allNewsItems.length);
     });
   }

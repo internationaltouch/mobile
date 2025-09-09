@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'news_view.dart';
 import 'club_view.dart';
 import 'competitions_view_riverpod.dart';
-import 'my_touch_view.dart';
+import 'favorites_view.dart';
 import '../config/config_service.dart';
 
 class MainNavigationView extends StatefulWidget {
@@ -24,13 +24,14 @@ class _MainNavigationViewState extends State<MainNavigationView> {
   void initState() {
     super.initState();
     _enabledTabs = ConfigService.config.navigation.enabledTabs;
-    _selectedIndex = widget.initialSelectedIndex.clamp(0, _enabledTabs.length - 1);
-    
+    _selectedIndex =
+        widget.initialSelectedIndex.clamp(0, _enabledTabs.length - 1);
+
     _navigatorKeys = List.generate(
       _enabledTabs.length,
       (index) => GlobalKey<NavigatorState>(),
     );
-    
+
     _pages = _enabledTabs.map((tab) => _buildNavigatorForTab(tab)).toList();
   }
 
@@ -56,7 +57,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
       case 'events':
         return _getEventsView(tab);
       case 'my_sport':
-        return const MyTouchView();
+        return const FavoritesView();
       default:
         return const Placeholder();
     }
@@ -66,7 +67,7 @@ class _MainNavigationViewState extends State<MainNavigationView> {
     final variant = tab.variant ?? 'standard';
     switch (variant) {
       case 'favorites':
-        return const MyTouchView(); // Use MyTouchView for favorites variant
+        return const FavoritesView(); // Use dedicated favorites view
       case 'standard':
       default:
         return const CompetitionsViewRiverpod(); // Use Riverpod version with real caching
@@ -93,16 +94,19 @@ class _MainNavigationViewState extends State<MainNavigationView> {
         currentIndex: _selectedIndex,
         backgroundColor: ConfigService.config.branding.backgroundColor,
         selectedItemColor: ConfigService.config.branding.primaryColor,
-        unselectedItemColor: ConfigService.config.branding.textColor.withValues(alpha: 0.6),
+        unselectedItemColor:
+            ConfigService.config.branding.textColor.withValues(alpha: 0.6),
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
           });
         },
-        items: _enabledTabs.map((tab) => BottomNavigationBarItem(
-          icon: Icon(tab.iconData),
-          label: tab.label,
-        )).toList(),
+        items: _enabledTabs
+            .map((tab) => BottomNavigationBarItem(
+                  icon: Icon(tab.iconData),
+                  label: tab.label,
+                ))
+            .toList(),
       ),
     );
   }

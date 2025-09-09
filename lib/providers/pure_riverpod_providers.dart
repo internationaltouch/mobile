@@ -8,8 +8,10 @@ import '../models/ladder_entry.dart';
 import '../models/team.dart';
 import '../models/club.dart';
 import '../models/news_item.dart';
+import '../models/favorite.dart';
 import '../services/api_service.dart';
 import '../services/competition_filter_service.dart';
+import '../services/favorites_service.dart';
 import '../config/config_service.dart';
 import '../config/app_config.dart';
 
@@ -49,26 +51,39 @@ final eventsProvider = FutureProvider<List<Event>>((ref) async {
 });
 
 // Seasons provider for specific event
-final seasonsProvider = FutureProvider.family<List<Season>, String>((ref, eventSlug) async {
-  final competitionDetails = await ApiService.fetchCompetitionDetails(eventSlug);
+final seasonsProvider =
+    FutureProvider.family<List<Season>, String>((ref, eventSlug) async {
+  final competitionDetails =
+      await ApiService.fetchCompetitionDetails(eventSlug);
   final seasons = (competitionDetails['seasons'] as List)
       .map((season) => Season.fromJson(season))
       .toList();
-  
+
   // Apply season filtering would go here if needed
   // For now, return all seasons
   return seasons;
 });
 
 // Divisions provider for specific event/season
-final divisionsProvider = FutureProvider.family<List<Division>, ({String eventId, String seasonSlug})>((ref, params) async {
-  final seasonDetails = await ApiService.fetchSeasonDetails(params.eventId, params.seasonSlug);
+final divisionsProvider = FutureProvider.family<List<Division>,
+    ({String eventId, String seasonSlug})>((ref, params) async {
+  final seasonDetails =
+      await ApiService.fetchSeasonDetails(params.eventId, params.seasonSlug);
   final divisions = <Division>[];
 
   final colors = [
-    '#1976D2', '#388E3C', '#F57C00', '#7B1FA2', '#D32F2F',
-    '#303F9F', '#00796B', '#FF6F00', '#C2185B', '#5D4037',
-    '#455A64', '#F57F17'
+    '#1976D2',
+    '#388E3C',
+    '#F57C00',
+    '#7B1FA2',
+    '#D32F2F',
+    '#303F9F',
+    '#00796B',
+    '#FF6F00',
+    '#C2185B',
+    '#5D4037',
+    '#455A64',
+    '#F57F17'
   ];
 
   for (int i = 0; i < (seasonDetails['divisions'] as List).length; i++) {
@@ -87,17 +102,21 @@ final divisionsProvider = FutureProvider.family<List<Division>, ({String eventId
   // Apply filtering
   final events = await ref.read(eventsProvider.future);
   final eventObj = events.firstWhere((e) => e.id == params.eventId);
-  return CompetitionFilterService.filterDivisions(eventObj, params.seasonSlug, divisions);
+  return CompetitionFilterService.filterDivisions(
+      eventObj, params.seasonSlug, divisions);
 });
 
 // Teams provider for specific division
-final teamsProvider = FutureProvider.family<List<Team>, ({String eventId, String seasonSlug, String divisionId})>((ref, params) async {
+final teamsProvider = FutureProvider.family<
+    List<Team>,
+    ({
+      String eventId,
+      String seasonSlug,
+      String divisionId
+    })>((ref, params) async {
   final divisionDetails = await ApiService.fetchDivisionDetails(
-    params.eventId, 
-    params.seasonSlug, 
-    params.divisionId
-  );
-  
+      params.eventId, params.seasonSlug, params.divisionId);
+
   final teams = <Team>[];
   for (final teamData in divisionDetails['teams']) {
     final team = Team(
@@ -109,25 +128,28 @@ final teamsProvider = FutureProvider.family<List<Team>, ({String eventId, String
     );
     teams.add(team);
   }
-  
+
   return teams;
 });
 
 // Fixtures provider for specific division
-final fixturesProvider = FutureProvider.family<List<Fixture>, ({String eventId, String seasonSlug, String divisionId})>((ref, params) async {
+final fixturesProvider = FutureProvider.family<
+    List<Fixture>,
+    ({
+      String eventId,
+      String seasonSlug,
+      String divisionId
+    })>((ref, params) async {
   final divisionDetails = await ApiService.fetchDivisionDetails(
-    params.eventId, 
-    params.seasonSlug, 
-    params.divisionId
-  );
-  
+      params.eventId, params.seasonSlug, params.divisionId);
+
   final fixtures = <Fixture>[];
   final teams = await ref.read(teamsProvider((
     eventId: params.eventId,
     seasonSlug: params.seasonSlug,
     divisionId: params.divisionId,
   )).future);
-  
+
   final teamMap = {for (final team in teams) team.id: team};
 
   // Process all stages and their matches
@@ -168,52 +190,52 @@ final fixturesProvider = FutureProvider.family<List<Fixture>, ({String eventId, 
   return fixtures;
 });
 
-// Ladder provider for specific division  
-final ladderProvider = FutureProvider.family<List<LadderEntry>, ({String eventId, String seasonSlug, String divisionId})>((ref, params) async {
+// Ladder provider for specific division
+final ladderProvider = FutureProvider.family<
+    List<LadderEntry>,
+    ({
+      String eventId,
+      String seasonSlug,
+      String divisionId
+    })>((ref, params) async {
   final divisionDetails = await ApiService.fetchDivisionDetails(
-    params.eventId, 
-    params.seasonSlug, 
-    params.divisionId
-  );
-  
+      params.eventId, params.seasonSlug, params.divisionId);
+
   final teams = divisionDetails['teams'] as List<dynamic>? ?? [];
-  
+
   // Process each stage and extract ladder data
   for (final stage in divisionDetails['stages']) {
     if (stage['ladder_summary'] != null &&
         (stage['ladder_summary'] as List).isNotEmpty) {
-      
       final ladder = <LadderEntry>[];
       final ladderData = stage['ladder_summary'] as List;
-      
+
       for (final entryData in ladderData) {
         final teamData = teams.firstWhere(
           (team) => team['id'] == entryData['team'],
           orElse: () => null,
         );
-        
+
         if (teamData != null) {
-          final entry = LadderEntry(
-            teamId: teamData['id']?.toString() ?? '',
-            teamName: teamData['title'] ?? 'Unknown Team',
-            played: entryData['played'] ?? 0,
-            wins: entryData['won'] ?? 0,
-            draws: entryData['drawn'] ?? 0,
-            losses: entryData['lost'] ?? 0,
-            goalsFor: entryData['points_for'] ?? 0,
-            goalsAgainst: entryData['points_against'] ?? 0,
-            goalDifference: entryData['points_differential'] ?? 0,
-            points: (entryData['points'] ?? 0).toDouble(),
-          );
+          // Prepare the JSON data for the model's fromJson method
+          final jsonData = {
+            ...entryData,
+            'team_name': teamData['title'] ?? 'Unknown Team',
+            'score_for': entryData['points_for'],
+            'score_against': entryData['points_against'],
+          };
+
+          final entry =
+              LadderEntry.fromJson(Map<String, dynamic>.from(jsonData));
           ladder.add(entry);
         }
       }
-      
+
       // Return the first stage's ladder (most stages have only one)
       return ladder;
     }
   }
-  
+
   return [];
 });
 
@@ -221,10 +243,10 @@ final ladderProvider = FutureProvider.family<List<LadderEntry>, ({String eventId
 final clubsProvider = FutureProvider<List<Club>>((ref) async {
   final clubsData = await ApiService.fetchClubs();
   var clubs = clubsData.map((json) => Club.fromJson(json)).toList();
-  
+
   // Apply configuration-based filters
   final clubConfig = ConfigService.config.features.clubs;
-  
+
   // Filter by status
   if (clubConfig.allowedStatuses.isNotEmpty) {
     clubs = clubs.where((club) {
@@ -232,7 +254,7 @@ final clubsProvider = FutureProvider<List<Club>>((ref) async {
       return clubConfig.allowedStatuses.contains(status);
     }).toList();
   }
-  
+
   // Filter by slug exclusions
   if (clubConfig.excludedSlugs.isNotEmpty) {
     clubs = clubs.where((club) {
@@ -242,7 +264,7 @@ final clubsProvider = FutureProvider<List<Club>>((ref) async {
 
   // Sort alphabetically
   clubs.sort((a, b) => a.title.compareTo(b.title));
-  
+
   return clubs;
 });
 
@@ -253,3 +275,97 @@ final newsProvider = FutureProvider<List<NewsItem>>((ref) async {
   // For now, we can still call DataService but Riverpod handles caching
   throw UnimplementedError('News provider needs RSS parsing implementation');
 });
+
+// Favorites providers
+final favoritesProvider = FutureProvider<List<Favorite>>((ref) async {
+  return await FavoritesService.getFavorites();
+});
+
+final favoritesByTypeProvider =
+    FutureProvider.family<List<Favorite>, FavoriteType>((ref, type) async {
+  return await FavoritesService.getFavoritesByType(type);
+});
+
+final isFavoritedProvider =
+    FutureProvider.family<bool, String>((ref, favoriteId) async {
+  return await FavoritesService.isFavorited(favoriteId);
+});
+
+// Favorites mutations (for adding/removing favorites)
+final favoritesNotifierProvider =
+    NotifierProvider<FavoritesNotifier, AsyncValue<List<Favorite>>>(
+  () => FavoritesNotifier(),
+);
+
+class FavoritesNotifier extends Notifier<AsyncValue<List<Favorite>>> {
+  @override
+  AsyncValue<List<Favorite>> build() {
+    // Initialize with loading state and load favorites
+    _loadFavorites();
+    return const AsyncValue.loading();
+  }
+
+  Future<void> _loadFavorites() async {
+    state = const AsyncValue.loading();
+    try {
+      final favorites = await FavoritesService.getFavorites();
+      state = AsyncValue.data(favorites);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+
+  Future<void> addFavorite(Favorite favorite) async {
+    try {
+      await FavoritesService.addFavorite(favorite);
+      await _loadFavorites();
+      // Invalidate related providers
+      ref.invalidate(favoritesProvider);
+      ref.invalidate(favoritesByTypeProvider);
+      ref.invalidate(isFavoritedProvider);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+
+  Future<void> removeFavorite(String favoriteId) async {
+    try {
+      await FavoritesService.removeFavorite(favoriteId);
+      await _loadFavorites();
+      // Invalidate related providers
+      ref.invalidate(favoritesProvider);
+      ref.invalidate(favoritesByTypeProvider);
+      ref.invalidate(isFavoritedProvider);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+
+  Future<bool> toggleFavorite(Favorite favorite) async {
+    try {
+      final isNowFavorited = await FavoritesService.toggleFavorite(favorite);
+      await _loadFavorites();
+      // Invalidate related providers
+      ref.invalidate(favoritesProvider);
+      ref.invalidate(favoritesByTypeProvider);
+      ref.invalidate(isFavoritedProvider);
+      return isNowFavorited;
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      return false;
+    }
+  }
+
+  Future<void> clearFavorites() async {
+    try {
+      await FavoritesService.clearFavorites();
+      await _loadFavorites();
+      // Invalidate related providers
+      ref.invalidate(favoritesProvider);
+      ref.invalidate(favoritesByTypeProvider);
+      ref.invalidate(isFavoritedProvider);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+}

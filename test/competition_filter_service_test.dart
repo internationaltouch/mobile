@@ -85,11 +85,14 @@ void main() {
 
         final seasons = [
           Season(title: '2020', slug: '2020'),
-          Season(title: '2018', slug: '2018'), // This should be filtered per test config
+          Season(
+              title: '2018',
+              slug: '2018'), // This should be filtered per test config
           Season(title: '2022', slug: '2022'),
         ];
 
-        final filteredSeasons = CompetitionFilterService.filterSeasons(event, seasons);
+        final filteredSeasons =
+            CompetitionFilterService.filterSeasons(event, seasons);
 
         // world-cup:2018 should be filtered out per test config
         expect(filteredSeasons.length, equals(2));
@@ -114,7 +117,8 @@ void main() {
           Season(title: '2021', slug: '2021'),
         ];
 
-        final filteredSeasons = CompetitionFilterService.filterSeasons(event, seasons);
+        final filteredSeasons =
+            CompetitionFilterService.filterSeasons(event, seasons);
 
         // All seasons should be filtered because competition is excluded
         expect(filteredSeasons.length, equals(0));
@@ -122,7 +126,8 @@ void main() {
     });
 
     group('Division Filtering', () {
-      test('should filter out divisions by competition+season+division combo', () {
+      test('should filter out divisions by competition+season+division combo',
+          () {
         final event = Event(
           id: '1',
           name: 'World Cup',
@@ -152,7 +157,8 @@ void main() {
           ),
         ];
 
-        final filteredDivisions = CompetitionFilterService.filterDivisions(event, '2022', divisions);
+        final filteredDivisions =
+            CompetitionFilterService.filterDivisions(event, '2022', divisions);
 
         // world-cup:2022:womens-30 should be filtered out per test config
         expect(filteredDivisions.length, equals(1));
@@ -182,7 +188,8 @@ void main() {
           ),
         ];
 
-        final filteredDivisions = CompetitionFilterService.filterDivisions(event, '2022', divisions);
+        final filteredDivisions =
+            CompetitionFilterService.filterDivisions(event, '2022', divisions);
 
         // All divisions should be filtered because competition is excluded
         expect(filteredDivisions.length, equals(0));
@@ -196,7 +203,8 @@ void main() {
       });
 
       test('should return null for unknown competition slug', () {
-        final imagePath = CompetitionFilterService.getCompetitionImage('unknown-competition');
+        final imagePath =
+            CompetitionFilterService.getCompetitionImage('unknown-competition');
         expect(imagePath, isNull);
       });
     });

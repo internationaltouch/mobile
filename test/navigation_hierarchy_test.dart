@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fit_mobile_app/views/main_navigation_view.dart';
 import 'package:fit_mobile_app/views/competitions_view_riverpod.dart';
-import 'package:fit_mobile_app/views/my_touch_view.dart';
+import 'package:fit_mobile_app/views/favorites_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/config/config_service.dart';
 
@@ -72,7 +72,7 @@ void main() {
 
       // Bottom navigation should still be visible
       expect(find.byType(BottomNavigationBar), findsOneWidget);
-      expect(find.byType(MyTouchView), findsOneWidget);
+      expect(find.byType(FavoritesView), findsOneWidget);
     });
 
     testWidgets('Should handle tab switching from any tab to any tab',
@@ -101,7 +101,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       expect(getNavBar().currentIndex, equals(3));
-      expect(find.byType(MyTouchView), findsOneWidget);
+      expect(find.byType(FavoritesView), findsOneWidget);
 
       // Switch back to News (index 0)
       await tester.tap(find.text('News'));
@@ -120,7 +120,7 @@ void main() {
       final navBar =
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(navBar.currentIndex, equals(3));
-      expect(find.byType(MyTouchView), findsOneWidget);
+      expect(find.byType(FavoritesView), findsOneWidget);
     });
 
     group('My Sport Navigation Integration', () {
@@ -131,7 +131,7 @@ void main() {
         await tester.pump(const Duration(seconds: 1));
 
         // Start on My Sport tab
-        expect(find.byType(MyTouchView), findsOneWidget);
+        expect(find.byType(FavoritesView), findsOneWidget);
 
         // Simulate user tapping a favorite (which should switch to Events tab)
         await tester.tap(find.text('Events'));

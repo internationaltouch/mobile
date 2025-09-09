@@ -60,14 +60,14 @@ void main() {
       final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
       if (enabledTabs.length > 1) {
         final secondTab = enabledTabs[1];
-        
+
         // Tap on second tab
         await tester.tap(find.text(secondTab.label));
         await tester.pump();
 
         // Verify second tab is selected (index 1)
-        final bottomNavBar =
-            tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+        final bottomNavBar = tester
+            .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
         expect(bottomNavBar.currentIndex, equals(1));
       }
     });
@@ -82,14 +82,14 @@ void main() {
       final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
       if (enabledTabs.length > 2) {
         final thirdTab = enabledTabs[2];
-        
+
         // Tap on third tab
         await tester.tap(find.text(thirdTab.label));
         await tester.pump();
 
         // Verify third tab is selected (index 2)
-        final bottomNavBar =
-            tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+        final bottomNavBar = tester
+            .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
         expect(bottomNavBar.currentIndex, equals(2));
       }
     });
@@ -104,14 +104,14 @@ void main() {
       final enabledTabs = config.tabs.where((tab) => tab.enabled).toList();
       if (enabledTabs.length > 3) {
         final fourthTab = enabledTabs[3];
-        
+
         // Tap on fourth tab
         await tester.tap(find.text(fourthTab.label));
         await tester.pump();
 
         // Verify fourth tab is selected (index 3)
-        final bottomNavBar =
-            tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+        final bottomNavBar = tester
+            .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
         expect(bottomNavBar.currentIndex, equals(3));
       }
     });
