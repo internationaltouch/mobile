@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'news_view.dart';
 import 'club_view.dart';
-import 'competitions_view.dart';
 import 'competitions_view_riverpod.dart';
 import 'my_touch_view.dart';
 import '../config/config_service.dart';

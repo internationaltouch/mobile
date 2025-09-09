@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fit_mobile_app/views/main_navigation_view.dart';
-import 'package:fit_mobile_app/views/competitions_view.dart';
-import 'package:fit_mobile_app/views/event_detail_view.dart';
-import 'package:fit_mobile_app/views/divisions_view.dart';
+import 'package:fit_mobile_app/views/competitions_view_riverpod.dart';
+import 'package:fit_mobile_app/views/event_detail_view_riverpod.dart';
+import 'package:fit_mobile_app/views/divisions_view_riverpod.dart';
 import 'package:fit_mobile_app/views/news_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/models/event.dart';
@@ -17,7 +18,7 @@ import 'package:fit_mobile_app/services/database_service.dart';
 import 'package:fit_mobile_app/services/database.dart' show createTestDatabase, AppDatabase;
 import 'package:fit_mobile_app/config/config_service.dart';
 import 'package:fit_mobile_app/models/division.dart';
-import 'package:fit_mobile_app/views/fixtures_results_view.dart';
+import 'package:fit_mobile_app/views/fixtures_results_view_riverpod.dart';
 
 @GenerateMocks([http.Client])
 import 'navigation_test.mocks.dart';
@@ -30,9 +31,11 @@ void main() {
     });
 
     Widget createTestApp({int initialTab = 0}) {
-      return MaterialApp(
-        theme: FITTheme.lightTheme,
-        home: MainNavigationView(initialSelectedIndex: initialTab),
+      return ProviderScope(
+        child: MaterialApp(
+          theme: FITTheme.lightTheme,
+          home: MainNavigationView(initialSelectedIndex: initialTab),
+        ),
       );
     }
 
@@ -64,7 +67,7 @@ void main() {
       expect(bottomNavBar.currentIndex, equals(2));
 
       // Verify Events content is visible
-      expect(find.byType(CompetitionsView), findsOneWidget);
+      expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
     });
 
     testWidgets('Should start with Events tab when specified',
@@ -77,7 +80,7 @@ void main() {
       expect(bottomNavBar.currentIndex, equals(2));
 
       // Verify Events content is visible
-      expect(find.byType(CompetitionsView), findsOneWidget);
+      expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
     });
 
     testWidgets('Should maintain tab selection when switching between tabs',
@@ -127,14 +130,16 @@ void main() {
       );
 
       Widget createCompetitionApp() {
-        return MaterialApp(
-          theme: FITTheme.lightTheme,
-          home: const MainNavigationView(initialSelectedIndex: 2),
-          routes: {
-            '/event-detail': (context) => EventDetailView(event: testEvent),
-            '/divisions': (context) =>
-                DivisionsView(event: testEvent, season: '2024'),
-          },
+        return ProviderScope(
+          child: MaterialApp(
+            theme: FITTheme.lightTheme,
+            home: const MainNavigationView(initialSelectedIndex: 2),
+            routes: {
+              '/event-detail': (context) => EventDetailViewRiverpod(event: testEvent),
+              '/divisions': (context) =>
+                  DivisionsViewRiverpod(event: testEvent, season: '2024'),
+            },
+          ),
         );
       }
 
@@ -142,44 +147,48 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(createCompetitionApp());
 
-        // Should start with CompetitionsView
-        expect(find.byType(CompetitionsView), findsOneWidget);
+        // Should start with CompetitionsViewRiverpod
+        expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
 
         // Mock navigation to event detail
-        await tester.pumpWidget(MaterialApp(
-          theme: FITTheme.lightTheme,
-          home: const MainNavigationView(initialSelectedIndex: 2),
-          builder: (context, child) {
+        await tester.pumpWidget(ProviderScope(
+          child: MaterialApp(
+            theme: FITTheme.lightTheme,
+            home: const MainNavigationView(initialSelectedIndex: 2),
+            builder: (context, child) {
             return Navigator(
               onGenerateRoute: (settings) {
                 return MaterialPageRoute(
-                  builder: (context) => EventDetailView(event: testEvent),
+                  builder: (context) => EventDetailViewRiverpod(event: testEvent),
                 );
               },
             );
           },
+          ),
         ));
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
 
-        // Should show EventDetailView
-        expect(find.byType(EventDetailView), findsOneWidget);
+        // Should show EventDetailViewRiverpod
+        expect(find.byType(EventDetailViewRiverpod), findsOneWidget);
         expect(find.text('Test Event'), findsOneWidget);
       });
 
       testWidgets('Should navigate from Event Detail to Divisions',
           (WidgetTester tester) async {
-        await tester.pumpWidget(MaterialApp(
-          theme: FITTheme.lightTheme,
-          home: EventDetailView(event: testEvent),
+        await tester.pumpWidget(ProviderScope(
+          child: MaterialApp(
+            theme: FITTheme.lightTheme,
+            home: EventDetailViewRiverpod(event: testEvent),
+          ),
         ));
 
         // Wait for the view to load
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
 
-        // Should show EventDetailView
-        expect(find.byType(EventDetailView), findsOneWidget);
+        // Should show EventDetailViewRiverpod
+        expect(find.byType(EventDetailViewRiverpod), findsOneWidget);
 
         // Tap on a season (if seasons are displayed as tappable items)
         final seasonFinders = find.text('2024');
@@ -189,38 +198,40 @@ void main() {
           await tester.pump();
           await tester.pump(const Duration(seconds: 1));
 
-          // Should navigate to DivisionsView
-          expect(find.byType(DivisionsView), findsOneWidget);
+          // Should navigate to DivisionsViewRiverpod
+          expect(find.byType(DivisionsViewRiverpod), findsOneWidget);
         }
       });
 
       testWidgets('Should maintain navigation stack integrity',
           (WidgetTester tester) async {
         // Test that back navigation works correctly through the hierarchy
-        await tester.pumpWidget(MaterialApp(
-          theme: FITTheme.lightTheme,
-          home: Scaffold(
-            body: Navigator(
+        await tester.pumpWidget(ProviderScope(
+          child: MaterialApp(
+            theme: FITTheme.lightTheme,
+            home: Scaffold(
+              body: Navigator(
               onGenerateRoute: (settings) {
                 switch (settings.name) {
                   case '/divisions':
                     return MaterialPageRoute(
                       builder: (context) =>
-                          DivisionsView(event: testEvent, season: '2024'),
+                          DivisionsViewRiverpod(event: testEvent, season: '2024'),
                     );
                   default:
                     return MaterialPageRoute(
-                      builder: (context) => EventDetailView(event: testEvent),
+                      builder: (context) => EventDetailViewRiverpod(event: testEvent),
                     );
                 }
               },
             ),
           ),
+          ),
         ));
 
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
-        expect(find.byType(EventDetailView), findsOneWidget);
+        expect(find.byType(EventDetailViewRiverpod), findsOneWidget);
       });
     });
 
@@ -230,7 +241,7 @@ void main() {
         await tester.pumpWidget(createTestApp(initialTab: 2));
 
         // Start on Events tab
-        expect(find.byType(CompetitionsView), findsOneWidget);
+        expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
 
         // Switch to News tab
         await tester.tap(find.text('News'));
@@ -242,11 +253,11 @@ void main() {
         await tester.tap(find.text('Events'));
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
-        expect(find.byType(CompetitionsView), findsOneWidget);
+        expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
 
         // Navigation state should be preserved (still on CompetitionsView, not deep in hierarchy)
-        expect(find.byType(EventDetailView), findsNothing);
-        expect(find.byType(DivisionsView), findsNothing);
+        expect(find.byType(EventDetailViewRiverpod), findsNothing);
+        expect(find.byType(DivisionsViewRiverpod), findsNothing);
       });
     });
 
@@ -344,37 +355,41 @@ void main() {
           (WidgetTester tester) async {
         const testTeamId = 'team-123';
 
-        await tester.pumpWidget(MaterialApp(
-          theme: FITTheme.lightTheme,
-          home: FixturesResultsView(
-            event: testEvent,
-            season: '2024',
-            division: testDivision,
-            initialTeamId: testTeamId,
+        await tester.pumpWidget(ProviderScope(
+          child: MaterialApp(
+            theme: FITTheme.lightTheme,
+            home: FixturesResultsViewRiverpod(
+              event: testEvent,
+              season: '2024',
+              division: testDivision,
+              initialTeamId: testTeamId,
+            ),
           ),
         ));
 
         await tester.pump();
         // Don't wait for data loading to avoid API call failures in tests
 
-        // Verify that FixturesResultsView is displayed and accepts initialTeamId
-        expect(find.byType(FixturesResultsView), findsOneWidget);
+        // Verify that FixturesResultsViewRiverpod is displayed and accepts initialTeamId
+        expect(find.byType(FixturesResultsViewRiverpod), findsOneWidget);
 
         // This test verifies:
-        // 1. The FixturesResultsView widget accepts the initialTeamId parameter
+        // 1. The FixturesResultsViewRiverpod widget accepts the initialTeamId parameter
         // 2. The widget renders without crashing
         // Note: Full team dropdown testing requires mocked API responses
       });
 
       testWidgets('Should work normally when no initialTeamId is provided',
           (WidgetTester tester) async {
-        await tester.pumpWidget(MaterialApp(
-          theme: FITTheme.lightTheme,
-          home: FixturesResultsView(
-            event: testEvent,
-            season: '2024',
-            division: testDivision,
-            // No initialTeamId provided
+        await tester.pumpWidget(ProviderScope(
+          child: MaterialApp(
+            theme: FITTheme.lightTheme,
+            home: FixturesResultsViewRiverpod(
+              event: testEvent,
+              season: '2024',
+              division: testDivision,
+              // No initialTeamId provided
+            ),
           ),
         ));
 
@@ -382,7 +397,7 @@ void main() {
         // Don't wait for data loading to avoid API call failures in tests
 
         // Should display normally without any team pre-selected
-        expect(find.byType(FixturesResultsView), findsOneWidget);
+        expect(find.byType(FixturesResultsViewRiverpod), findsOneWidget);
       });
     });
   });

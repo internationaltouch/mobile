@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fit_mobile_app/main.dart';
 import 'package:fit_mobile_app/services/database_service.dart';
 import 'package:fit_mobile_app/services/database.dart' show createTestDatabase, AppDatabase;
-import 'package:fit_mobile_app/views/competitions_view.dart';
+import 'package:fit_mobile_app/views/competitions_view_riverpod.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
@@ -73,7 +74,7 @@ void main() {
 
   testWidgets('FIT Mobile App smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const FITMobileApp());
+    await tester.pumpWidget(const ProviderScope(child: FITMobileApp()));
 
     // Allow time for initial data loading attempts
     await tester.pump();
@@ -85,7 +86,7 @@ void main() {
   });
 
   testWidgets('Navigation to events works', (WidgetTester tester) async {
-    await tester.pumpWidget(const FITMobileApp());
+    await tester.pumpWidget(const ProviderScope(child: FITMobileApp()));
 
     // Allow time for initial data loading attempts
     await tester.pump();
@@ -96,7 +97,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    // Verify we're now on the events page by checking for CompetitionsView
-    expect(find.byType(CompetitionsView), findsOneWidget);
+    // Verify we're now on the events page by checking for CompetitionsViewRiverpod
+    expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
   });
 }

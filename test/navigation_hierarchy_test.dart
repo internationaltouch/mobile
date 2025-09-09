@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fit_mobile_app/views/main_navigation_view.dart';
-import 'package:fit_mobile_app/views/competitions_view.dart';
+import 'package:fit_mobile_app/views/competitions_view_riverpod.dart';
 import 'package:fit_mobile_app/views/my_touch_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/config/config_service.dart';
@@ -13,9 +14,11 @@ void main() {
       ConfigService.setTestConfig();
     });
     Widget createTestApp({int initialTab = 0}) {
-      return MaterialApp(
-        theme: FITTheme.lightTheme,
-        home: MainNavigationView(initialSelectedIndex: initialTab),
+      return ProviderScope(
+        child: MaterialApp(
+          theme: FITTheme.lightTheme,
+          home: MainNavigationView(initialSelectedIndex: initialTab),
+        ),
       );
     }
 
@@ -26,7 +29,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       // Start on Events tab (Competitions tab)
-      expect(find.byType(CompetitionsView), findsOneWidget);
+      expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
 
       // Switch to News tab
       await tester.tap(find.text('News'));
@@ -38,8 +41,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
-      // Should still be on CompetitionsView (navigation state preserved)
-      expect(find.byType(CompetitionsView), findsOneWidget);
+      // Should still be on CompetitionsViewRiverpod (navigation state preserved)
+      expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
     });
 
     testWidgets('Should preserve bottom navigation during navigation',
@@ -88,7 +91,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       expect(getNavBar().currentIndex, equals(2));
-      expect(find.byType(CompetitionsView), findsOneWidget);
+      expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
 
       // Switch to My Sport (index 3)
       final config2 = ConfigService.config.navigation;
@@ -135,8 +138,8 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
 
-        // Should now be on Events tab showing CompetitionsView
-        expect(find.byType(CompetitionsView), findsOneWidget);
+        // Should now be on Events tab showing CompetitionsViewRiverpod
+        expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
         final navBar = tester
             .widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
         expect(navBar.currentIndex, equals(2));
@@ -147,9 +150,11 @@ void main() {
   group('Navigation State Persistence', () {
     testWidgets('Should maintain separate navigation stacks per tab',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: FITTheme.lightTheme,
-        home: const MainNavigationView(initialSelectedIndex: 0),
+      await tester.pumpWidget(ProviderScope(
+        child: MaterialApp(
+          theme: FITTheme.lightTheme,
+          home: const MainNavigationView(initialSelectedIndex: 0),
+        ),
       ));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
@@ -178,11 +183,11 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       expect(getNavBar().currentIndex, equals(3));
 
-      // Switch back to Events - should still be on CompetitionsView root
+      // Switch back to Events - should still be on CompetitionsViewRiverpod root
       await tester.tap(find.text('Events'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(find.byType(CompetitionsView), findsOneWidget);
+      expect(find.byType(CompetitionsViewRiverpod), findsOneWidget);
     });
   });
 }

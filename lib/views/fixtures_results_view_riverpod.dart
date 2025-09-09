@@ -3,18 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/pure_riverpod_providers.dart';
 import '../models/event.dart';
 import '../models/division.dart';
+import '../models/fixture.dart';
 import '../widgets/match_score_card.dart';
 
 class FixturesResultsViewRiverpod extends ConsumerStatefulWidget {
   final Event event;
   final String season;
   final Division division;
+  final String? initialTeamId;
 
   const FixturesResultsViewRiverpod({
     super.key,
     required this.event,
     required this.season,
     required this.division,
+    this.initialTeamId,
   });
 
   @override
@@ -24,17 +27,75 @@ class FixturesResultsViewRiverpod extends ConsumerStatefulWidget {
 class _FixturesResultsViewRiverpodState extends ConsumerState<FixturesResultsViewRiverpod>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  String? _selectedTeamId;
+  String? _selectedPoolId;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _selectedTeamId = widget.initialTeamId;
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _onTeamSelected(String? teamId) {
+    setState(() {
+      _selectedTeamId = teamId;
+    });
+  }
+
+  void _onPoolSelected(String? poolId) {
+    setState(() {
+      _selectedPoolId = (poolId == 'all_pools') ? null : poolId;
+    });
+  }
+
+  List<DropdownMenuItem<String>> _buildPoolDropdownItems(List<Fixture> allFixtures) {
+    final pools = <String, String>{};  // poolId -> poolTitle
+    
+    for (final fixture in allFixtures) {
+      if (fixture.poolId != null) {
+        final poolId = fixture.poolId.toString();
+        final poolTitle = 'Pool ${fixture.poolId}'; // Simple naming
+        pools[poolId] = poolTitle;
+      }
+    }
+
+    return pools.entries.map((entry) => 
+      DropdownMenuItem<String>(
+        value: entry.key,
+        child: Text(entry.value),
+      )
+    ).toList();
+  }
+
+  List<Fixture> _filterFixtures(List<Fixture> allFixtures) {
+    return allFixtures.where((fixture) {
+      bool matchesTeam = true;
+      bool matchesPool = true;
+
+      // Apply team filter if selected
+      if (_selectedTeamId != null) {
+        matchesTeam = fixture.homeTeamId == _selectedTeamId ||
+            fixture.awayTeamId == _selectedTeamId;
+      }
+
+      // Apply pool filter if selected
+      if (_selectedPoolId != null) {
+        matchesPool = fixture.poolId?.toString() == _selectedPoolId;
+      }
+
+      return matchesTeam && matchesPool;
+    }).toList();
+  }
+
+  bool _hasAnyPools(List<Fixture> fixtures) {
+    return fixtures.any((fixture) => fixture.poolId != null);
   }
 
   @override
@@ -63,9 +124,12 @@ class _FixturesResultsViewRiverpodState extends ConsumerState<FixturesResultsVie
         ),
         bottom: TabBar(
           controller: _tabController,
+          labelColor: Theme.of(context).colorScheme.onPrimary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
+          indicatorColor: Theme.of(context).colorScheme.onPrimary,
           tabs: const [
-            Tab(text: 'Fixtures'),
-            Tab(text: 'Ladder'),
+            Tab(text: 'Fixtures', icon: Icon(Icons.schedule)),
+            Tab(text: 'Ladder', icon: Icon(Icons.leaderboard)),
           ],
         ),
       ),
@@ -121,26 +185,101 @@ class _FixturesResultsViewRiverpodState extends ConsumerState<FixturesResultsVie
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(fixturesProvider(params));
-            ref.invalidate(teamsProvider(params));
-            await ref.read(fixturesProvider(params).future);
-          },
-          child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16.0),
-            itemCount: fixtures.length,
-            itemBuilder: (context, index) {
-              final fixture = fixtures[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8.0),
-                child: MatchScoreCard(
-                  fixture: fixture,
-                ),
-              );
-            },
-          ),
+        final filteredFixtures = _filterFixtures(fixtures);
+        final teamsAsync = ref.watch(teamsProvider(params));
+
+        return Column(
+          children: [
+            // Filter dropdowns
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  // Pool filter dropdown - only show if pools exist
+                  if (_hasAnyPools(fixtures)) ...[
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedPoolId ?? 'all_pools',
+                      decoration: const InputDecoration(
+                        labelText: 'Filter by Pool',
+                        border: OutlineInputBorder(),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: 'all_pools',
+                          child: Text('All Pools'),
+                        ),
+                        ..._buildPoolDropdownItems(fixtures),
+                      ],
+                      onChanged: _onPoolSelected,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  
+                  // Team filter dropdown
+                  teamsAsync.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (error, stackTrace) => const SizedBox.shrink(),
+                    data: (teams) {
+                      return DropdownButtonFormField<String>(
+                        initialValue: _selectedTeamId,
+                        decoration: const InputDecoration(
+                          labelText: 'Filter by Team',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                        ),
+                        items: [
+                          const DropdownMenuItem<String>(
+                            value: null,
+                            child: Text('All Teams'),
+                          ),
+                          ...(teams..sort((a, b) => a.name.compareTo(b.name)))
+                              .map((team) => DropdownMenuItem<String>(
+                                    value: team.id,
+                                    child: Text(team.name),
+                                  )),
+                        ],
+                        onChanged: _onTeamSelected,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            // Fixtures list
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(fixturesProvider(params));
+                  ref.invalidate(teamsProvider(params));
+                  await ref.read(fixturesProvider(params).future);
+                },
+                child: filteredFixtures.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No fixtures match your filters',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    : ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(16.0),
+                        itemCount: filteredFixtures.length,
+                        itemBuilder: (context, index) {
+                          final fixture = filteredFixtures[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8.0),
+                            child: MatchScoreCard(
+                              fixture: fixture,
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ),
+          ],
         );
       },
     );

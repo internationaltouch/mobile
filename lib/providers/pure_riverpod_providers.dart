@@ -11,6 +11,7 @@ import '../models/news_item.dart';
 import '../services/api_service.dart';
 import '../services/competition_filter_service.dart';
 import '../config/config_service.dart';
+import '../config/app_config.dart';
 
 // HTTP Client provider
 final httpClientProvider = Provider<http.Client>((ref) => http.Client());
@@ -25,7 +26,8 @@ final rawEventsProvider = FutureProvider<List<Event>>((ref) async {
       final event = Event(
         id: competition['slug'],
         name: competition['title'],
-        logoUrl: '', // Will be set by competition filter service
+        logoUrl: AppConfig.getCompetitionLogoUrl(
+            competition['title'].substring(0, 3).toUpperCase()),
         seasons: [], // Load on demand
         description: 'International touch tournament',
         slug: competition['slug'],

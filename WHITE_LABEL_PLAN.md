@@ -43,25 +43,25 @@ lib/
 │   ├── news/
 │   │   ├── models/                 # RSS feed models
 │   │   ├── services/               # News data fetching
-│   │   ├── bloc/                   # Business logic (state management)
+│   │   ├── providers/              # Riverpod providers (state management)
 │   │   ├── widgets/                # Reusable UI widgets
 │   │   └── views/                  # NewsView and related screens
 │   ├── clubs/
 │   │   ├── models/                 # Club data models
 │   │   ├── services/               # Club API services
-│   │   ├── bloc/                   # Club state management
+│   │   ├── providers/              # Riverpod providers (state management)
 │   │   ├── widgets/                # Club UI components
 │   │   └── views/                  # ClubView and related screens
 │   ├── competitions/
 │   │   ├── models/                 # Competition/fixture models
 │   │   ├── services/               # Competition API services
-│   │   ├── bloc/                   # Competition state management
+│   │   ├── providers/              # Riverpod providers (state management)
 │   │   ├── widgets/                # Competition UI components
 │   │   └── views/                  # Competition views
 │   └── favorites/
 │       ├── models/                 # Favorites data models
 │       ├── services/               # Favorites persistence
-│       ├── bloc/                   # Favorites state management
+│       ├── providers/              # Riverpod providers (state management)
 │       ├── widgets/                # Favorites UI components
 │       └── views/                  # Favorites view
 └── shared/                         # Cross-component utilities
@@ -74,7 +74,7 @@ lib/
 - Each component is self-contained with its own models, services, and UI
 - Components communicate through well-defined interfaces (events/states)
 - Shared code lives in `core/` and `shared/` directories
-- Business logic is separated from UI using BLoC pattern
+- Business logic is separated from UI using Riverpod providers
 - Each module has comprehensive unit and widget tests
 
 ## Mono-Repo Structure
@@ -206,7 +206,7 @@ dependencies:
    - ✅ Ensure filtering works at all navigation levels
 
 ### Phase 2: Library Integration & Architecture
-1. **Entity Image System Refactor**: Restructure entity image handling as app-specific specialization
+1. **Entity Image System Refactor**: ✅ COMPLETED Restructure entity image handling as app-specific specialization
    - **Create Abstract Entity Image Interface**: Define `EntityImageServiceInterface` in core with standardized methods
      - `Widget? getEntityImageWidget({required String entityName, String? entityAbbreviation, double size})` 
      - `bool hasImageForEntity(String entityName, String? entityAbbreviation)`
@@ -224,15 +224,25 @@ dependencies:
      - API-based providers for remote entity image fetching
      - Mixed providers that handle clubs, teams, leagues, and other entities appropriately
      - Each app declares its entity image service matching their domain model
-2. **State Management Libraries**: Integrate recommended libraries
-   - Add `bloc` and `flutter_bloc` for business logic separation
-   - Integrate `riverpod` for reactive data caching and async handling
-   - Migrate existing state management to use these patterns
-3. **Device & Connectivity**: Add device awareness capabilities
+2. **Riverpod Backend Migration**: ✅ COMPLETED Replace custom SQLite caching with native Riverpod state management
+   - ✅ Implement pure Riverpod providers for all data fetching (`eventsProvider`, `seasonsProvider`, `divisionsProvider`, etc.)
+   - ✅ Replace `DataService` calls with direct API calls through Riverpod providers
+   - ✅ Leverage Riverpod's built-in caching instead of custom SQLite cache
+   - ✅ Create Riverpod versions of all competition navigation views
+   - ✅ Maintain visual parity with original views (icons, styling, functionality)
+   - ✅ Add team and pool filtering with dropdown interfaces
+   - ✅ Implement comprehensive test coverage (100% test pass rate)
+   - ✅ Ensure proper error handling and loading states
+   - ✅ Add refresh functionality with `ref.invalidate()` pattern
+3. **State Management Libraries**: ✅ COMPLETED Integrate recommended libraries
+   - ✅ Integrate `riverpod` for reactive data caching and async handling
+   - ✅ Migrate competition components to use Riverpod patterns
+   - ✅ Establish pure Riverpod architecture for state management
+4. **Device & Connectivity**: Add device awareness capabilities
    - Integrate `connectivity_plus` for network state monitoring
    - Add `device_info_plus` for device-specific feature enabling/disabling
    - Implement adaptive behavior based on connectivity and device capabilities
-4. **Data Persistence**: Implement local storage
+5. **Data Persistence**: Implement local storage
    - Add `shared_preferences` for simple key-value storage
    - Move user preferences and settings to device storage
    - Implement offline capability where appropriate
@@ -425,14 +435,14 @@ test/
 │   │   │   └── news_item_test.dart
 │   │   ├── services/
 │   │   │   └── rss_service_test.dart
-│   │   ├── bloc/
-│   │   │   └── news_bloc_test.dart
+│   │   ├── providers/
+│   │   │   └── news_provider_test.dart
 │   │   └── widgets/
 │   │       └── news_card_test.dart
 │   ├── clubs/
 │   │   ├── models/
 │   │   ├── services/
-│   │   ├── bloc/
+│   │   ├── providers/
 │   │   └── widgets/
 │   └── competitions/
 └── integration/                   # Integration tests
@@ -446,7 +456,7 @@ test/
 1. **Unit Tests**: Test individual functions, models, and services
    - Models: Data parsing, validation, serialization
    - Services: API calls, data transformation, business logic
-   - BLoCs: State management, event handling
+   - Providers: Riverpod state management, async data handling
    - Utilities: Helper functions, extensions
 
 2. **Widget Tests**: Test UI components in isolation
@@ -508,9 +518,8 @@ Based on WHITE_LABEL.md recommendations, these libraries should be integrated:
 - `connectivity_plus` - Network state monitoring for adaptive behavior
 - `device_info_plus` - Device-specific feature capabilities  
 - `shared_preferences` - Simple key-value storage for user preferences
-- `bloc` and `flutter_bloc` - Business logic separation and state management
 - `flex_color_scheme` - Advanced Material Design theming
-- `riverpod` - Reactive data caching and async state management
+- ✅ `riverpod` - Reactive data caching and async state management (COMPLETED)
 - `flutter_local_notifications` - Match reminder notifications
 
 ## Benefits of This Approach

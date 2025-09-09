@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fit_mobile_app/views/main_navigation_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/config/config_service.dart';
@@ -11,9 +12,11 @@ void main() {
       ConfigService.setTestConfig();
     });
     Widget createTestApp({int initialTab = 0}) {
-      return MaterialApp(
-        theme: FITTheme.lightTheme,
-        home: MainNavigationView(initialSelectedIndex: initialTab),
+      return ProviderScope(
+        child: MaterialApp(
+          theme: FITTheme.lightTheme,
+          home: MainNavigationView(initialSelectedIndex: initialTab),
+        ),
       );
     }
 

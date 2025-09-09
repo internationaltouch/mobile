@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fit_mobile_app/views/main_navigation_view.dart';
 import 'package:fit_mobile_app/theme/fit_theme.dart';
 import 'package:fit_mobile_app/config/config_service.dart';
@@ -13,9 +14,11 @@ void main() {
 
     testWidgets('Should render navigation with configuration-based labels and icons',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: FITTheme.lightTheme,
-        home: const MainNavigationView(initialSelectedIndex: 1), // Second tab selected
+      await tester.pumpWidget(ProviderScope(
+        child: MaterialApp(
+          theme: FITTheme.lightTheme,
+          home: const MainNavigationView(initialSelectedIndex: 1), // Second tab selected
+        ),
       ));
 
       await tester.pump();

@@ -91,24 +91,11 @@ class DivisionsViewRiverpod extends ConsumerWidget {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8.0),
                   child: ListTile(
-                    leading: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Color(int.parse(division.color.replaceFirst('#', '0xFF'))),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          division.name.length >= 2 
-                              ? division.name.substring(0, 2).toUpperCase()
-                              : division.name.toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
+                    leading: CircleAvatar(
+                      backgroundColor: Color(int.parse(division.color.replaceFirst('#', '0xFF'))),
+                      child: const Icon(
+                        Icons.category,
+                        color: Colors.white,
                       ),
                     ),
                     title: Text(

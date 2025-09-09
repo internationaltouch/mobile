@@ -49,7 +49,6 @@ dev_dependencies:
   # sqflite_common_ffi: ^2.3.6  # Temporarily disabled due to Dart SDK version requirement
   
   # Phase 2.2: Code Generation
-  json_serializable: ^6.8.0
   freezed: ^2.5.7
 
 flutter:
