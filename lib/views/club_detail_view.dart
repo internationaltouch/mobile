@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/club.dart';
-import '../services/flag_service.dart';
+import '../services/fit_entity_image_service.dart';
 import '../theme/fit_colors.dart';
 
 class ClubDetailView extends StatelessWidget {
@@ -77,7 +77,7 @@ class ClubDetailView extends StatelessWidget {
             SizedBox(
               height: 120,
               width: 160, // 4:3 aspect ratio
-              child: FlagService.getFlagWidget(
+              child: FITEntityImageService.getFlagWidget(
                     teamName: club.title,
                     clubAbbreviation: club.abbreviation,
                     size: 120.0,

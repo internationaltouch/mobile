@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import '../config/flags/flags_factory.dart';
 
-/// Service to map team names to country flags using configurable flag modules
-class FlagService {
+/// FIT-specific entity image service that maps team names to country flags using configurable flag modules
+class FITEntityImageService {
   /// Get flag widget for a team name or club abbreviation
   static Widget? getFlagWidget({
     required String teamName,

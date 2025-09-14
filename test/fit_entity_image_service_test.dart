@@ -1,17 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/widgets.dart';
-import 'package:fit_mobile_app/services/flag_service.dart';
+import 'package:fit_mobile_app/services/fit_entity_image_service.dart';
 import 'package:fit_mobile_app/config/config_service.dart';
 
 void main() {
-  group('FlagService Tests', () {
+  group('FITEntityImageService Tests', () {
     setUp(() {
       // Initialize ConfigService for all flag service tests
       ConfigService.setTestConfig();
     });
     test('should return flag widget for direct country names', () {
       // Test with direct country name
-      final franceFlagWidget = FlagService.getFlagWidget(
+      final franceFlagWidget = FITEntityImageService.getFlagWidget(
         teamName: 'France',
         clubAbbreviation: 'FRA',
       );
@@ -21,7 +21,7 @@ void main() {
     });
 
     test('should return flag widget for England (sub-country)', () {
-      final englandFlagWidget = FlagService.getFlagWidget(
+      final englandFlagWidget = FITEntityImageService.getFlagWidget(
         teamName: 'England',
         clubAbbreviation: 'ENG',
       );
@@ -31,7 +31,7 @@ void main() {
     });
 
     test('should return flag widget for Hong Kong China mapping', () {
-      final hkFlagWidget = FlagService.getFlagWidget(
+      final hkFlagWidget = FITEntityImageService.getFlagWidget(
         teamName: 'Hong Kong China',
         clubAbbreviation: null,
       );
@@ -41,7 +41,7 @@ void main() {
     });
 
     test('should return flag widget for USA through abbreviation', () {
-      final usaFlagWidget = FlagService.getFlagWidget(
+      final usaFlagWidget = FITEntityImageService.getFlagWidget(
         teamName: 'United States',
         clubAbbreviation: 'USA',
       );
@@ -50,7 +50,7 @@ void main() {
     });
 
     test('should return null for unknown countries', () {
-      final unknownFlagWidget = FlagService.getFlagWidget(
+      final unknownFlagWidget = FITEntityImageService.getFlagWidget(
         teamName: 'Fictional Country',
         clubAbbreviation: 'XYZ',
       );
@@ -59,14 +59,14 @@ void main() {
     });
 
     test('should correctly identify teams with flags', () {
-      expect(FlagService.hasFlagForTeam('France', 'FRA'), isTrue);
-      expect(FlagService.hasFlagForTeam('England', 'ENG'), isTrue);
-      expect(FlagService.hasFlagForTeam('Hong Kong China', null), isTrue);
-      expect(FlagService.hasFlagForTeam('Unknown Country', 'XYZ'), isFalse);
+      expect(FITEntityImageService.hasFlagForTeam('France', 'FRA'), isTrue);
+      expect(FITEntityImageService.hasFlagForTeam('England', 'ENG'), isTrue);
+      expect(FITEntityImageService.hasFlagForTeam('Hong Kong China', null), isTrue);
+      expect(FITEntityImageService.hasFlagForTeam('Unknown Country', 'XYZ'), isFalse);
     });
 
     test('should handle direct country name matches', () {
-      final australiaFlagWidget = FlagService.getFlagWidget(
+      final australiaFlagWidget = FITEntityImageService.getFlagWidget(
         teamName: 'Australia',
         clubAbbreviation: null,
       );
@@ -75,7 +75,7 @@ void main() {
     });
 
     test('should handle 2-letter ISO codes correctly', () {
-      final deFlagWidget = FlagService.getFlagWidget(
+      final deFlagWidget = FITEntityImageService.getFlagWidget(
         teamName: 'Germany',
         clubAbbreviation: 'DE',
       );
@@ -85,7 +85,7 @@ void main() {
 
     group('Missing Countries Issue #22', () {
       test('should return flag widget for Chile (CHL)', () {
-        final chileFlagWidget = FlagService.getFlagWidget(
+        final chileFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Chile National Team',
           clubAbbreviation: 'CHL',
         );
@@ -93,21 +93,21 @@ void main() {
         expect(chileFlagWidget, isNotNull);
         expect(chileFlagWidget, isA<Widget>());
         expect(
-            FlagService.hasFlagForTeam('Chile National Team', 'CHL'), isTrue);
+            FITEntityImageService.hasFlagForTeam('Chile National Team', 'CHL'), isTrue);
       });
 
       test('should return flag widget for Chile by country name', () {
-        final chileFlagWidget = FlagService.getFlagWidget(
+        final chileFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Chile',
           clubAbbreviation: null,
         );
 
         expect(chileFlagWidget, isNotNull);
-        expect(FlagService.hasFlagForTeam('Chile', null), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Chile', null), isTrue);
       });
 
       test('should return flag widget for Cayman Islands (CYM)', () {
-        final caymanFlagWidget = FlagService.getFlagWidget(
+        final caymanFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Cayman Islands Touch Association',
           clubAbbreviation: 'CYM',
         );
@@ -115,23 +115,23 @@ void main() {
         expect(caymanFlagWidget, isNotNull);
         expect(caymanFlagWidget, isA<Widget>());
         expect(
-            FlagService.hasFlagForTeam(
+            FITEntityImageService.hasFlagForTeam(
                 'Cayman Islands Touch Association', 'CYM'),
             isTrue);
       });
 
       test('should return flag widget for Cayman Islands by country name', () {
-        final caymanFlagWidget = FlagService.getFlagWidget(
+        final caymanFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Cayman Islands',
           clubAbbreviation: null,
         );
 
         expect(caymanFlagWidget, isNotNull);
-        expect(FlagService.hasFlagForTeam('Cayman Islands', null), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Cayman Islands', null), isTrue);
       });
 
       test('should return flag widget for Lebanon (LBN)', () {
-        final lebanonFlagWidget = FlagService.getFlagWidget(
+        final lebanonFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Lebanon National Team',
           clubAbbreviation: 'LBN',
         );
@@ -139,21 +139,21 @@ void main() {
         expect(lebanonFlagWidget, isNotNull);
         expect(lebanonFlagWidget, isA<Widget>());
         expect(
-            FlagService.hasFlagForTeam('Lebanon National Team', 'LBN'), isTrue);
+            FITEntityImageService.hasFlagForTeam('Lebanon National Team', 'LBN'), isTrue);
       });
 
       test('should return flag widget for Lebanon by country name', () {
-        final lebanonFlagWidget = FlagService.getFlagWidget(
+        final lebanonFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Lebanon',
           clubAbbreviation: null,
         );
 
         expect(lebanonFlagWidget, isNotNull);
-        expect(FlagService.hasFlagForTeam('Lebanon', null), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Lebanon', null), isTrue);
       });
 
       test('should return flag widget for Guernsey (GGY)', () {
-        final guernseyFlagWidget = FlagService.getFlagWidget(
+        final guernseyFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Guernsey Touch Club',
           clubAbbreviation: 'GGY',
         );
@@ -161,82 +161,82 @@ void main() {
         expect(guernseyFlagWidget, isNotNull);
         expect(guernseyFlagWidget, isA<Widget>());
         expect(
-            FlagService.hasFlagForTeam('Guernsey Touch Club', 'GGY'), isTrue);
+            FITEntityImageService.hasFlagForTeam('Guernsey Touch Club', 'GGY'), isTrue);
       });
 
       test('should return flag widget for Guernsey by country name', () {
-        final guernseyFlagWidget = FlagService.getFlagWidget(
+        final guernseyFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Guernsey',
           clubAbbreviation: null,
         );
 
         expect(guernseyFlagWidget, isNotNull);
-        expect(FlagService.hasFlagForTeam('Guernsey', null), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Guernsey', null), isTrue);
       });
 
       test('should return flag widget for Jersey (JEY)', () {
-        final jerseyFlagWidget = FlagService.getFlagWidget(
+        final jerseyFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Jersey Touch Association',
           clubAbbreviation: 'JEY',
         );
 
         expect(jerseyFlagWidget, isNotNull);
         expect(jerseyFlagWidget, isA<Widget>());
-        expect(FlagService.hasFlagForTeam('Jersey Touch Association', 'JEY'),
+        expect(FITEntityImageService.hasFlagForTeam('Jersey Touch Association', 'JEY'),
             isTrue);
       });
 
       test('should return flag widget for Jersey by country name', () {
-        final jerseyFlagWidget = FlagService.getFlagWidget(
+        final jerseyFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Jersey',
           clubAbbreviation: null,
         );
 
         expect(jerseyFlagWidget, isNotNull);
-        expect(FlagService.hasFlagForTeam('Jersey', null), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Jersey', null), isTrue);
       });
 
       test('should return flag widget for Oman (OMN)', () {
-        final omanFlagWidget = FlagService.getFlagWidget(
+        final omanFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Oman National Team',
           clubAbbreviation: 'OMN',
         );
 
         expect(omanFlagWidget, isNotNull);
         expect(omanFlagWidget, isA<Widget>());
-        expect(FlagService.hasFlagForTeam('Oman National Team', 'OMN'), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Oman National Team', 'OMN'), isTrue);
       });
 
       test('should return flag widget for Oman by country name', () {
-        final omanFlagWidget = FlagService.getFlagWidget(
+        final omanFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Oman',
           clubAbbreviation: null,
         );
 
         expect(omanFlagWidget, isNotNull);
-        expect(FlagService.hasFlagForTeam('Oman', null), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Oman', null), isTrue);
       });
 
       test('should handle Chinese Taipei special case', () {
-        final chineseTaipeiFlagWidget = FlagService.getFlagWidget(
+        final chineseTaipeiFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Chinese Taipei',
           clubAbbreviation: null,
         );
 
         expect(chineseTaipeiFlagWidget, isNotNull);
         expect(chineseTaipeiFlagWidget, isA<Widget>());
-        expect(FlagService.hasFlagForTeam('Chinese Taipei', null), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Chinese Taipei', null), isTrue);
       });
 
       test('should handle TPE abbreviation for Chinese Taipei', () {
-        final tpeFlagWidget = FlagService.getFlagWidget(
+        final tpeFlagWidget = FITEntityImageService.getFlagWidget(
           teamName: 'Chinese Taipei National Team',
           clubAbbreviation: 'TPE',
         );
 
         expect(tpeFlagWidget, isNotNull);
         expect(
-            FlagService.hasFlagForTeam('Chinese Taipei National Team', 'TPE'),
+            FITEntityImageService.hasFlagForTeam('Chinese Taipei National Team', 'TPE'),
             isTrue);
       });
     });

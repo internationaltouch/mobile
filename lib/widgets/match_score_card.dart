@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/fixture.dart';
 import '../theme/fit_colors.dart';
-import '../services/flag_service.dart';
+import '../services/fit_entity_image_service.dart';
 import 'video_player_dialog.dart';
 
 class MatchScoreCard extends StatelessWidget {
@@ -364,7 +364,7 @@ class MatchScoreCard extends StatelessWidget {
 
   Widget _buildTeamLogo(String teamName, String? abbreviation) {
     // Try to get flag widget from flag service first
-    final flagWidget = FlagService.getFlagWidget(
+    final flagWidget = FITEntityImageService.getFlagWidget(
       teamName: teamName,
       clubAbbreviation: abbreviation,
       size: 45.0,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/club.dart';
 import '../services/api_service.dart';
-import '../services/flag_service.dart';
+import '../services/fit_entity_image_service.dart';
 import '../theme/fit_colors.dart';
 import '../config/config_service.dart';
 import 'club_detail_view.dart';
@@ -192,7 +192,7 @@ class _ClubViewState extends State<ClubView> {
                 child: Container(
                   width: double.infinity,
                   constraints: const BoxConstraints(maxHeight: 80),
-                  child: FlagService.getFlagWidget(
+                  child: FITEntityImageService.getFlagWidget(
                         teamName: club.title,
                         clubAbbreviation: club.abbreviation,
                         size: 80.0,

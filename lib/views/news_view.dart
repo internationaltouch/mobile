@@ -5,7 +5,7 @@ import '../services/data_service.dart';
 import '../theme/fit_colors.dart';
 import '../utils/image_utils.dart';
 import '../config/config_service.dart';
-import 'competitions_view.dart';
+import 'competitions_view_riverpod.dart';
 import 'news_detail_view.dart';
 
 class NewsView extends StatefulWidget {
@@ -81,7 +81,7 @@ class _NewsViewState extends State<NewsView> {
 
     // Original behavior for backward compatibility
     return Scaffold(
-      body: _selectedIndex == 0 ? _buildNewsPage() : const CompetitionsView(),
+      body: _selectedIndex == 0 ? _buildNewsPage() : const CompetitionsViewRiverpod(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
