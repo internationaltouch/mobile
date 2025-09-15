@@ -4,6 +4,7 @@ import '../providers/pure_riverpod_providers.dart';
 import '../models/event.dart';
 import '../models/division.dart';
 import '../models/fixture.dart';
+import '../models/ladder_entry.dart';
 import '../models/favorite.dart';
 import '../widgets/match_score_card.dart';
 import '../widgets/favorite_button.dart';
@@ -160,7 +161,7 @@ class _FixturesResultsViewRiverpodState
     for (final fixture in allFixtures) {
       if (fixture.poolId != null) {
         final poolId = fixture.poolId.toString();
-        final poolTitle = 'Pool ${fixture.poolId}'; // Simple naming
+        final poolTitle = fixture.poolName!; // Must have actual pool name, no fallback
         pools[poolId] = poolTitle;
       }
     }
@@ -439,6 +440,13 @@ class _FixturesResultsViewRiverpodState
           );
         }
 
+        // Group ladder entries by pool
+        final groupedLadder = <String, List<LadderEntry>>{};
+        for (final entry in ladder) {
+          final poolName = entry.poolName ?? 'No Pool';
+          groupedLadder.putIfAbsent(poolName, () => []).add(entry);
+        }
+
         return RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(ladderProvider(params));
@@ -446,85 +454,108 @@ class _FixturesResultsViewRiverpodState
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            scrollDirection: Axis.horizontal,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: DataTable(
-                  columnSpacing: 12.0,
-                  columns: const [
-                    DataColumn(
-                        label: Text('Pos',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('Team',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('P',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('W',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('D',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('L',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('GF',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('GA',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('GD',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('Pts',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                  ],
-                  rows: ladder.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final ladderEntry = entry.value;
-                    final position = index + 1;
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: groupedLadder.entries.map((poolGroup) {
+                  final poolName = poolGroup.key;
+                  final poolLadder = poolGroup.value;
 
-                    return DataRow(
-                      cells: [
-                        DataCell(Text(position.toString())),
-                        DataCell(
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Entity images can be added here if needed
-                              Container(
-                                width: 20,
-                                height: 20,
-                                margin: const EdgeInsets.only(right: 8.0),
-                                child:
-                                    Container(), // Placeholder for entity images
-                              ),
-                              Flexible(
-                                child: Text(
-                                  ladderEntry.teamName,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Pool header
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0, top: 16.0),
+                        child: Text(
+                          poolName,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        DataCell(Text(ladderEntry.played.toString())),
-                        DataCell(Text(ladderEntry.wins.toString())),
-                        DataCell(Text(ladderEntry.draws.toString())),
-                        DataCell(Text(ladderEntry.losses.toString())),
-                        DataCell(Text(ladderEntry.goalsFor.toString())),
-                        DataCell(Text(ladderEntry.goalsAgainst.toString())),
-                        DataCell(Text(ladderEntry.goalDifferenceText)),
-                        DataCell(Text(ladderEntry.points.toStringAsFixed(0))),
-                      ],
-                    );
-                  }).toList(),
-                ),
+                      ),
+                      // Pool ladder table
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          columnSpacing: 12.0,
+                          columns: const [
+                            DataColumn(
+                                label: Text('Pos',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('Team',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('P',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('W',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('D',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('L',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('GF',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('GA',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('GD',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('Pts',
+                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                          ],
+                          rows: poolLadder.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final ladderEntry = entry.value;
+                            final position = index + 1;
+
+                            return DataRow(
+                              cells: [
+                                DataCell(Text(position.toString())),
+                                DataCell(
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Entity images can be added here if needed
+                                      Container(
+                                        width: 20,
+                                        height: 20,
+                                        margin: const EdgeInsets.only(right: 8.0),
+                                        child: Container(), // Placeholder for entity images
+                                      ),
+                                      Flexible(
+                                        child: Text(
+                                          ladderEntry.teamName,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                DataCell(Text(ladderEntry.played.toString())),
+                                DataCell(Text(ladderEntry.wins.toString())),
+                                DataCell(Text(ladderEntry.draws.toString())),
+                                DataCell(Text(ladderEntry.losses.toString())),
+                                DataCell(Text(ladderEntry.goalsFor.toString())),
+                                DataCell(Text(ladderEntry.goalsAgainst.toString())),
+                                DataCell(Text(ladderEntry.goalDifferenceText)),
+                                DataCell(Text(ladderEntry.points.toStringAsFixed(0))),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
               ),
             ),
           ),

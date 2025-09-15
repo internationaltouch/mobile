@@ -51,6 +51,7 @@ class LadderStage {
         goalsAgainst: ladderEntry.goalsAgainst,
         percentage: ladderEntry.percentage,
         poolId: ladderEntry.poolId,
+        poolName: ladderEntry.poolName,
       );
     }).toList();
 

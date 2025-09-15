@@ -11,6 +11,7 @@ class LadderEntry {
   final int goalsAgainst;
   final double? percentage;
   final int? poolId; // Pool ID for pool-based ladder entries
+  final String? poolName; // Pool name from pools lookup
 
   LadderEntry({
     required this.teamId,
@@ -25,6 +26,7 @@ class LadderEntry {
     required this.goalsAgainst,
     this.percentage,
     this.poolId,
+    this.poolName,
   });
 
   factory LadderEntry.fromJson(Map<String, dynamic> json) {
@@ -74,6 +76,7 @@ class LadderEntry {
       poolId: json['stage_group'] is int
           ? json['stage_group'] as int
           : int.tryParse(json['stage_group']?.toString() ?? ''),
+      poolName: json['pool_name'] as String?,
     );
   }
 

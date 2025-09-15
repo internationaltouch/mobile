@@ -152,6 +152,16 @@ final fixturesProvider = FutureProvider.family<
 
   final teamMap = {for (final team in teams) team.id: team};
 
+  // Create pools lookup map from API response - pools are nested in stages
+  final poolsMap = <int, String>{};
+  for (final stage in divisionDetails['stages']) {
+    if (stage['pools'] != null) {
+      for (final pool in stage['pools'] as List<dynamic>) {
+        poolsMap[pool['id'] as int] = pool['title'] as String;
+      }
+    }
+  }
+
   // Process all stages and their matches
   for (final stage in divisionDetails['stages']) {
     for (final match in stage['matches']) {
@@ -160,6 +170,8 @@ final fixturesProvider = FutureProvider.family<
       final homeTeam = teamMap[match['home_team']?.toString()];
       final awayTeam = teamMap[match['away_team']?.toString()];
 
+      final stageGroupId = match['stage_group'] as int?;
+      final poolName = stageGroupId != null ? poolsMap[stageGroupId] : null;
       final fixture = Fixture(
         id: match['id'].toString(),
         homeTeamId: homeTeam?.id ?? match['home_team']?.toString() ?? '',
@@ -180,7 +192,8 @@ final fixturesProvider = FutureProvider.family<
         round: match['round'],
         isBye: match['is_bye'],
         videos: (match['videos'] as List<dynamic>?)?.cast<String>() ?? [],
-        poolId: match['stage_group'] as int?,
+        poolId: stageGroupId,
+        poolName: poolName,
       );
 
       fixtures.add(fixture);
@@ -203,11 +216,22 @@ final ladderProvider = FutureProvider.family<
 
   final teams = divisionDetails['teams'] as List<dynamic>? ?? [];
 
+  // Create pools lookup map from API response - pools are nested in stages
+  final poolsMap = <int, String>{};
+  for (final stage in divisionDetails['stages']) {
+    if (stage['pools'] != null) {
+      for (final pool in stage['pools'] as List<dynamic>) {
+        poolsMap[pool['id'] as int] = pool['title'] as String;
+      }
+    }
+  }
+
+  final allLadderEntries = <LadderEntry>[];
+
   // Process each stage and extract ladder data
   for (final stage in divisionDetails['stages']) {
     if (stage['ladder_summary'] != null &&
         (stage['ladder_summary'] as List).isNotEmpty) {
-      final ladder = <LadderEntry>[];
       final ladderData = stage['ladder_summary'] as List;
 
       for (final entryData in ladderData) {
@@ -217,26 +241,27 @@ final ladderProvider = FutureProvider.family<
         );
 
         if (teamData != null) {
+          final stageGroupId = entryData['stage_group'] as int?;
+          final poolName = stageGroupId != null ? poolsMap[stageGroupId] : null;
+
           // Prepare the JSON data for the model's fromJson method
           final jsonData = {
             ...entryData,
             'team_name': teamData['title'] ?? 'Unknown Team',
             'score_for': entryData['points_for'],
             'score_against': entryData['points_against'],
+            'pool_name': poolName, // Add pool name for grouping
           };
 
           final entry =
               LadderEntry.fromJson(Map<String, dynamic>.from(jsonData));
-          ladder.add(entry);
+          allLadderEntries.add(entry);
         }
       }
-
-      // Return the first stage's ladder (most stages have only one)
-      return ladder;
     }
   }
 
-  return [];
+  return allLadderEntries;
 });
 
 // Clubs provider with configuration-based filtering

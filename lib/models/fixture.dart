@@ -16,6 +16,7 @@ class Fixture {
   final bool? isBye; // Add bye information from API
   final List<String> videos; // Add video URLs from API
   final int? poolId; // Pool ID for pool-based matches
+  final String? poolName; // Pool name from pools lookup
 
   Fixture({
     required this.id,
@@ -35,6 +36,7 @@ class Fixture {
     this.isBye,
     this.videos = const [],
     this.poolId,
+    this.poolName,
   });
 
   factory Fixture.fromJson(Map<String, dynamic> json) {
@@ -95,6 +97,7 @@ class Fixture {
       poolId: json['stage_group'] is int
           ? json['stage_group'] as int
           : int.tryParse(json['stage_group']?.toString() ?? ''),
+      poolName: json['pool_name'] as String?,
     );
   }
 
