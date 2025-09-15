@@ -8,6 +8,7 @@ import '../models/ladder_entry.dart';
 import '../models/favorite.dart';
 import '../widgets/match_score_card.dart';
 import '../widgets/favorite_button.dart';
+import '../services/user_preferences_service.dart';
 
 class FixturesResultsViewRiverpod extends ConsumerStatefulWidget {
   final Event event;
@@ -40,6 +41,22 @@ class _FixturesResultsViewRiverpodState
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _selectedTeamId = widget.initialTeamId;
+    _loadSavedPreferences();
+  }
+
+  void _loadSavedPreferences() async {
+    if (_selectedTeamId == null) {
+      _selectedTeamId = await UserPreferencesService.getSelectedTeam(widget.division.id);
+    }
+    _selectedPoolId = await UserPreferencesService.getSelectedPool(widget.division.id);
+    final lastTab = await UserPreferencesService.getLastSelectedTab(widget.division.id);
+    _tabController.animateTo(lastTab);
+
+    _tabController.addListener(() {
+      UserPreferencesService.setLastSelectedTab(widget.division.id, _tabController.index);
+    });
+
+    if (mounted) setState(() {});
   }
 
   @override
@@ -52,6 +69,7 @@ class _FixturesResultsViewRiverpodState
     setState(() {
       _selectedTeamId = teamId;
     });
+    UserPreferencesService.setSelectedTeam(widget.division.id, teamId);
   }
 
   Widget _buildContextualFavoriteButton(WidgetRef ref, String seasonSlug) {
@@ -152,6 +170,7 @@ class _FixturesResultsViewRiverpodState
     setState(() {
       _selectedPoolId = (poolId == 'all_pools') ? null : poolId;
     });
+    UserPreferencesService.setSelectedPool(widget.division.id, _selectedPoolId);
   }
 
   List<DropdownMenuItem<String>> _buildPoolDropdownItems(
