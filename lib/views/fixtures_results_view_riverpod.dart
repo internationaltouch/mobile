@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/pure_riverpod_providers.dart';
-import '../models/event.dart';
+
 import '../models/division.dart';
+import '../models/event.dart';
+import '../models/favorite.dart';
 import '../models/fixture.dart';
 import '../models/ladder_entry.dart';
-import '../models/favorite.dart';
-import '../widgets/match_score_card.dart';
-import '../widgets/favorite_button.dart';
+import '../providers/pure_riverpod_providers.dart';
 import '../services/user_preferences_service.dart';
+import '../widgets/favorite_button.dart';
+import '../widgets/match_score_card.dart';
 
 class FixturesResultsViewRiverpod extends ConsumerStatefulWidget {
   final Event event;
@@ -45,15 +46,17 @@ class _FixturesResultsViewRiverpodState
   }
 
   void _loadSavedPreferences() async {
-    if (_selectedTeamId == null) {
-      _selectedTeamId = await UserPreferencesService.getSelectedTeam(widget.division.id);
-    }
-    _selectedPoolId = await UserPreferencesService.getSelectedPool(widget.division.id);
-    final lastTab = await UserPreferencesService.getLastSelectedTab(widget.division.id);
+    _selectedTeamId ??=
+        await UserPreferencesService.getSelectedTeam(widget.division.id);
+    _selectedPoolId =
+        await UserPreferencesService.getSelectedPool(widget.division.id);
+    final lastTab =
+        await UserPreferencesService.getLastSelectedTab(widget.division.id);
     _tabController.animateTo(lastTab);
 
     _tabController.addListener(() {
-      UserPreferencesService.setLastSelectedTab(widget.division.id, _tabController.index);
+      UserPreferencesService.setLastSelectedTab(
+          widget.division.id, _tabController.index);
     });
 
     if (mounted) setState(() {});
@@ -180,7 +183,8 @@ class _FixturesResultsViewRiverpodState
     for (final fixture in allFixtures) {
       if (fixture.poolId != null) {
         final poolId = fixture.poolId.toString();
-        final poolTitle = fixture.poolName!; // Must have actual pool name, no fallback
+        final poolTitle =
+            fixture.poolName!; // Must have actual pool name, no fallback
         pools[poolId] = poolTitle;
       }
     }
@@ -489,9 +493,12 @@ class _FixturesResultsViewRiverpodState
                         padding: const EdgeInsets.only(bottom: 16.0, top: 16.0),
                         child: Text(
                           poolName,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                       ),
                       // Pool ladder table
@@ -502,34 +509,44 @@ class _FixturesResultsViewRiverpodState
                           columns: const [
                             DataColumn(
                                 label: Text('Pos',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                             DataColumn(
                                 label: Text('Team',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                             DataColumn(
                                 label: Text('P',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                             DataColumn(
                                 label: Text('W',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                             DataColumn(
                                 label: Text('D',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                             DataColumn(
                                 label: Text('L',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                             DataColumn(
                                 label: Text('GF',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                             DataColumn(
                                 label: Text('GA',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                             DataColumn(
                                 label: Text('GD',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                             DataColumn(
                                 label: Text('Pts',
-                                    style: TextStyle(fontWeight: FontWeight.bold))),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
                           ],
                           rows: poolLadder.asMap().entries.map((entry) {
                             final index = entry.key;
@@ -547,8 +564,10 @@ class _FixturesResultsViewRiverpodState
                                       Container(
                                         width: 20,
                                         height: 20,
-                                        margin: const EdgeInsets.only(right: 8.0),
-                                        child: Container(), // Placeholder for entity images
+                                        margin:
+                                            const EdgeInsets.only(right: 8.0),
+                                        child:
+                                            Container(), // Placeholder for entity images
                                       ),
                                       Flexible(
                                         child: Text(
@@ -564,9 +583,11 @@ class _FixturesResultsViewRiverpodState
                                 DataCell(Text(ladderEntry.draws.toString())),
                                 DataCell(Text(ladderEntry.losses.toString())),
                                 DataCell(Text(ladderEntry.goalsFor.toString())),
-                                DataCell(Text(ladderEntry.goalsAgainst.toString())),
+                                DataCell(
+                                    Text(ladderEntry.goalsAgainst.toString())),
                                 DataCell(Text(ladderEntry.goalDifferenceText)),
-                                DataCell(Text(ladderEntry.points.toStringAsFixed(0))),
+                                DataCell(Text(
+                                    ladderEntry.points.toStringAsFixed(0))),
                               ],
                             );
                           }).toList(),

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'views/main_navigation_view.dart';
-import 'theme/configurable_theme.dart';
+
 import 'config/config_service.dart';
+import 'services/device_service.dart';
 import 'services/user_preferences_service.dart';
-import 'services/favorites_service.dart';
+import 'theme/configurable_theme.dart';
+import 'views/main_navigation_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,9 @@ void main() async {
 
   // Initialize user preferences
   await UserPreferencesService.init();
+
+  // Initialize device service
+  await DeviceService.instance.initialize();
 
   // Lock orientation to portrait mode
   await SystemChrome.setPreferredOrientations([

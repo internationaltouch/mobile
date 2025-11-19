@@ -9,6 +9,13 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 part 'database.g.dart';
 
+// Configure Drift runtime options
+void _configureDriftRuntime() {
+  // Allow multiple database instances for testing
+  // Each test file creates its own in-memory database instance
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+}
+
 // Table definitions
 class Events extends Table {
   TextColumn get slug => text().named('slug')();
@@ -193,6 +200,7 @@ class AppDatabase extends _$AppDatabase {
 
 // Create a test database factory
 AppDatabase createTestDatabase() {
+  _configureDriftRuntime();
   return AppDatabase(NativeDatabase.memory());
 }
 

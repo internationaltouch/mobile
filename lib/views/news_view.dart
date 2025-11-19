@@ -81,7 +81,9 @@ class _NewsViewState extends State<NewsView> {
 
     // Original behavior for backward compatibility
     return Scaffold(
-      body: _selectedIndex == 0 ? _buildNewsPage() : const CompetitionsViewRiverpod(),
+      body: _selectedIndex == 0
+          ? _buildNewsPage()
+          : const CompetitionsViewRiverpod(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {

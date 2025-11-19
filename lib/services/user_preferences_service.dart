@@ -63,7 +63,8 @@ class UserPreferencesService {
 
   // Tab Preferences
   /// Save last selected tab index for a specific division
-  static Future<void> setLastSelectedTab(String divisionId, int tabIndex) async {
+  static Future<void> setLastSelectedTab(
+      String divisionId, int tabIndex) async {
     final prefs = await _preferences;
     await prefs.setInt('$_lastTabPrefix$divisionId', tabIndex);
   }
@@ -98,6 +99,18 @@ class UserPreferencesService {
   static Future<int> getCacheExpiryHours() async {
     final prefs = await _preferences;
     return prefs.getInt(_cacheExpiryHours) ?? 24;
+  }
+
+  /// Save adaptive cache expiry based on device capabilities (in milliseconds)
+  static Future<void> setAdaptiveCacheExpiry(int milliseconds) async {
+    final prefs = await _preferences;
+    await prefs.setInt('adaptive_cache_expiry', milliseconds);
+  }
+
+  /// Get adaptive cache expiry in milliseconds (defaults to 30 minutes)
+  static Future<int> getAdaptiveCacheExpiry() async {
+    final prefs = await _preferences;
+    return prefs.getInt('adaptive_cache_expiry') ?? (30 * 60 * 1000);
   }
 
   // Utility Methods

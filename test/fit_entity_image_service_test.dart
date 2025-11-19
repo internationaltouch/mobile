@@ -61,8 +61,10 @@ void main() {
     test('should correctly identify teams with flags', () {
       expect(FITEntityImageService.hasFlagForTeam('France', 'FRA'), isTrue);
       expect(FITEntityImageService.hasFlagForTeam('England', 'ENG'), isTrue);
-      expect(FITEntityImageService.hasFlagForTeam('Hong Kong China', null), isTrue);
-      expect(FITEntityImageService.hasFlagForTeam('Unknown Country', 'XYZ'), isFalse);
+      expect(FITEntityImageService.hasFlagForTeam('Hong Kong China', null),
+          isTrue);
+      expect(FITEntityImageService.hasFlagForTeam('Unknown Country', 'XYZ'),
+          isFalse);
     });
 
     test('should handle direct country name matches', () {
@@ -93,7 +95,8 @@ void main() {
         expect(chileFlagWidget, isNotNull);
         expect(chileFlagWidget, isA<Widget>());
         expect(
-            FITEntityImageService.hasFlagForTeam('Chile National Team', 'CHL'), isTrue);
+            FITEntityImageService.hasFlagForTeam('Chile National Team', 'CHL'),
+            isTrue);
       });
 
       test('should return flag widget for Chile by country name', () {
@@ -127,7 +130,8 @@ void main() {
         );
 
         expect(caymanFlagWidget, isNotNull);
-        expect(FITEntityImageService.hasFlagForTeam('Cayman Islands', null), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Cayman Islands', null),
+            isTrue);
       });
 
       test('should return flag widget for Lebanon (LBN)', () {
@@ -139,7 +143,9 @@ void main() {
         expect(lebanonFlagWidget, isNotNull);
         expect(lebanonFlagWidget, isA<Widget>());
         expect(
-            FITEntityImageService.hasFlagForTeam('Lebanon National Team', 'LBN'), isTrue);
+            FITEntityImageService.hasFlagForTeam(
+                'Lebanon National Team', 'LBN'),
+            isTrue);
       });
 
       test('should return flag widget for Lebanon by country name', () {
@@ -161,7 +167,8 @@ void main() {
         expect(guernseyFlagWidget, isNotNull);
         expect(guernseyFlagWidget, isA<Widget>());
         expect(
-            FITEntityImageService.hasFlagForTeam('Guernsey Touch Club', 'GGY'), isTrue);
+            FITEntityImageService.hasFlagForTeam('Guernsey Touch Club', 'GGY'),
+            isTrue);
       });
 
       test('should return flag widget for Guernsey by country name', () {
@@ -182,7 +189,9 @@ void main() {
 
         expect(jerseyFlagWidget, isNotNull);
         expect(jerseyFlagWidget, isA<Widget>());
-        expect(FITEntityImageService.hasFlagForTeam('Jersey Touch Association', 'JEY'),
+        expect(
+            FITEntityImageService.hasFlagForTeam(
+                'Jersey Touch Association', 'JEY'),
             isTrue);
       });
 
@@ -204,7 +213,9 @@ void main() {
 
         expect(omanFlagWidget, isNotNull);
         expect(omanFlagWidget, isA<Widget>());
-        expect(FITEntityImageService.hasFlagForTeam('Oman National Team', 'OMN'), isTrue);
+        expect(
+            FITEntityImageService.hasFlagForTeam('Oman National Team', 'OMN'),
+            isTrue);
       });
 
       test('should return flag widget for Oman by country name', () {
@@ -225,7 +236,8 @@ void main() {
 
         expect(chineseTaipeiFlagWidget, isNotNull);
         expect(chineseTaipeiFlagWidget, isA<Widget>());
-        expect(FITEntityImageService.hasFlagForTeam('Chinese Taipei', null), isTrue);
+        expect(FITEntityImageService.hasFlagForTeam('Chinese Taipei', null),
+            isTrue);
       });
 
       test('should handle TPE abbreviation for Chinese Taipei', () {
@@ -236,7 +248,8 @@ void main() {
 
         expect(tpeFlagWidget, isNotNull);
         expect(
-            FITEntityImageService.hasFlagForTeam('Chinese Taipei National Team', 'TPE'),
+            FITEntityImageService.hasFlagForTeam(
+                'Chinese Taipei National Team', 'TPE'),
             isTrue);
       });
     });
