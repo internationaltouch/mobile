@@ -12,6 +12,8 @@ import '../models/favorite.dart';
 import '../services/api_service.dart';
 import '../services/competition_filter_service.dart';
 import '../services/favorites_service.dart';
+import '../services/news_api_service.dart';
+import '../services/database_service.dart';
 import '../config/config_service.dart';
 import '../config/app_config.dart';
 
@@ -293,12 +295,59 @@ final clubsProvider = FutureProvider<List<Club>>((ref) async {
   return clubs;
 });
 
-// News provider (RSS parsing)
-final newsProvider = FutureProvider<List<NewsItem>>((ref) async {
-  // This will use Riverpod's caching instead of custom SQLite caching
-  // Implementation would move RSS parsing logic here directly
-  // For now, we can still call DataService but Riverpod handles caching
-  throw UnimplementedError('News provider needs RSS parsing implementation');
+// News API Service provider
+final newsApiServiceProvider = Provider<NewsApiService>((ref) {
+  final httpClient = ref.watch(httpClientProvider);
+  return NewsApiService(httpClient: httpClient);
+});
+
+// News list provider - fetches from REST API with SQLite fallback
+final newsListProvider = FutureProvider<List<NewsItem>>((ref) async {
+  final newsApiService = ref.watch(newsApiServiceProvider);
+
+  try {
+    // Try to fetch fresh news from API
+    final freshNews = await newsApiService.fetchNewsList();
+
+    // Cache to SQLite for offline support
+    await DatabaseService.cacheNewsItems(freshNews);
+
+    return freshNews;
+  } catch (e) {
+    // On error, try to return cached news
+    try {
+      return await DatabaseService.getCachedNewsItems();
+    } catch (_) {
+      // If cache is also empty, rethrow original error
+      rethrow;
+    }
+  }
+});
+
+// News detail provider - fetches full article with image and content
+final newsDetailProvider =
+    FutureProvider.family<NewsItem, String>((ref, slug) async {
+  final newsApiService = ref.watch(newsApiServiceProvider);
+
+  try {
+    final detail = await newsApiService.fetchNewsDetail(slug);
+
+    // Enrich cache with image URL
+    if (detail.imageUrl != null) {
+      await DatabaseService.enrichNewsItemWithImage(slug, detail.imageUrl!);
+    }
+
+    return detail;
+  } catch (e) {
+    // If detail fetch fails, try to get from cache
+    try {
+      final cached = await DatabaseService.getCachedNewsItems();
+      final item = cached.firstWhere((item) => item.id == slug);
+      return item;
+    } catch (_) {
+      rethrow;
+    }
+  }
 });
 
 // Favorites providers

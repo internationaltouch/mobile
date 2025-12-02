@@ -117,13 +117,17 @@ class LadderEntries extends Table {
 }
 
 class NewsItems extends Table {
-  TextColumn get id => text().named('id')();
-  TextColumn get title => text().named('title')();
-  TextColumn get summary => text().named('summary')();
+  TextColumn get id => text().named('id')(); // slug from API
+  TextColumn get title => text().named('title')(); // headline from API
+  TextColumn get summary => text().named('summary')(); // abstract from API
   TextColumn get imageUrl => text().nullable().named('image_url')();
-  TextColumn get link => text().nullable().named('link')();
+  TextColumn get content =>
+      text().nullable().named('content')(); // copy from API
+  TextColumn get byline => text().nullable().named('byline')();
   IntColumn get publishedAt => integer().named('published_at')();
   IntColumn get createdAt => integer().named('created_at')();
+  IntColumn get isActive =>
+      integer().named('is_active')(); // Store as 0/1 for SQLite
 
   @override
   Set<Column> get primaryKey => {id};
@@ -173,7 +177,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -191,6 +195,13 @@ class AppDatabase extends _$AppDatabase {
                 ladderEntries.points: ladderEntries.points.cast<double>(),
               },
             ),
+          );
+        }
+
+        if (from <= 2 && to >= 3) {
+          // Add is_active column to news_items table with default value of 1 (true)
+          await customStatement(
+            'ALTER TABLE news_items ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1',
           );
         }
       },

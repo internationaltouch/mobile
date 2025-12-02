@@ -196,20 +196,19 @@ class TabConfig {
 }
 
 class NewsConfig {
-  final String rssUrl;
+  final String newsApiPath;
   final int initialItemsCount;
   final int infiniteScrollBatchSize;
 
   NewsConfig({
-    required this.rssUrl,
+    required this.newsApiPath,
     this.initialItemsCount = 10,
     this.infiniteScrollBatchSize = 5,
   });
 
   factory NewsConfig.fromJson(Map<String, dynamic> json) {
     return NewsConfig(
-      rssUrl: json['rssUrl'] as String? ??
-          'https://www.internationaltouch.org/news/feeds/rss/',
+      newsApiPath: json['newsApiPath'] as String? ?? 'news/articles/',
       initialItemsCount: json['initialItemsCount'] as int? ?? 10,
       infiniteScrollBatchSize: json['infiniteScrollBatchSize'] as int? ?? 5,
     );
@@ -407,7 +406,7 @@ class ConfigService {
         flagsModule: 'test',
         eventsVariant: 'standard',
         news: NewsConfig(
-          rssUrl: 'https://test.example.com/news/rss',
+          newsApiPath: 'news/articles/',
           initialItemsCount: 10,
           infiniteScrollBatchSize: 5,
         ),

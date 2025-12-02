@@ -169,13 +169,6 @@ class _FixturesResultsViewRiverpodState
     }
   }
 
-  void _onPoolSelected(String? poolId) {
-    setState(() {
-      _selectedPoolId = (poolId == 'all_pools') ? null : poolId;
-    });
-    UserPreferencesService.setSelectedPool(widget.division.id, _selectedPoolId);
-  }
-
   List<DropdownMenuItem<String>> _buildPoolDropdownItems(
       List<Fixture> allFixtures) {
     final pools = <String, String>{}; // poolId -> poolTitle
@@ -331,8 +324,8 @@ class _FixturesResultsViewRiverpodState
                 children: [
                   // Pool filter dropdown - only show if pools exist
                   if (_hasAnyPools(fixtures)) ...[
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedPoolId ?? 'all_pools',
+                    DropdownButtonFormField<String?>(
+                      initialValue: _selectedPoolId,
                       decoration: const InputDecoration(
                         labelText: 'Filter by Pool',
                         border: OutlineInputBorder(),
@@ -340,13 +333,19 @@ class _FixturesResultsViewRiverpodState
                             EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       items: [
-                        const DropdownMenuItem<String>(
-                          value: 'all_pools',
+                        const DropdownMenuItem<String?>(
+                          value: null,
                           child: Text('All Pools'),
                         ),
                         ..._buildPoolDropdownItems(fixtures),
                       ],
-                      onChanged: _onPoolSelected,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedPoolId = value;
+                        });
+                        UserPreferencesService.setSelectedPool(
+                            widget.division.id, value);
+                      },
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -356,7 +355,7 @@ class _FixturesResultsViewRiverpodState
                     loading: () => const SizedBox.shrink(),
                     error: (error, stackTrace) => const SizedBox.shrink(),
                     data: (teams) {
-                      return DropdownButtonFormField<String>(
+                      return DropdownButtonFormField<String?>(
                         initialValue: _selectedTeamId,
                         decoration: const InputDecoration(
                           labelText: 'Filter by Team',
@@ -365,12 +364,12 @@ class _FixturesResultsViewRiverpodState
                               EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                         items: [
-                          const DropdownMenuItem<String>(
+                          const DropdownMenuItem<String?>(
                             value: null,
                             child: Text('All Teams'),
                           ),
                           ...(teams..sort((a, b) => a.name.compareTo(b.name)))
-                              .map((team) => DropdownMenuItem<String>(
+                              .map((team) => DropdownMenuItem<String?>(
                                     value: team.id,
                                     child: Text(team.name),
                                   )),

@@ -382,17 +382,24 @@ class DatabaseService {
         debugPrint(
             '🗺️ [Drift] 📝 Inserting news item ${i + 1}/${newsItems.length}: ID="${newsItem.id}", Title="${newsItem.title.length > 50 ? '${newsItem.title.substring(0, 50)}...' : newsItem.title}"');
 
-        await db.into(db.newsItems).insert(
-              NewsItemsCompanion.insert(
-                id: newsItem.id,
-                title: newsItem.title,
-                summary: newsItem.summary,
-                imageUrl: Value(newsItem.imageUrl),
-                link: Value(newsItem.link),
-                publishedAt: newsItem.publishedAt.millisecondsSinceEpoch,
-                createdAt: DateTime.now().millisecondsSinceEpoch,
-              ),
-            );
+        try {
+          await db.into(db.newsItems).insertOnConflictUpdate(
+                NewsItemsCompanion.insert(
+                  id: newsItem.id,
+                  title: newsItem.title,
+                  summary: newsItem.summary,
+                  publishedAt: newsItem.publishedAt.millisecondsSinceEpoch,
+                  isActive: newsItem.isActive ? 1 : 0,
+                  createdAt: DateTime.now().millisecondsSinceEpoch,
+                ),
+              );
+          debugPrint(
+              '🗺️ [Drift] ✅ Successfully inserted/updated news item: ${newsItem.id}');
+        } catch (e) {
+          debugPrint(
+              '🗺️ [Drift] ❌ Error inserting news item ${newsItem.id}: $e');
+          rethrow;
+        }
       }
     });
 
@@ -404,6 +411,23 @@ class DatabaseService {
     } catch (e) {
       debugPrint('🗺️ [Drift] ❌ Error caching news items: $e');
       rethrow;
+    }
+  }
+
+  static Future<void> enrichNewsItemWithImage(
+      String slug, String imageUrl) async {
+    debugPrint('🗺️ [Drift] 🖼️ Enriching news item $slug with image URL');
+    final db = database;
+
+    try {
+      // Update only the imageUrl field for the existing item
+      await (db.update(db.newsItems)..where((n) => n.id.equals(slug)))
+          .write(const NewsItemsCompanion(imageUrl: Value.absent()));
+
+      debugPrint('🗺️ [Drift] ✅ News item $slug enriched with image');
+    } catch (e) {
+      debugPrint('🗺️ [Drift] ❌ Error enriching news item: $e');
+      // Don't rethrow - this is non-critical
     }
   }
 
@@ -426,10 +450,11 @@ class DatabaseService {
                 id: row.id,
                 title: row.title,
                 summary: row.summary,
-                imageUrl: row.imageUrl ?? '',
-                link: row.link,
+                imageUrl: row.imageUrl,
                 publishedAt:
                     DateTime.fromMillisecondsSinceEpoch(row.publishedAt),
+                content: row.content,
+                isActive: row.isActive == 1,
               ))
           .toList();
 

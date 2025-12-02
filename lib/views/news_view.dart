@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../models/news_item.dart';
-import '../services/data_service.dart';
 import '../theme/fit_colors.dart';
 import '../utils/image_utils.dart';
 import '../config/config_service.dart';
+import '../providers/pure_riverpod_providers.dart';
 import 'competitions_view_riverpod.dart';
 import 'news_detail_view.dart';
 
-class NewsView extends StatefulWidget {
+class NewsView extends ConsumerStatefulWidget {
   final int initialSelectedIndex;
   final bool showOnlyNews;
 
@@ -16,12 +17,11 @@ class NewsView extends StatefulWidget {
       {super.key, this.initialSelectedIndex = 0, this.showOnlyNews = false});
 
   @override
-  State<NewsView> createState() => _NewsViewState();
+  ConsumerState<NewsView> createState() => _NewsViewState();
 }
 
-class _NewsViewState extends State<NewsView> {
+class _NewsViewState extends ConsumerState<NewsView> {
   late int _selectedIndex;
-  late Future<List<NewsItem>> _newsFuture;
   List<NewsItem> _allNewsItems = [];
   late int _visibleItemsCount;
   ScrollController? _scrollController;
@@ -67,7 +67,8 @@ class _NewsViewState extends State<NewsView> {
   }
 
   Future<void> _testConnectivityAndLoadNews() async {
-    _newsFuture = DataService.getNewsItems();
+    // News loading is now handled through Riverpod provider
+    // The FutureBuilder will trigger the newsListProvider
   }
 
   @override
@@ -112,48 +113,69 @@ class _NewsViewState extends State<NewsView> {
       _scrollController!.addListener(_scrollListener);
     }
 
-    return FutureBuilder<List<NewsItem>>(
-      future: _newsFuture,
-      builder: (context, snapshot) {
-        return Stack(
-          children: [
-            RefreshIndicator(
-              onRefresh: () async {
-                // Clear cache and refresh
-                DataService.clearCache();
-                setState(() {
-                  _newsFuture = DataService.getNewsItems();
-                });
-                await _newsFuture;
-              },
-              child: _buildNewsContent(snapshot),
-            ),
-            if (_showReturnToTop)
-              Positioned(
-                bottom: 24,
-                right: 16,
-                child: FloatingActionButton(
-                  mini: true,
-                  onPressed: _scrollToTop,
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  child: const Icon(Icons.keyboard_arrow_up),
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: () {
+            // Invalidate the news provider to refresh from API
+            ref.invalidate(newsListProvider);
+            return ref.watch(newsListProvider.future);
+          },
+          child: ref.watch(newsListProvider).when(
+            data: (newsItems) {
+              _allNewsItems = newsItems;
+              _visibleItemsCount =
+                  ConfigService.config.features.news.initialItemsCount;
+              return _buildNewsContent(newsItems);
+            },
+            loading: () {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            },
+            error: (error, stackTrace) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Failed to load news'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        ref.invalidate(newsListProvider);
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
                 ),
-              ),
-          ],
-        );
-      },
+              );
+            },
+          ),
+        ),
+        if (_showReturnToTop)
+          Positioned(
+            bottom: 24,
+            right: 16,
+            child: FloatingActionButton(
+              mini: true,
+              onPressed: _scrollToTop,
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              child: const Icon(Icons.keyboard_arrow_up),
+            ),
+          ),
+      ],
     );
   }
 
-  Widget _buildNewsContent(AsyncSnapshot<List<NewsItem>> snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (snapshot.hasError) {
+  Widget _buildNewsContent(List<NewsItem> newsItems) {
+    if (newsItems.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -177,9 +199,7 @@ class _NewsViewState extends State<NewsView> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                setState(() {
-                  _newsFuture = DataService.getNewsItems();
-                });
+                ref.invalidate(newsListProvider);
               },
               child: const Text('Retry'),
             ),
@@ -188,15 +208,8 @@ class _NewsViewState extends State<NewsView> {
       );
     }
 
-    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-      return const Center(
-        child: Text('No news items available'),
-      );
-    }
-
-    _allNewsItems = snapshot.data!;
-    final visibleNewsItems = _allNewsItems.take(_visibleItemsCount).toList();
-    final hasMoreItems = _allNewsItems.length > _visibleItemsCount;
+    final visibleNewsItems = newsItems.take(_visibleItemsCount).toList();
+    final hasMoreItems = newsItems.length > _visibleItemsCount;
 
     return ListView.builder(
       controller: _scrollController,
@@ -213,7 +226,7 @@ class _NewsViewState extends State<NewsView> {
                 width: MediaQuery.of(context).size.width *
                     0.6, // 60% of screen width
                 child: Image.asset(
-                  'assets/images/LOGO_FIT-HZ.png',
+                  ConfigService.config.branding.logoHorizontal,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -242,7 +255,7 @@ class _NewsViewState extends State<NewsView> {
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 child: Text(
-                    'Show more (${_allNewsItems.length - _visibleItemsCount} remaining)'),
+                    'Show more (${newsItems.length - _visibleItemsCount} remaining)'),
               ),
             ),
           );
@@ -303,7 +316,7 @@ class _NewsCardState extends State<NewsCard> {
 
   Future<void> _loadImageImmediately() async {
     // Force load for immediate items, bypassing visibility checks
-    if (_imageLoading || widget.newsItem.link == null) {
+    if (_imageLoading) {
       return;
     }
 
@@ -312,8 +325,8 @@ class _NewsCardState extends State<NewsCard> {
       _hasBeenVisible = true; // Mark as loaded to prevent future loads
     });
 
-    await DataService.updateNewsItemImage(widget.newsItem);
-
+    // Image loading is now handled by the detail provider in the parent
+    // The image URL will be fetched and cached automatically
     if (mounted) {
       setState(() {
         _imageLoading = false;
@@ -322,10 +335,9 @@ class _NewsCardState extends State<NewsCard> {
   }
 
   Future<void> _loadImage() async {
-    // Don't load if already loading, already loaded, or no link available
+    // Don't load if already loading, already loaded
     if (_imageLoading ||
         _hasBeenVisible ||
-        widget.newsItem.link == null ||
         widget.newsItem.imageUrl != _originalImageUrl) {
       return;
     }
@@ -335,8 +347,8 @@ class _NewsCardState extends State<NewsCard> {
       _hasBeenVisible = true; // Mark as loaded to prevent future loads
     });
 
-    await DataService.updateNewsItemImage(widget.newsItem);
-
+    // Image loading is now handled by the detail provider in the parent
+    // The image URL will be fetched and cached automatically
     if (mounted) {
       setState(() {
         _imageLoading = false;
@@ -381,55 +393,58 @@ class _NewsCardState extends State<NewsCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12.0),
-              ),
-              child: Stack(
-                children: [
-                  ImageUtils.buildImage(
-                    widget.newsItem.imageUrl,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 200,
-                        color: FITColors.lightGrey,
-                        child: const Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            size: 50,
-                            color: FITColors.mediumGrey,
+            if (widget.newsItem.imageUrl != null &&
+                widget.newsItem.imageUrl!.isNotEmpty)
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12.0),
+                ),
+                child: Stack(
+                  children: [
+                    ImageUtils.buildImage(
+                      widget.newsItem.imageUrl!,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 200,
+                          color: FITColors.lightGrey,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              size: 50,
+                              color: FITColors.mediumGrey,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  if (_showSpinner && widget.newsItem.link != null)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: FITColors.primaryBlack.withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(FITColors.white),
+                        );
+                      },
+                    ),
+                    if (_showSpinner)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color:
+                                FITColors.primaryBlack.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  FITColors.white),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
