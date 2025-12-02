@@ -32,7 +32,6 @@ class _NewsViewState extends ConsumerState<NewsView> {
     super.initState();
     _selectedIndex = widget.initialSelectedIndex;
     _visibleItemsCount = ConfigService.config.features.news.initialItemsCount;
-    _testConnectivityAndLoadNews();
   }
 
   @override
@@ -64,11 +63,6 @@ class _NewsViewState extends ConsumerState<NewsView> {
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
     );
-  }
-
-  Future<void> _testConnectivityAndLoadNews() async {
-    // News loading is now handled through Riverpod provider
-    // The FutureBuilder will trigger the newsListProvider
   }
 
   @override

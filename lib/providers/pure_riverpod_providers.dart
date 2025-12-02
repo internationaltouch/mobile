@@ -14,6 +14,7 @@ import '../services/competition_filter_service.dart';
 import '../services/favorites_service.dart';
 import '../services/news_api_service.dart';
 import '../services/database_service.dart';
+import '../services/device_service.dart';
 import '../config/config_service.dart';
 import '../config/app_config.dart';
 
@@ -309,8 +310,9 @@ final newsListProvider = FutureProvider<List<NewsItem>>((ref) async {
     // Try to fetch fresh news from API
     final freshNews = await newsApiService.fetchNewsList();
 
-    // Cache to SQLite for offline support
-    await DatabaseService.cacheNewsItems(freshNews);
+    // Cache to SQLite for offline support with smart TTL
+    final ttl = await DeviceService.instance.recommendedCacheExpiry;
+    await DatabaseService.cacheNewsItems(freshNews, ttlMs: ttl);
 
     return freshNews;
   } catch (e) {

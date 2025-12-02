@@ -88,7 +88,8 @@ class DatabaseService {
   }
 
   // Events
-  static Future<void> cacheEvents(List<models.Event> events) async {
+  static Future<void> cacheEvents(List<models.Event> events,
+      {int? ttlMs}) async {
     final db = database;
 
     await db.transaction(() async {
@@ -128,7 +129,8 @@ class DatabaseService {
       }
     });
 
-    await updateCacheMetadata('events', const Duration(hours: 1));
+    final expiryMs = ttlMs ?? const Duration(hours: 1).inMilliseconds;
+    await updateCacheMetadata('events', Duration(milliseconds: expiryMs));
   }
 
   static Future<List<models.Event>> getCachedEvents() async {
@@ -172,7 +174,8 @@ class DatabaseService {
 
   // Divisions
   static Future<void> cacheDivisions(String competitionSlug, String seasonSlug,
-      List<models.Division> divisions) async {
+      List<models.Division> divisions,
+      {int? ttlMs}) async {
     final db = database;
 
     await db.transaction(() async {
@@ -198,8 +201,9 @@ class DatabaseService {
       }
     });
 
+    final expiryMs = ttlMs ?? const Duration(minutes: 30).inMilliseconds;
     await updateCacheMetadata('divisions_${competitionSlug}_$seasonSlug',
-        const Duration(minutes: 30));
+        Duration(milliseconds: expiryMs));
   }
 
   static Future<List<models.Division>> getCachedDivisions(
@@ -225,7 +229,8 @@ class DatabaseService {
 
   // Teams
   static Future<void> cacheTeams(String competitionSlug, String seasonSlug,
-      String divisionSlug, List<models.Team> teams) async {
+      String divisionSlug, List<models.Team> teams,
+      {int? ttlMs}) async {
     final db = database;
 
     await db.transaction(() async {
@@ -254,9 +259,10 @@ class DatabaseService {
       }
     });
 
+    final expiryMs = ttlMs ?? const Duration(minutes: 30).inMilliseconds;
     await updateCacheMetadata(
         'teams_${competitionSlug}_${seasonSlug}_$divisionSlug',
-        const Duration(minutes: 30));
+        Duration(milliseconds: expiryMs));
   }
 
   static Future<List<models.Team>> getCachedTeams(
@@ -282,7 +288,8 @@ class DatabaseService {
 
   // Fixtures
   static Future<void> cacheFixtures(String competitionSlug, String seasonSlug,
-      String divisionSlug, List<models.Fixture> fixtures) async {
+      String divisionSlug, List<models.Fixture> fixtures,
+      {int? ttlMs}) async {
     final db = database;
 
     await db.transaction(() async {
@@ -322,9 +329,10 @@ class DatabaseService {
       }
     });
 
+    final expiryMs = ttlMs ?? const Duration(minutes: 15).inMilliseconds;
     await updateCacheMetadata(
         'fixtures_${competitionSlug}_${seasonSlug}_$divisionSlug',
-        const Duration(minutes: 15));
+        Duration(milliseconds: expiryMs));
   }
 
   static Future<List<models.Fixture>> getCachedFixtures(
@@ -367,7 +375,8 @@ class DatabaseService {
   }
 
   // News
-  static Future<void> cacheNewsItems(List<models.NewsItem> newsItems) async {
+  static Future<void> cacheNewsItems(List<models.NewsItem> newsItems,
+      {int? ttlMs}) async {
     debugPrint(
         '🗺️ [Drift] 💾 Caching ${newsItems.length} news items to database...');
     final db = database;
@@ -406,8 +415,10 @@ class DatabaseService {
     try {
       debugPrint(
           '🗺️ [Drift] ✅ Successfully inserted ${newsItems.length} news items into database');
-      await updateCacheMetadata('news', const Duration(minutes: 30));
-      debugPrint('🗺️ [Drift] ✅ Cache metadata updated for news (30min TTL)');
+      final expiryMs = ttlMs ?? const Duration(minutes: 30).inMilliseconds;
+      await updateCacheMetadata('news', Duration(milliseconds: expiryMs));
+      debugPrint(
+          '🗺️ [Drift] ✅ Cache metadata updated for news (${expiryMs ~/ 60000}min TTL)');
     } catch (e) {
       debugPrint('🗺️ [Drift] ❌ Error caching news items: $e');
       rethrow;
@@ -472,7 +483,8 @@ class DatabaseService {
       String competitionSlug,
       String seasonSlug,
       String divisionSlug,
-      List<models.LadderEntry> ladderEntries) async {
+      List<models.LadderEntry> ladderEntries,
+      {int? ttlMs}) async {
     final db = database;
 
     await db.transaction(() async {
@@ -508,9 +520,10 @@ class DatabaseService {
       }
     });
 
+    final expiryMs = ttlMs ?? const Duration(minutes: 15).inMilliseconds;
     await updateCacheMetadata(
         'ladder_${competitionSlug}_${seasonSlug}_$divisionSlug',
-        const Duration(minutes: 15));
+        Duration(milliseconds: expiryMs));
   }
 
   static Future<List<models.LadderEntry>> getCachedLadderEntries(

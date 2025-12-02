@@ -11,6 +11,7 @@ import '../models/ladder_stage.dart';
 import '../config/app_config.dart';
 import 'api_service.dart';
 import 'database_service.dart';
+import 'device_service.dart';
 
 class DataService {
   // Cache for API data
@@ -85,7 +86,8 @@ class DataService {
       }
 
       // Cache the events first (without seasons) for fast UI
-      await DatabaseService.cacheEvents(events);
+      final ttl = await DeviceService.instance.recommendedCacheExpiry;
+      await DatabaseService.cacheEvents(events, ttlMs: ttl);
       _cachedEvents = events;
 
       // Load seasons in background without blocking UI
@@ -163,7 +165,8 @@ class DataService {
       if (updatedEvents.isNotEmpty) {
         debugPrint(
             '🏆 [Events] 💾 Background: Phase 1 complete - Caching ${updatedEvents.length} events with seasons...');
-        await DatabaseService.cacheEvents(updatedEvents);
+        final ttl = await DeviceService.instance.recommendedCacheExpiry;
+        await DatabaseService.cacheEvents(updatedEvents, ttlMs: ttl);
         _cachedEvents = updatedEvents; // Update in-memory cache
         debugPrint(
             '🏆 [Events] ✅ Background: Phase 1 complete - All seasons cached successfully');
@@ -231,8 +234,10 @@ class DataService {
         }
 
         // Cache divisions for this competition/season
+        final ttl = await DeviceService.instance.recommendedCacheExpiry;
         await DatabaseService.cacheDivisions(
-            competitionSlug, season.slug, divisions);
+            competitionSlug, season.slug, divisions,
+            ttlMs: ttl);
         totalDivisionsCached += divisions.length;
         debugPrint(
             '🏆 [Divisions] ✅ Background: [$completed/${allSeasonData.length}] Cached ${divisions.length} divisions for $competitionTitle/${season.title}');
@@ -483,8 +488,10 @@ class DataService {
       }
 
       // Cache the fixtures in database with new schema
+      final ttl = await DeviceService.instance.recommendedCacheExpiry;
       await DatabaseService.cacheFixtures(
-          eventId, seasonSlug, divisionId, fixtures);
+          eventId, seasonSlug, divisionId, fixtures,
+          ttlMs: ttl);
       _cachedFixtures[divisionId] = fixtures;
       return fixtures;
     } catch (e) {

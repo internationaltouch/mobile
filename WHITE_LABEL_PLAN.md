@@ -238,10 +238,15 @@ dependencies:
    - ✅ Integrate `riverpod` for reactive data caching and async handling
    - ✅ Migrate competition components to use Riverpod patterns
    - ✅ Establish pure Riverpod architecture for state management
-4. **Device & Connectivity**: Add device awareness capabilities
-   - Integrate `connectivity_plus` for network state monitoring
-   - Add `device_info_plus` for device-specific feature enabling/disabling
-   - Implement adaptive behavior based on connectivity and device capabilities
+4. **Device & Connectivity**: ✅ COMPLETED Add device awareness capabilities
+   - ✅ Integrate `connectivity_plus` for network state monitoring
+   - ✅ Add `device_info_plus` for device-specific feature enabling/disabling
+   - ✅ Implement adaptive behavior based on connectivity and device capabilities
+   - ✅ Add persistent offline banner in `MainNavigationView`
+   - ✅ Implement smart cache TTL based on device type and connectivity (60/45/30 min)
+   - ✅ Enhance error handling in `NewsApiService` with connectivity checks
+   - ✅ Create custom exceptions: `NetworkUnavailableException`, `ApiErrorException`
+   - ✅ All existing tests continue to pass (90/90)
 5. **Data Persistence**: ✅ COMPLETED Implement local storage
    - ✅ Add `shared_preferences` for simple key-value storage
    - ✅ Create `UserPreferencesService` for managing user settings persistence

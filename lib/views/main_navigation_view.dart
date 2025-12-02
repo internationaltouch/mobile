@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'news_view.dart';
 import 'club_view.dart';
 import 'competitions_view_riverpod.dart';
 import 'favorites_view.dart';
 import '../config/config_service.dart';
+import '../widgets/connection_status_widget.dart';
 
-class MainNavigationView extends StatefulWidget {
+class MainNavigationView extends ConsumerStatefulWidget {
   final int initialSelectedIndex;
 
   const MainNavigationView({super.key, this.initialSelectedIndex = 0});
 
   @override
-  State<MainNavigationView> createState() => _MainNavigationViewState();
+  ConsumerState<MainNavigationView> createState() => _MainNavigationViewState();
 }
 
-class _MainNavigationViewState extends State<MainNavigationView> {
+class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
   late int _selectedIndex;
   late List<GlobalKey<NavigatorState>> _navigatorKeys;
   late List<Widget> _pages;
@@ -79,15 +81,21 @@ class _MainNavigationViewState extends State<MainNavigationView> {
     // If only one tab, show it directly without bottom navigation bar
     if (_enabledTabs.length == 1) {
       return Scaffold(
-        body: _pages[0],
+        body: ConnectionStatusWidget(
+          showOfflineMessage: true,
+          child: _pages[0],
+        ),
       );
     }
 
     // Multiple tabs - show with bottom navigation bar
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
+      body: ConnectionStatusWidget(
+        showOfflineMessage: true,
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,

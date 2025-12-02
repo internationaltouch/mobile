@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/config_service.dart';
 import '../models/news_item.dart';
+import 'device_service.dart';
 
 class NewsApiService {
   final http.Client httpClient;
@@ -15,6 +16,14 @@ class NewsApiService {
   /// Fetch news list from REST API
   /// Returns a list of NewsItem objects from the list endpoint
   Future<List<NewsItem>> fetchNewsList() async {
+    // Check connectivity first
+    final isConnected = await DeviceService.instance.isConnected;
+    if (!isConnected) {
+      debugPrint('📰 [NewsAPI] ❌ No internet connection');
+      throw NetworkUnavailableException(
+          'Cannot fetch news - no internet connection');
+    }
+
     // newsApiPath is just 'news/articles/' without '/api/v1' prefix
     final path =
         _newsApiPath.startsWith('/') ? _newsApiPath.substring(1) : _newsApiPath;
@@ -53,17 +62,32 @@ class NewsApiService {
       } else {
         debugPrint(
             '📰 [NewsAPI] ❌ HTTP ${response.statusCode}: ${response.reasonPhrase}');
-        throw Exception('Failed to load news: ${response.statusCode}');
+        throw ApiErrorException(
+            response.statusCode, response.reasonPhrase ?? 'Unknown error');
       }
-    } catch (e) {
-      debugPrint('📰 [NewsAPI] ❌ Error fetching news list: $e');
+    } on NetworkUnavailableException {
       rethrow;
+    } on TimeoutException {
+      rethrow;
+    } on ApiErrorException {
+      rethrow;
+    } catch (e) {
+      debugPrint('📰 [NewsAPI] ❌ Network error fetching news list: $e');
+      throw NetworkUnavailableException('Network error: $e');
     }
   }
 
   /// Fetch individual news article detail
   /// Returns a single NewsItem with full content and image from detail endpoint
   Future<NewsItem> fetchNewsDetail(String slug) async {
+    // Check connectivity first
+    final isConnected = await DeviceService.instance.isConnected;
+    if (!isConnected) {
+      debugPrint('📰 [NewsAPI] ❌ No internet connection');
+      throw NetworkUnavailableException(
+          'Cannot fetch news detail - no internet connection');
+    }
+
     // newsApiPath is just 'news/articles/' without '/api/v1' prefix
     final path =
         _newsApiPath.startsWith('/') ? _newsApiPath.substring(1) : _newsApiPath;
@@ -97,11 +121,18 @@ class NewsApiService {
       } else {
         debugPrint(
             '📰 [NewsAPI] ❌ HTTP ${response.statusCode}: ${response.reasonPhrase}');
-        throw Exception('Failed to load news detail: ${response.statusCode}');
+        throw ApiErrorException(
+            response.statusCode, response.reasonPhrase ?? 'Unknown error');
       }
-    } catch (e) {
-      debugPrint('📰 [NewsAPI] ❌ Error fetching news detail: $e');
+    } on NetworkUnavailableException {
       rethrow;
+    } on TimeoutException {
+      rethrow;
+    } on ApiErrorException {
+      rethrow;
+    } catch (e) {
+      debugPrint('📰 [NewsAPI] ❌ Network error fetching news detail: $e');
+      throw NetworkUnavailableException('Network error: $e');
     }
   }
 }
@@ -113,4 +144,24 @@ class TimeoutException implements Exception {
 
   @override
   String toString() => message;
+}
+
+class NetworkUnavailableException implements Exception {
+  final String message;
+
+  NetworkUnavailableException(
+      [this.message = 'No internet connection available']);
+
+  @override
+  String toString() => message;
+}
+
+class ApiErrorException implements Exception {
+  final int statusCode;
+  final String message;
+
+  ApiErrorException(this.statusCode, [this.message = 'API request failed']);
+
+  @override
+  String toString() => 'API Error ($statusCode): $message';
 }
