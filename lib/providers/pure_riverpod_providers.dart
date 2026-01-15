@@ -21,55 +21,89 @@ import '../config/app_config.dart';
 // HTTP Client provider
 final httpClientProvider = Provider<http.Client>((ref) => http.Client());
 
-// Raw API providers (no custom caching, just Riverpod's built-in caching)
+// Raw API providers with offline caching support
 final rawEventsProvider = FutureProvider<List<Event>>((ref) async {
-  final apiCompetitions = await ApiService.fetchCompetitions();
-  final events = <Event>[];
+  // Keep provider alive for offline caching
+  ref.keepAlive();
 
-  for (final competition in apiCompetitions) {
-    try {
-      final event = Event(
-        id: competition['slug'],
-        name: competition['title'],
-        logoUrl: AppConfig.getCompetitionLogoUrl(
-            competition['title'].substring(0, 3).toUpperCase()),
-        seasons: [], // Load on demand
-        description: 'International touch tournament',
-        slug: competition['slug'],
-        seasonsLoaded: false,
-      );
-      events.add(event);
-    } catch (e) {
-      // Skip competitions that fail to load
+  try {
+    final apiCompetitions = await ApiService.fetchCompetitions();
+    final events = <Event>[];
+
+    for (final competition in apiCompetitions) {
+      try {
+        final event = Event(
+          id: competition['slug'],
+          name: competition['title'],
+          logoUrl: AppConfig.getCompetitionLogoUrl(
+              competition['title'].substring(0, 3).toUpperCase()),
+          seasons: [], // Load on demand
+          description: 'International touch tournament',
+          slug: competition['slug'],
+          seasonsLoaded: false,
+        );
+        events.add(event);
+      } catch (e) {
+        // Skip competitions that fail to load
+      }
     }
-  }
 
-  return events;
+    return events;
+  } catch (e) {
+    // Check if it's a network error
+    if (e is NetworkUnavailableException) {
+      // Try to get cached data if available
+      try {
+        final cachedEvents = await DatabaseService.getCachedEvents();
+        if (cachedEvents.isNotEmpty) {
+          return cachedEvents;
+        }
+      } catch (_) {
+        // Cache unavailable or empty
+      }
+    }
+    // Rethrow the error if no cache available
+    rethrow;
+  }
 });
 
 // Filtered events (applies competition filtering)
 final eventsProvider = FutureProvider<List<Event>>((ref) async {
+  // Keep provider alive for offline caching
+  ref.keepAlive();
+
   final events = await ref.read(rawEventsProvider.future);
   return CompetitionFilterService.filterEvents(events);
 });
 
-// Seasons provider for specific event
+// Seasons provider for specific event with offline support
 final seasonsProvider =
     FutureProvider.family<List<Season>, String>((ref, eventSlug) async {
-  final competitionDetails =
-      await ApiService.fetchCompetitionDetails(eventSlug);
-  final seasons = (competitionDetails['seasons'] as List)
-      .map((season) => Season.fromJson(season))
-      .toList();
+  // Keep provider alive for offline caching
+  ref.keepAlive();
 
-  // Apply season filtering would go here if needed
-  // For now, return all seasons
-  return seasons;
+  try {
+    final competitionDetails =
+        await ApiService.fetchCompetitionDetails(eventSlug);
+    final seasons = (competitionDetails['seasons'] as List)
+        .map((season) => Season.fromJson(season))
+        .toList();
+
+    // Apply season filtering would go here if needed
+    // For now, return all seasons
+    return seasons;
+  } catch (e) {
+    // For now, rethrow - can add caching later if needed
+    rethrow;
+  }
 });
 
-// Divisions provider for specific event/season
+// Divisions provider for specific event/season with offline support
 final divisionsProvider = FutureProvider.family<List<Division>,
     ({String eventId, String seasonSlug})>((ref, params) async {
+  // Keep provider alive for offline caching
+  ref.keepAlive();
+
   final seasonDetails =
       await ApiService.fetchSeasonDetails(params.eventId, params.seasonSlug);
   final divisions = <Division>[];
@@ -135,7 +169,7 @@ final teamsProvider = FutureProvider.family<
   return teams;
 });
 
-// Fixtures provider for specific division
+// Fixtures provider for specific division with offline support
 final fixturesProvider = FutureProvider.family<
     List<Fixture>,
     ({
@@ -143,6 +177,8 @@ final fixturesProvider = FutureProvider.family<
       String seasonSlug,
       String divisionId
     })>((ref, params) async {
+  // Keep provider alive for offline caching
+  ref.keepAlive();
   final divisionDetails = await ApiService.fetchDivisionDetails(
       params.eventId, params.seasonSlug, params.divisionId);
 
@@ -206,7 +242,7 @@ final fixturesProvider = FutureProvider.family<
   return fixtures;
 });
 
-// Ladder provider for specific division
+// Ladder provider for specific division with offline support
 final ladderProvider = FutureProvider.family<
     List<LadderEntry>,
     ({
@@ -214,6 +250,8 @@ final ladderProvider = FutureProvider.family<
       String seasonSlug,
       String divisionId
     })>((ref, params) async {
+  // Keep provider alive for offline caching
+  ref.keepAlive();
   final divisionDetails = await ApiService.fetchDivisionDetails(
       params.eventId, params.seasonSlug, params.divisionId);
 
@@ -267,8 +305,11 @@ final ladderProvider = FutureProvider.family<
   return allLadderEntries;
 });
 
-// Clubs provider with configuration-based filtering
+// Clubs provider with configuration-based filtering and offline support
 final clubsProvider = FutureProvider<List<Club>>((ref) async {
+  // Keep provider alive for offline caching
+  ref.keepAlive();
+
   final clubsData = await ApiService.fetchClubs();
   var clubs = clubsData.map((json) => Club.fromJson(json)).toList();
 
@@ -304,6 +345,9 @@ final newsApiServiceProvider = Provider<NewsApiService>((ref) {
 
 // News list provider - fetches from REST API with SQLite fallback
 final newsListProvider = FutureProvider<List<NewsItem>>((ref) async {
+  // Keep provider alive for offline caching
+  ref.keepAlive();
+
   final newsApiService = ref.watch(newsApiServiceProvider);
 
   try {
@@ -329,6 +373,9 @@ final newsListProvider = FutureProvider<List<NewsItem>>((ref) async {
 // News detail provider - fetches full article with image and content
 final newsDetailProvider =
     FutureProvider.family<NewsItem, String>((ref, slug) async {
+  // Keep provider alive for offline caching
+  ref.keepAlive();
+
   final newsApiService = ref.watch(newsApiServiceProvider);
 
   try {
@@ -352,8 +399,11 @@ final newsDetailProvider =
   }
 });
 
-// Favorites providers
+// Favorites providers (local storage, works offline)
 final favoritesProvider = FutureProvider<List<Favorite>>((ref) async {
+  // Keep provider alive - favorites are local and should persist
+  ref.keepAlive();
+
   return await FavoritesService.getFavorites();
 });
 

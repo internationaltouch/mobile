@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/pure_riverpod_providers.dart';
 import '../models/event.dart';
 import '../services/competition_filter_service.dart';
+import '../services/news_api_service.dart';
 import '../utils/image_utils.dart';
 import '../config/config_service.dart';
 import 'event_detail_view_riverpod.dart';
@@ -22,6 +23,17 @@ class _CompetitionsViewRiverpodState
   void initState() {
     super.initState();
     // Riverpod providers load automatically - no manual initialization needed!
+  }
+
+  String _getErrorMessage(Object error) {
+    if (error is NetworkUnavailableException) {
+      return 'No internet connection. Please check your network and try again.';
+    } else if (error is TimeoutException) {
+      return 'Request timed out. Please try again.';
+    } else if (error is ApiErrorException) {
+      return 'Unable to load competitions. Error: ${error.message}';
+    }
+    return 'Failed to load competitions. Please try again.';
   }
 
   Future<void> _navigateToConfiguredCompetition(
@@ -156,28 +168,36 @@ class _CompetitionsViewRiverpodState
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.error_outline,
+                  error is NetworkUnavailableException
+                      ? Icons.cloud_off
+                      : Icons.error_outline,
                   size: 64,
                   color: Colors.red[300],
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Failed to load competitions',
+                  error is NetworkUnavailableException
+                      ? 'No Internet Connection'
+                      : 'Unable to Load Competitions',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  error.toString(),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                  child: Text(
+                    _getErrorMessage(error),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: () {
                     // Riverpod refresh - invalidates cache and refetches
                     ref.invalidate(eventsProvider);
                   },
-                  child: const Text('Retry'),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
                 ),
               ],
             ),

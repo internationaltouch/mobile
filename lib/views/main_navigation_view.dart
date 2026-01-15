@@ -6,6 +6,7 @@ import 'competitions_view_riverpod.dart';
 import 'favorites_view.dart';
 import '../config/config_service.dart';
 import '../widgets/connection_status_widget.dart';
+import '../services/user_preferences_service.dart';
 
 class MainNavigationView extends ConsumerStatefulWidget {
   final int initialSelectedIndex;
@@ -35,6 +36,21 @@ class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
     );
 
     _pages = _enabledTabs.map((tab) => _buildNavigatorForTab(tab)).toList();
+
+    // Load last selected tab from preferences
+    _loadLastSelectedTab();
+  }
+
+  Future<void> _loadLastSelectedTab() async {
+    // Only restore if not explicitly set via initialSelectedIndex
+    if (widget.initialSelectedIndex == 0) {
+      final lastTab = await UserPreferencesService.getLastMainNavigationTab();
+      if (mounted && lastTab < _enabledTabs.length) {
+        setState(() {
+          _selectedIndex = lastTab;
+        });
+      }
+    }
   }
 
   Widget _buildNavigatorForTab(TabConfig tab) {
@@ -108,6 +124,8 @@ class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
           setState(() {
             _selectedIndex = index;
           });
+          // Persist the selected tab
+          UserPreferencesService.setLastMainNavigationTab(index);
         },
         items: _enabledTabs
             .map((tab) => BottomNavigationBarItem(
@@ -124,6 +142,8 @@ class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
     setState(() {
       _selectedIndex = index;
     });
+    // Persist the selected tab
+    UserPreferencesService.setLastMainNavigationTab(index);
   }
 
   // Method to navigate within a specific tab's navigator

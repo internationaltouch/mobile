@@ -5,6 +5,7 @@ class UserPreferencesService {
   static const String _selectedTeamPrefix = 'selected_team_';
   static const String _selectedPoolPrefix = 'selected_pool_';
   static const String _lastTabPrefix = 'last_tab_';
+  static const String _lastMainNavigationTab = 'last_main_navigation_tab';
   static const String _themeMode = 'theme_mode';
   static const String _cacheExpiryHours = 'cache_expiry_hours';
 
@@ -73,6 +74,19 @@ class UserPreferencesService {
   static Future<int> getLastSelectedTab(String divisionId) async {
     final prefs = await _preferences;
     return prefs.getInt('$_lastTabPrefix$divisionId') ?? 0;
+  }
+
+  // Main Navigation Tab Preferences
+  /// Save last selected main navigation tab index
+  static Future<void> setLastMainNavigationTab(int tabIndex) async {
+    final prefs = await _preferences;
+    await prefs.setInt(_lastMainNavigationTab, tabIndex);
+  }
+
+  /// Get last selected main navigation tab index (defaults to 0)
+  static Future<int> getLastMainNavigationTab() async {
+    final prefs = await _preferences;
+    return prefs.getInt(_lastMainNavigationTab) ?? 0;
   }
 
   // Theme Preferences
