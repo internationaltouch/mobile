@@ -1,0 +1,75 @@
+{
+  "app": {
+    "name": "Touch Superleague",
+    "displayName": "Touch Superleague",
+    "description": "Touch Superleague",
+    "identifier": {
+      "android": "uk.org.touchsuperleague.mobile",
+      "ios": "uk.org.touchsuperleague.mobile"
+    },
+    "version": "1.0.0+1"
+  },
+  "api": {
+    "baseUrl": "https://www.touchsuperleague.org.uk/api/v1",
+    "imageBaseUrl": "https://www.touchsuperleague.org.uk"
+  },
+  "branding": {
+    "primaryColor": "#0993b8",
+    "secondaryColor": "#0993b8",
+    "accentColor": "#0993b8",
+    "errorColor": "#B12128",
+    "backgroundColor": "#FFFFFF",
+    "textColor": "#222222",
+    "logoVertical": "assets/images/touch-superleague-logo.png",
+    "logoHorizontal": "assets/images/touch-superleague-logo.png",
+    "appIcon": "assets/images/touch-superleague-logo.png",
+    "splashScreen": {
+      "backgroundColor": "#FFFFFF",
+      "image": "assets/images/touch-superleague-logo.png",
+      "imageBackgroundColor": "#FFFFFF"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "id": "events",
+        "label": "Events",
+        "icon": "sports",
+        "enabled": true,
+        "backgroundColor": "#0993b8",
+        "variant": "standard"
+      },
+      {
+        "id": "my_sport",
+        "label": "Favorites",
+        "icon": "star",
+        "enabled": true,
+        "backgroundColor": "#0993b8"
+      }
+    ]
+  },
+  "features": {
+    "flagsModule": "fit",
+    "eventsVariant": "standard",
+    "clubs": {
+      "navigationLabel": "Clubs",
+      "titleBarText": "Clubs", 
+      "allowedStatuses": ["active"],
+      "excludedSlugs": [],
+      "slugImageMapping": {}
+    },
+    "competitions": {
+      "excludedSlugs": [
+        "cardiff-touch-superleague",
+        "jersey-touch-superleague"
+      ],
+      "excludedSeasonCombos": [],
+      "excludedDivisionCombos": [],
+      "slugImageMapping": {}
+    }
+  },
+  "assets": {
+    "competitionImages": "assets/images/competitions/",
+    "flagsPath": "lib/config/flags/fit_flags.dart"
+  }
+}
