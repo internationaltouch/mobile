@@ -8,6 +8,7 @@ import '../utils/image_utils.dart';
 import '../config/config_service.dart';
 import 'event_detail_view_riverpod.dart';
 import 'divisions_view_riverpod.dart';
+import 'fixtures_results_view_riverpod.dart';
 
 class CompetitionsViewRiverpod extends ConsumerStatefulWidget {
   const CompetitionsViewRiverpod({super.key});
@@ -37,7 +38,8 @@ class _CompetitionsViewRiverpodState
   }
 
   Future<void> _navigateToConfiguredCompetition(
-      List<Event> events, String competitionSlug, String season) async {
+      List<Event> events, String competitionSlug, String season,
+      {String? divisionSlug}) async {
     try {
       final targetEvent =
           events.where((event) => event.slug == competitionSlug).firstOrNull;
@@ -46,9 +48,36 @@ class _CompetitionsViewRiverpodState
         throw Exception('Competition "$competitionSlug" not found');
       }
 
-      // In Riverpod version, we can directly navigate to divisions
-      // since seasons are loaded on-demand by the DivisionsViewRiverpod
-      if (mounted) {
+      if (!mounted) return;
+
+      // Navigate to division level if specified - requires fetching division data
+      if (divisionSlug != null) {
+        // Fetch divisions to get the Division object
+        final divisions = await ref.read(divisionsProvider(
+          (eventId: targetEvent.id, seasonSlug: season),
+        ).future);
+
+        final targetDivision = divisions
+            .where((div) => div.slug == divisionSlug)
+            .firstOrNull;
+
+        if (targetDivision == null) {
+          throw Exception('Division "$divisionSlug" not found');
+        }
+
+        if (!mounted) return;
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => FixturesResultsViewRiverpod(
+              event: targetEvent,
+              season: season,
+              division: targetDivision,
+            ),
+          ),
+        );
+      } else {
+        // Navigate to season/divisions level
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => DivisionsViewRiverpod(
@@ -149,8 +178,25 @@ class _CompetitionsViewRiverpodState
   @override
   Widget build(BuildContext context) {
     final config = ConfigService.config;
-    final hasConfiguredCompetition =
-        config.api.competition != null && config.api.season != null;
+
+    // Check for initial navigation configuration
+    // Priority: navigation.initialNavigation > api.competition/season (legacy)
+    final initialNav = config.navigation.initialNavigation;
+    String? competitionSlug;
+    String? seasonSlug;
+    String? divisionSlug;
+
+    if (initialNav != null && initialNav.shouldNavigateToSeason) {
+      competitionSlug = initialNav.competition;
+      seasonSlug = initialNav.season;
+      divisionSlug = initialNav.division;
+    } else if (config.api.competition != null && config.api.season != null) {
+      // Legacy configuration support
+      competitionSlug = config.api.competition;
+      seasonSlug = config.api.season;
+    }
+
+    final hasDeepLink = competitionSlug != null && seasonSlug != null;
 
     // Use pure Riverpod provider - no custom state management needed!
     final eventsAsync = ref.watch(eventsProvider);
@@ -203,13 +249,14 @@ class _CompetitionsViewRiverpodState
             ),
           ),
           data: (events) {
-            // Handle configured competition navigation
-            if (hasConfiguredCompetition) {
+            // Handle deep link navigation (initial navigation to specific competition/season/division)
+            if (hasDeepLink) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _navigateToConfiguredCompetition(
                   events,
-                  config.api.competition!,
-                  config.api.season!,
+                  competitionSlug!,
+                  seasonSlug!,
+                  divisionSlug: divisionSlug,
                 );
               });
               return const Center(child: CircularProgressIndicator());

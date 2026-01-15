@@ -42,14 +42,37 @@ class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
   }
 
   Future<void> _loadLastSelectedTab() async {
-    // Only restore if not explicitly set via initialSelectedIndex
-    if (widget.initialSelectedIndex == 0) {
-      final lastTab = await UserPreferencesService.getLastMainNavigationTab();
-      if (mounted && lastTab < _enabledTabs.length) {
+    // Priority order:
+    // 1. Explicit initialSelectedIndex parameter (if not 0)
+    // 2. Config initialNavigation.initialTab (if specified)
+    // 3. Saved user preference (if exists)
+    // 4. Default to 0
+
+    if (widget.initialSelectedIndex != 0) {
+      // Already set by parameter, don't override
+      return;
+    }
+
+    // Check config for initial tab preference
+    final initialNav = ConfigService.config.navigation.initialNavigation;
+    if (initialNav?.initialTab != null) {
+      final tabIndex = _enabledTabs.indexWhere(
+        (tab) => tab.id == initialNav!.initialTab,
+      );
+      if (tabIndex != -1 && mounted) {
         setState(() {
-          _selectedIndex = lastTab;
+          _selectedIndex = tabIndex;
         });
+        return;
       }
+    }
+
+    // Fall back to saved user preference
+    final lastTab = await UserPreferencesService.getLastMainNavigationTab();
+    if (mounted && lastTab < _enabledTabs.length) {
+      setState(() {
+        _selectedIndex = lastTab;
+      });
     }
   }
 

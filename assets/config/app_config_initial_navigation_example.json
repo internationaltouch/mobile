@@ -1,0 +1,116 @@
+{
+  "_comment": "Example configuration demonstrating initial navigation deep linking",
+  "app": {
+    "name": "Touch Organization",
+    "displayName": "Touch Organization",
+    "description": "Example app with initial navigation",
+    "identifier": {
+      "android": "org.touch.example",
+      "ios": "org.touch.example"
+    },
+    "version": "1.0.0+1"
+  },
+  "api": {
+    "baseUrl": "https://api.example.org/api/v1",
+    "imageBaseUrl": "https://api.example.org"
+  },
+  "branding": {
+    "primaryColor": "#1976D2",
+    "secondaryColor": "#64B5F6",
+    "accentColor": "#FF4081",
+    "errorColor": "#D32F2F",
+    "backgroundColor": "#FFFFFF",
+    "textColor": "#212121",
+    "logoVertical": "assets/images/logo.png",
+    "logoHorizontal": "assets/images/logo.png",
+    "appIcon": "assets/images/logo.png",
+    "splashScreen": {
+      "backgroundColor": "#FFFFFF",
+      "image": "assets/images/logo.png",
+      "imageBackgroundColor": "#FFFFFF"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "id": "news",
+        "label": "News",
+        "icon": "newspaper",
+        "enabled": true,
+        "backgroundColor": "#FFFFFF"
+      },
+      {
+        "id": "events",
+        "label": "Events",
+        "icon": "sports",
+        "enabled": true,
+        "backgroundColor": "#1976D2",
+        "variant": "standard"
+      },
+      {
+        "id": "my_sport",
+        "label": "Favorites",
+        "icon": "star",
+        "enabled": true,
+        "backgroundColor": "#FF4081"
+      }
+    ],
+    "initialNavigation": {
+      "_comment": "Deep link configuration - app will start at the specified level",
+      "_examples": [
+        {
+          "description": "Start at Events tab (default behavior)",
+          "initialTab": "events"
+        },
+        {
+          "description": "Start at specific competition's seasons list",
+          "initialTab": "events",
+          "competition": "world-cup-2024"
+        },
+        {
+          "description": "Start at specific season's divisions list",
+          "initialTab": "events",
+          "competition": "world-cup-2024",
+          "season": "2024"
+        },
+        {
+          "description": "Start at specific division's fixtures/ladder view",
+          "initialTab": "events",
+          "competition": "world-cup-2024",
+          "season": "2024",
+          "division": "mens-open"
+        }
+      ],
+      "initialTab": "events",
+      "competition": "world-cup-2024",
+      "season": "2024",
+      "division": "mens-open"
+    }
+  },
+  "features": {
+    "news": {
+      "newsApiPath": "news/articles/",
+      "initialItemsCount": 10,
+      "infiniteScrollBatchSize": 5
+    },
+    "flagsModule": "fit",
+    "eventsVariant": "standard",
+    "clubs": {
+      "navigationLabel": "Clubs",
+      "titleBarText": "Clubs",
+      "allowedStatuses": ["active"],
+      "excludedSlugs": [],
+      "slugImageMapping": {}
+    },
+    "competitions": {
+      "excludedSlugs": [],
+      "excludedSeasonCombos": [],
+      "excludedDivisionCombos": [],
+      "slugImageMapping": {}
+    }
+  },
+  "assets": {
+    "competitionImages": "assets/images/competitions/",
+    "flagsPath": "lib/config/flags/fit_flags.dart"
+  }
+}

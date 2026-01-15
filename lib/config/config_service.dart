@@ -138,16 +138,56 @@ class SplashScreenConfig {
 
 class NavigationConfig {
   final List<TabConfig> tabs;
+  final InitialNavigationConfig? initialNavigation;
 
-  NavigationConfig({required this.tabs});
+  NavigationConfig({
+    required this.tabs,
+    this.initialNavigation,
+  });
 
   factory NavigationConfig.fromJson(Map<String, dynamic> json) {
     final tabsList = json['tabs'] as List;
     final tabs = tabsList.map((tab) => TabConfig.fromJson(tab)).toList();
-    return NavigationConfig(tabs: tabs);
+    return NavigationConfig(
+      tabs: tabs,
+      initialNavigation: json['initialNavigation'] != null
+          ? InitialNavigationConfig.fromJson(json['initialNavigation'])
+          : null,
+    );
   }
 
   List<TabConfig> get enabledTabs => tabs.where((tab) => tab.enabled).toList();
+}
+
+class InitialNavigationConfig {
+  final String? initialTab;
+  final String? competition;
+  final String? season;
+  final String? division;
+
+  InitialNavigationConfig({
+    this.initialTab,
+    this.competition,
+    this.season,
+    this.division,
+  });
+
+  factory InitialNavigationConfig.fromJson(Map<String, dynamic> json) {
+    return InitialNavigationConfig(
+      initialTab: json['initialTab'] as String?,
+      competition: json['competition'] as String?,
+      season: json['season'] as String?,
+      division: json['division'] as String?,
+    );
+  }
+
+  bool get hasDeepLink =>
+      competition != null || season != null || division != null;
+
+  bool get shouldNavigateToCompetition => competition != null;
+  bool get shouldNavigateToSeason => competition != null && season != null;
+  bool get shouldNavigateToDivision =>
+      competition != null && season != null && division != null;
 }
 
 class TabConfig {
