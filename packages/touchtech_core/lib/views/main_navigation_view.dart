@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:touchtech_competitions/touchtech_competitions.dart';
-import 'package:touchtech_competitions/touchtech_competitions.dart';
 import 'package:touchtech_core/touchtech_core.dart';
 
 class MainNavigationView extends ConsumerStatefulWidget {

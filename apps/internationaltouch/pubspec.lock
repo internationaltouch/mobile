@@ -621,13 +621,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.6"
-  touchtech_clubs:
-    dependency: "direct main"
-    description:
-      path: "../../packages/touchtech_clubs"
-      relative: true
-    source: path
-    version: "1.0.0"
   touchtech_competitions:
     dependency: "direct main"
     description:
