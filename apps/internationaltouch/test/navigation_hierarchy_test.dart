@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:internationaltouch/views/main_navigation_view.dart';
+import 'package:internationaltouch/main_navigation_view.dart';
 import 'package:touchtech_competitions/views/competitions_view_riverpod.dart';
 import 'package:internationaltouch/views/favorites_view.dart';
 import 'package:touchtech_core/theme/fit_theme.dart';
