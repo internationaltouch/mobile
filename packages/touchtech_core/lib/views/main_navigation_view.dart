@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:touchtech_clubs/touchtech_clubs.dart';
 import 'package:touchtech_competitions/touchtech_competitions.dart';
 import 'package:touchtech_core/touchtech_core.dart';
-import 'favorites_view.dart';
-import 'news_view.dart';
 
 class MainNavigationView extends ConsumerStatefulWidget {
   final int initialSelectedIndex;

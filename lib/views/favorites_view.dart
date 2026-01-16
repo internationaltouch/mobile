@@ -7,7 +7,6 @@ import '../models/division.dart';
 import '../views/event_detail_view_riverpod.dart';
 import '../views/divisions_view_riverpod.dart';
 import '../views/fixtures_results_view_riverpod.dart';
-import '../views/main_navigation_view.dart';
 import '../config/config_service.dart';
 
 class FavoritesView extends ConsumerWidget {
@@ -48,11 +47,7 @@ class FavoritesView extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.red[300],
-              ),
+              Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
               const SizedBox(height: 16),
               Text(
                 'Failed to load favorites',
@@ -96,9 +91,7 @@ class FavoritesView extends ConsumerWidget {
                     leading: _buildFavoriteIcon(favorite),
                     title: Text(
                       favorite.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     subtitle: favorite.subtitle != null
                         ? Text(favorite.subtitle!)
@@ -135,24 +128,20 @@ class FavoritesView extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.favorite_border,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.favorite_border, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No Favorites Yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
               'Add competitions, seasons, or divisions to your favorites for quick access.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -160,8 +149,9 @@ class FavoritesView extends ConsumerWidget {
               onPressed: () {
                 // Find the events tab index dynamically
                 final enabledTabs = ConfigService.config.navigation.enabledTabs;
-                final eventsTabIndex =
-                    enabledTabs.indexWhere((tab) => tab.id == 'events');
+                final eventsTabIndex = enabledTabs.indexWhere(
+                  (tab) => tab.id == 'events',
+                );
                 if (eventsTabIndex != -1) {
                   context.switchToTab(eventsTabIndex);
                 }
@@ -207,11 +197,7 @@ class FavoritesView extends ConsumerWidget {
 
     return CircleAvatar(
       backgroundColor: color,
-      child: Icon(
-        iconData,
-        color: Colors.white,
-        size: 20,
-      ),
+      child: Icon(iconData, color: Colors.white, size: 20),
     );
   }
 
@@ -240,7 +226,9 @@ class FavoritesView extends ConsumerWidget {
           seasonsLoaded: false,
         );
         context.switchToTabAndNavigate(
-            eventsTabIndex, EventDetailViewRiverpod(event: event));
+          eventsTabIndex,
+          EventDetailViewRiverpod(event: event),
+        );
         break;
 
       case FavoriteType.season:
@@ -255,11 +243,9 @@ class FavoritesView extends ConsumerWidget {
           seasonsLoaded: false,
         );
         context.switchToTabAndNavigate(
-            eventsTabIndex,
-            DivisionsViewRiverpod(
-              event: event,
-              season: favorite.season!,
-            ));
+          eventsTabIndex,
+          DivisionsViewRiverpod(event: event, season: favorite.season!),
+        );
         break;
 
       case FavoriteType.division:
@@ -282,12 +268,13 @@ class FavoritesView extends ConsumerWidget {
           slug: favorite.divisionSlug,
         );
         context.switchToTabAndNavigate(
-            eventsTabIndex,
-            FixturesResultsViewRiverpod(
-              event: event,
-              season: favorite.season!,
-              division: division,
-            ));
+          eventsTabIndex,
+          FixturesResultsViewRiverpod(
+            event: event,
+            season: favorite.season!,
+            division: division,
+          ),
+        );
         break;
 
       case FavoriteType.team:
@@ -310,13 +297,14 @@ class FavoritesView extends ConsumerWidget {
           slug: favorite.divisionSlug,
         );
         context.switchToTabAndNavigate(
-            eventsTabIndex,
-            FixturesResultsViewRiverpod(
-              event: event,
-              season: favorite.season!,
-              division: division,
-              initialTeamId: favorite.teamId, // Pre-select the team
-            ));
+          eventsTabIndex,
+          FixturesResultsViewRiverpod(
+            event: event,
+            season: favorite.season!,
+            division: division,
+            initialTeamId: favorite.teamId, // Pre-select the team
+          ),
+        );
         break;
     }
   }
@@ -328,7 +316,8 @@ class FavoritesView extends ConsumerWidget {
         return AlertDialog(
           title: const Text('Clear All Favorites'),
           content: const Text(
-              'Are you sure you want to remove all favorites? This action cannot be undone.'),
+            'Are you sure you want to remove all favorites? This action cannot be undone.',
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -344,9 +333,7 @@ class FavoritesView extends ConsumerWidget {
                     .clearFavorites();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('All favorites cleared'),
-                    ),
+                    const SnackBar(content: Text('All favorites cleared')),
                   );
                 }
               },

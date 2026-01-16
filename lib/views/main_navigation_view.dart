@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'news_view.dart';
 import 'club_view.dart';
 import 'competitions_view_riverpod.dart';
-import 'favorites_view.dart';
 import '../config/config_service.dart';
 import '../widgets/connection_status_widget.dart';
 import '../services/user_preferences_service.dart';
@@ -27,8 +25,10 @@ class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
   void initState() {
     super.initState();
     _enabledTabs = ConfigService.config.navigation.enabledTabs;
-    _selectedIndex =
-        widget.initialSelectedIndex.clamp(0, _enabledTabs.length - 1);
+    _selectedIndex = widget.initialSelectedIndex.clamp(
+      0,
+      _enabledTabs.length - 1,
+    );
 
     _navigatorKeys = List.generate(
       _enabledTabs.length,
@@ -131,18 +131,16 @@ class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
     return Scaffold(
       body: ConnectionStatusWidget(
         showOfflineMessage: true,
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
+        child: IndexedStack(index: _selectedIndex, children: _pages),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         backgroundColor: ConfigService.config.branding.backgroundColor,
         selectedItemColor: ConfigService.config.branding.primaryColor,
-        unselectedItemColor:
-            ConfigService.config.branding.textColor.withValues(alpha: 0.6),
+        unselectedItemColor: ConfigService.config.branding.textColor.withValues(
+          alpha: 0.6,
+        ),
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
@@ -151,10 +149,12 @@ class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
           UserPreferencesService.setLastMainNavigationTab(index);
         },
         items: _enabledTabs
-            .map((tab) => BottomNavigationBarItem(
-                  icon: Icon(tab.iconData),
-                  label: tab.label,
-                ))
+            .map(
+              (tab) => BottomNavigationBarItem(
+                icon: Icon(tab.iconData),
+                label: tab.label,
+              ),
+            )
             .toList(),
       ),
     );
@@ -173,8 +173,8 @@ class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
   void navigateInTab(int tabIndex, Widget destination) {
     if (tabIndex >= 0 && tabIndex < _navigatorKeys.length) {
       _navigatorKeys[tabIndex].currentState?.push(
-            MaterialPageRoute(builder: (context) => destination),
-          );
+        MaterialPageRoute(builder: (context) => destination),
+      );
     }
   }
 

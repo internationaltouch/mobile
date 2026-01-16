@@ -5,7 +5,6 @@ import 'package:touchtech_news/models/news_item.dart';
 import 'package:touchtech_core/touchtech_core.dart';
 import 'package:touchtech_competitions/providers/pure_riverpod_providers.dart';
 import 'package:touchtech_competitions/views/competitions_view_riverpod.dart';
-import 'news_detail_view.dart';
 
 class NewsView extends ConsumerStatefulWidget {
   final int initialSelectedIndex;

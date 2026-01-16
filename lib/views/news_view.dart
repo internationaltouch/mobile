@@ -7,14 +7,16 @@ import '../utils/image_utils.dart';
 import '../config/config_service.dart';
 import '../providers/pure_riverpod_providers.dart';
 import 'competitions_view_riverpod.dart';
-import 'news_detail_view.dart';
 
 class NewsView extends ConsumerStatefulWidget {
   final int initialSelectedIndex;
   final bool showOnlyNews;
 
-  const NewsView(
-      {super.key, this.initialSelectedIndex = 0, this.showOnlyNews = false});
+  const NewsView({
+    super.key,
+    this.initialSelectedIndex = 0,
+    this.showOnlyNews = false,
+  });
 
   @override
   ConsumerState<NewsView> createState() => _NewsViewState();
@@ -69,9 +71,7 @@ class _NewsViewState extends ConsumerState<NewsView> {
   Widget build(BuildContext context) {
     if (widget.showOnlyNews) {
       // When used within MainNavigationView, only show news content
-      return Scaffold(
-        body: _buildNewsPage(),
-      );
+      return Scaffold(body: _buildNewsPage());
     }
 
     // Original behavior for backward compatibility
@@ -87,10 +87,7 @@ class _NewsViewState extends ConsumerState<NewsView> {
           });
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.newspaper),
-            label: 'News',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: 'News'),
           BottomNavigationBarItem(
             icon: Icon(Icons.sports),
             label: 'Competitions',
@@ -115,42 +112,42 @@ class _NewsViewState extends ConsumerState<NewsView> {
             ref.invalidate(newsListProvider);
             return ref.watch(newsListProvider.future);
           },
-          child: ref.watch(newsListProvider).when(
-            data: (newsItems) {
-              _allNewsItems = newsItems;
-              _visibleItemsCount =
-                  ConfigService.config.features.news.initialItemsCount;
-              return _buildNewsContent(newsItems);
-            },
-            loading: () {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            },
-            error: (error, stackTrace) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.error,
+          child: ref
+              .watch(newsListProvider)
+              .when(
+                data: (newsItems) {
+                  _allNewsItems = newsItems;
+                  _visibleItemsCount =
+                      ConfigService.config.features.news.initialItemsCount;
+                  return _buildNewsContent(newsItems);
+                },
+                loading: () {
+                  return const Center(child: CircularProgressIndicator());
+                },
+                error: (error, stackTrace) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('Failed to load news'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            ref.invalidate(newsListProvider);
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    const Text('Failed to load news'),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        ref.invalidate(newsListProvider);
-                      },
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
         ),
         if (_showReturnToTop)
           Positioned(
@@ -217,7 +214,8 @@ class _NewsViewState extends ConsumerState<NewsView> {
             padding: const EdgeInsets.only(top: 24.0, bottom: 12.0),
             child: Center(
               child: SizedBox(
-                width: MediaQuery.of(context).size.width *
+                width:
+                    MediaQuery.of(context).size.width *
                     0.6, // 60% of screen width
                 child: Image.asset(
                   ConfigService.config.branding.logoHorizontal,
@@ -245,11 +243,14 @@ class _NewsViewState extends ConsumerState<NewsView> {
               child: ElevatedButton(
                 onPressed: _showMoreItems,
                 style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                 ),
                 child: Text(
-                    'Show more (${newsItems.length - _visibleItemsCount} remaining)'),
+                  'Show more (${newsItems.length - _visibleItemsCount} remaining)',
+                ),
               ),
             ),
           );
@@ -260,9 +261,10 @@ class _NewsViewState extends ConsumerState<NewsView> {
 
   void _showMoreItems() {
     setState(() {
-      _visibleItemsCount = (_visibleItemsCount +
-              ConfigService.config.features.news.infiniteScrollBatchSize)
-          .clamp(0, _allNewsItems.length);
+      _visibleItemsCount =
+          (_visibleItemsCount +
+                  ConfigService.config.features.news.infiniteScrollBatchSize)
+              .clamp(0, _allNewsItems.length);
     });
   }
 
@@ -421,8 +423,9 @@ class _NewsCardState extends State<NewsCard> {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color:
-                                FITColors.primaryBlack.withValues(alpha: 0.7),
+                            color: FITColors.primaryBlack.withValues(
+                              alpha: 0.7,
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const SizedBox(
@@ -431,7 +434,8 @@ class _NewsCardState extends State<NewsCard> {
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                  FITColors.white),
+                                FITColors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -447,8 +451,8 @@ class _NewsCardState extends State<NewsCard> {
                   Text(
                     widget.newsItem.title,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8.0),
                   Text(
@@ -458,9 +462,9 @@ class _NewsCardState extends State<NewsCard> {
                   const SizedBox(height: 8.0),
                   Text(
                     _formatDate(widget.newsItem.publishedAt),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: FITColors.darkGrey,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: FITColors.darkGrey),
                   ),
                 ],
               ),
