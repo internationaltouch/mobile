@@ -8,9 +8,11 @@ export 'models/ladder_stage.dart';
 export 'models/pool.dart';
 export 'models/team.dart';
 export 'models/shortcut_item.dart';
+export 'models/favorites/favorite.dart';
 
 // Services
 export 'services/competition_filter_service.dart';
+export 'services/favorites/favorites_service.dart';
 
 // Providers
 export 'providers/pure_riverpod_providers.dart';
@@ -18,6 +20,7 @@ export 'providers/pure_riverpod_providers.dart';
 
 // Widgets
 export 'widgets/match_score_card.dart';
+export 'widgets/favorites/favorite_button.dart';
 
 // Views
 export 'views/competitions_view_riverpod.dart';

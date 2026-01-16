@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:touchtech_competitions/providers/pure_riverpod_providers.dart';
-import 'package:touchtech_favorites/models/favorite.dart';
+import '../../models/favorites/favorite.dart';
 
 class FavoriteButton extends ConsumerWidget {
   final Favorite favorite;

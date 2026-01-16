@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/pure_riverpod_providers.dart';
 import '../models/event.dart';
 import '../models/season.dart';
-import 'package:touchtech_favorites/models/favorite.dart';
+import '../models/favorites/favorite.dart';
 import '../services/competition_filter_service.dart';
 import 'package:touchtech_core/utils/image_utils.dart';
-import 'package:touchtech_favorites/widgets/favorite_button.dart';
+import '../widgets/favorites/favorite_button.dart';
 import 'divisions_view_riverpod.dart';
 
 class EventDetailViewRiverpod extends ConsumerStatefulWidget {

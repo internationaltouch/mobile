@@ -19,7 +19,6 @@ pub-get-packages:
 	@cd packages/touchtech_news && flutter pub get
 	@cd packages/touchtech_clubs && flutter pub get
 	@cd packages/touchtech_competitions && flutter pub get
-	@cd packages/touchtech_favorites && flutter pub get
 	@echo "✅ All package dependencies resolved!"
 
 pub-get-apps:
@@ -36,7 +35,6 @@ test-packages:
 	@cd packages/touchtech_news && flutter test
 	@cd packages/touchtech_clubs && flutter test
 	@cd packages/touchtech_competitions && flutter test
-	@cd packages/touchtech_favorites && flutter test
 	@echo "✅ All package tests passed!"
 
 test-apps:
@@ -51,7 +49,6 @@ lint:
 	@cd packages/touchtech_news && flutter analyze
 	@cd packages/touchtech_clubs && flutter analyze
 	@cd packages/touchtech_competitions && flutter analyze
-	@cd packages/touchtech_favorites && flutter analyze
 	@cd apps/internationaltouch && flutter analyze
 	@cd apps/touch_superleague_uk && flutter analyze
 	@echo "✅ All code analyzed!"
@@ -62,7 +59,6 @@ clean:
 	@cd packages/touchtech_news && flutter clean
 	@cd packages/touchtech_clubs && flutter clean
 	@cd packages/touchtech_competitions && flutter clean
-	@cd packages/touchtech_favorites && flutter clean
 	@cd apps/internationaltouch && flutter clean
 	@cd apps/touch_superleague_uk && flutter clean
 	@echo "✅ Cleaned!"

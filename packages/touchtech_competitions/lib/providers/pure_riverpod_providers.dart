@@ -7,10 +7,10 @@ import 'package:touchtech_competitions/models/fixture.dart';
 import 'package:touchtech_competitions/models/ladder_entry.dart';
 import 'package:touchtech_competitions/models/team.dart';
 import 'package:touchtech_clubs/models/club.dart';
-import 'package:touchtech_favorites/models/favorite.dart';
 import 'package:touchtech_core/services/api_service.dart';
 import 'package:touchtech_competitions/services/competition_filter_service.dart';
-import 'package:touchtech_favorites/services/favorites_service.dart';
+import '../models/favorites/favorite.dart';
+import '../services/favorites/favorites_service.dart';
 // TODO: Re-implement caching with new database service
 // import 'package:touchtech_core/services/database_service.dart';
 import 'package:touchtech_core/config/config_service.dart';

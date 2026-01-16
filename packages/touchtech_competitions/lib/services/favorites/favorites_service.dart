@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:touchtech_favorites/models/favorite.dart';
+import '../../models/favorites/favorite.dart';
 
 class FavoritesService {
   static const String _favoritesKey = 'favorites';

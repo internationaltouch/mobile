@@ -30,8 +30,6 @@ dependencies:
     path: ../touchtech_clubs
   touchtech_competitions:
     path: ../touchtech_competitions
-  touchtech_favorites:
-    path: ../touchtech_favorites
 
 dev_dependencies:
   flutter_test:

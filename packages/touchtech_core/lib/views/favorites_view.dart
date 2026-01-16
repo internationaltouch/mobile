@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:touchtech_competitions/providers/pure_riverpod_providers.dart';
-import 'package:touchtech_favorites/models/favorite.dart';
+import 'package:touchtech_competitions/models/favorites/favorite.dart';
 import 'package:touchtech_competitions/models/event.dart';
 import 'package:touchtech_competitions/models/division.dart';
 import 'package:touchtech_competitions/views/event_detail_view_riverpod.dart';

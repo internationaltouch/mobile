@@ -18,8 +18,6 @@ dependencies:
     path: ../../packages/touchtech_clubs
   touchtech_competitions:
     path: ../../packages/touchtech_competitions
-  touchtech_favorites:
-    path: ../../packages/touchtech_favorites
   cupertino_icons: ^1.0.6
   flutter_riverpod: ^2.5.1
   flag: ^7.0.0

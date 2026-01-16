@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/division.dart';
 import '../models/event.dart';
-import 'package:touchtech_favorites/models/favorite.dart';
+import '../models/favorites/favorite.dart';
 import '../models/fixture.dart';
 import '../models/ladder_entry.dart';
 import '../providers/pure_riverpod_providers.dart';
 import 'package:touchtech_core/services/user_preferences_service.dart';
-import 'package:touchtech_favorites/widgets/favorite_button.dart';
+import '../widgets/favorites/favorite_button.dart';
 import '../widgets/match_score_card.dart';
 
 class FixturesResultsViewRiverpod extends ConsumerStatefulWidget {

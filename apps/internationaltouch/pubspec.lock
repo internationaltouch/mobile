@@ -642,13 +642,6 @@ packages:
       relative: true
     source: path
     version: "1.0.0"
-  touchtech_favorites:
-    dependency: "direct main"
-    description:
-      path: "../../packages/touchtech_favorites"
-      relative: true
-    source: path
-    version: "1.0.0"
   touchtech_news:
     dependency: "direct main"
     description:

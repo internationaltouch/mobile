@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/pure_riverpod_providers.dart';
 import '../models/event.dart';
-import 'package:touchtech_favorites/models/favorite.dart';
-import 'package:touchtech_favorites/widgets/favorite_button.dart';
+import '../models/favorites/favorite.dart';
+import '../widgets/favorites/favorite_button.dart';
 import 'fixtures_results_view_riverpod.dart';
 
 class DivisionsViewRiverpod extends ConsumerWidget {
