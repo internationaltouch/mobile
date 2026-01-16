@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/pure_riverpod_providers.dart';
 import '../models/event.dart';
 import '../services/competition_filter_service.dart';
-import 'package:touchtech_news/services/news_api_service.dart';
 import 'package:touchtech_core/utils/image_utils.dart';
 import 'package:touchtech_core/config/config_service.dart';
 import 'event_detail_view_riverpod.dart';
@@ -27,12 +26,13 @@ class _CompetitionsViewRiverpodState
   }
 
   String _getErrorMessage(Object error) {
-    if (error is NetworkUnavailableException) {
+    final errorString = error.toString().toLowerCase();
+    if (errorString.contains('network') || errorString.contains('connection')) {
       return 'No internet connection. Please check your network and try again.';
-    } else if (error is TimeoutException) {
+    } else if (errorString.contains('timeout')) {
       return 'Request timed out. Please try again.';
-    } else if (error is ApiErrorException) {
-      return 'Unable to load competitions. Error: ${error.message}';
+    } else if (errorString.contains('api') || errorString.contains('http')) {
+      return 'Unable to load competitions. Please check your connection and try again.';
     }
     return 'Failed to load competitions. Please try again.';
   }
@@ -57,9 +57,8 @@ class _CompetitionsViewRiverpodState
           (eventId: targetEvent.id, seasonSlug: season),
         ).future);
 
-        final targetDivision = divisions
-            .where((div) => div.slug == divisionSlug)
-            .firstOrNull;
+        final targetDivision =
+            divisions.where((div) => div.slug == divisionSlug).firstOrNull;
 
         if (targetDivision == null) {
           throw Exception('Division "$divisionSlug" not found');
@@ -214,7 +213,8 @@ class _CompetitionsViewRiverpodState
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  error is NetworkUnavailableException
+                  error.toString().toLowerCase().contains('network') ||
+                          error.toString().toLowerCase().contains('connection')
                       ? Icons.cloud_off
                       : Icons.error_outline,
                   size: 64,
@@ -222,7 +222,8 @@ class _CompetitionsViewRiverpodState
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  error is NetworkUnavailableException
+                  error.toString().toLowerCase().contains('network') ||
+                          error.toString().toLowerCase().contains('connection')
                       ? 'No Internet Connection'
                       : 'Unable to Load Competitions',
                   style: Theme.of(context).textTheme.titleLarge,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:touchtech_clubs/models/club.dart';
+import '../../models/clubs/club.dart';
 import 'package:touchtech_core/touchtech_core.dart';
 // import '../services/fit_entity_image_service.dart'; // App-specific
 // import '../theme/fit_colors.dart'; // Available from touchtech_core

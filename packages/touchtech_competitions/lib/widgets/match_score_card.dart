@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:touchtech_competitions/models/fixture.dart';
 import 'package:touchtech_core/touchtech_core.dart';
-import 'package:touchtech_news/widgets/video_player_dialog.dart';
 
 class MatchScoreCard extends StatelessWidget {
   final Fixture fixture;

@@ -1,3 +1,6 @@
+// App
+export 'app/touch_tech_app.dart';
+
 // Config
 export 'config/config_service.dart';
 export 'config/app_config.dart';
@@ -19,7 +22,7 @@ export 'utils/image_utils.dart';
 
 // Widgets
 export 'widgets/connection_status_widget.dart';
-// video_player_dialog not exported - it depends on youtube_player_iframe
+export 'widgets/video_player_dialog.dart';
 
 // Views
 export 'views/main_navigation_view.dart';

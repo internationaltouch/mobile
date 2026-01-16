@@ -12,15 +12,12 @@ dependencies:
      sdk: flutter
    touchtech_core:
      path: ../touchtech_core
-   touchtech_news:
-     path: ../touchtech_news
-   touchtech_clubs:
-     path: ../touchtech_clubs
    flutter_riverpod: ^2.5.1
    http: ^1.1.0
    shared_preferences: ^2.5.3
    json_annotation: ^4.9.0
    freezed_annotation: ^2.4.4
+   url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

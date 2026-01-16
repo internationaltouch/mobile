@@ -6,7 +6,7 @@ import 'package:touchtech_competitions/models/division.dart';
 import 'package:touchtech_competitions/models/fixture.dart';
 import 'package:touchtech_competitions/models/ladder_entry.dart';
 import 'package:touchtech_competitions/models/team.dart';
-import 'package:touchtech_clubs/models/club.dart';
+import '../models/clubs/club.dart';
 import 'package:touchtech_core/services/api_service.dart';
 import 'package:touchtech_competitions/services/competition_filter_service.dart';
 import '../models/favorites/favorite.dart';

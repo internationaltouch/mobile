@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:touchtech_clubs/models/club.dart';
+import '../../models/clubs/club.dart';
 import 'package:touchtech_core/touchtech_core.dart';
 // import '../services/fit_entity_image_service.dart'; // App-specific
 // import '../theme/fit_colors.dart'; // Available from touchtech_core
-import 'package:touchtech_clubs/views/club_detail_view.dart';
+import 'club_detail_view.dart';
 
 class ClubView extends StatefulWidget {
   const ClubView({super.key});

@@ -8,7 +8,6 @@ export 'services/news_api_service.dart';
 export 'providers/news_providers.dart';
 
 // Widgets
-export 'widgets/video_player_dialog.dart';
 
 // Views
 export 'views/news_view.dart';

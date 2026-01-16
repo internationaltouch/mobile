@@ -9,6 +9,7 @@ export 'models/pool.dart';
 export 'models/team.dart';
 export 'models/shortcut_item.dart';
 export 'models/favorites/favorite.dart';
+export 'models/clubs/club.dart';
 
 // Services
 export 'services/competition_filter_service.dart';
@@ -28,3 +29,5 @@ export 'views/event_detail_view_riverpod.dart';
 export 'views/divisions_view_riverpod.dart';
 export 'views/fixtures_results_view_riverpod.dart';
 export 'views/shortcuts_view.dart';
+export 'views/clubs/club_view.dart';
+export 'views/clubs/club_detail_view.dart';

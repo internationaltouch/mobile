@@ -14,8 +14,6 @@ dependencies:
     path: ../../packages/touchtech_core
   touchtech_news:
     path: ../../packages/touchtech_news
-  touchtech_clubs:
-    path: ../../packages/touchtech_clubs
   touchtech_competitions:
     path: ../../packages/touchtech_competitions
   cupertino_icons: ^1.0.6
