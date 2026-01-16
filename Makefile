@@ -17,7 +17,6 @@ pub-get-packages:
 	@echo "📦 Getting dependencies for packages..."
 	@cd packages/touchtech_core && flutter pub get
 	@cd packages/touchtech_news && flutter pub get
-	@cd packages/touchtech_clubs && flutter pub get
 	@cd packages/touchtech_competitions && flutter pub get
 	@echo "✅ All package dependencies resolved!"
 
@@ -33,7 +32,6 @@ test-packages:
 	@echo "🧪 Testing packages..."
 	@cd packages/touchtech_core && flutter test
 	@cd packages/touchtech_news && flutter test
-	@cd packages/touchtech_clubs && flutter test
 	@cd packages/touchtech_competitions && flutter test
 	@echo "✅ All package tests passed!"
 
@@ -47,7 +45,6 @@ lint:
 	@echo "🔍 Linting all code..."
 	@cd packages/touchtech_core && flutter analyze
 	@cd packages/touchtech_news && flutter analyze
-	@cd packages/touchtech_clubs && flutter analyze
 	@cd packages/touchtech_competitions && flutter analyze
 	@cd apps/internationaltouch && flutter analyze
 	@cd apps/touch_superleague_uk && flutter analyze
@@ -57,7 +54,6 @@ clean:
 	@echo "🧹 Cleaning all build artifacts..."
 	@cd packages/touchtech_core && flutter clean
 	@cd packages/touchtech_news && flutter clean
-	@cd packages/touchtech_clubs && flutter clean
 	@cd packages/touchtech_competitions && flutter clean
 	@cd apps/internationaltouch && flutter clean
 	@cd apps/touch_superleague_uk && flutter clean
