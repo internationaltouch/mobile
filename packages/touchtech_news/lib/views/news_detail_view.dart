@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:touchtech_news/models/news_item.dart';
 import 'package:touchtech_core/touchtech_core.dart';
-import 'package:touchtech_competitions/providers/pure_riverpod_providers.dart';
+import 'package:touchtech_news/providers/news_providers.dart';
 
 class NewsDetailView extends ConsumerWidget {
   final NewsItem newsItem;

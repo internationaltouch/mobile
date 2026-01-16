@@ -7,12 +7,10 @@ import 'package:touchtech_competitions/models/fixture.dart';
 import 'package:touchtech_competitions/models/ladder_entry.dart';
 import 'package:touchtech_competitions/models/team.dart';
 import 'package:touchtech_clubs/models/club.dart';
-import 'package:touchtech_news/models/news_item.dart';
 import 'package:touchtech_favorites/models/favorite.dart';
 import 'package:touchtech_core/services/api_service.dart';
 import 'package:touchtech_competitions/services/competition_filter_service.dart';
 import 'package:touchtech_favorites/services/favorites_service.dart';
-import 'package:touchtech_news/services/news_api_service.dart';
 // TODO: Re-implement caching with new database service
 // import 'package:touchtech_core/services/database_service.dart';
 import 'package:touchtech_core/config/config_service.dart';
@@ -51,7 +49,8 @@ final rawEventsProvider = FutureProvider<List<Event>>((ref) async {
     return events;
   } catch (e) {
     // Check if it's a network error
-    if (e is NetworkUnavailableException) {
+    if (e.toString().contains('network') ||
+        e.toString().contains('connection')) {
       // TODO: Re-implement caching with new database service
       // Try to get cached data if available
       // try {
@@ -336,77 +335,6 @@ final clubsProvider = FutureProvider<List<Club>>((ref) async {
   clubs.sort((a, b) => a.title.compareTo(b.title));
 
   return clubs;
-});
-
-// News API Service provider
-final newsApiServiceProvider = Provider<NewsApiService>((ref) {
-  final httpClient = ref.watch(httpClientProvider);
-  return NewsApiService(httpClient: httpClient);
-});
-
-// News list provider - fetches from REST API with SQLite fallback
-final newsListProvider = FutureProvider<List<NewsItem>>((ref) async {
-  // Keep provider alive for offline caching
-  ref.keepAlive();
-
-  final newsApiService = ref.watch(newsApiServiceProvider);
-
-  try {
-    // Try to fetch fresh news from API
-    final freshNews = await newsApiService.fetchNewsList();
-
-    // TODO: Re-implement caching with new database service
-    // Cache to SQLite for offline support with smart TTL
-    // final ttl = await DeviceService.instance.recommendedCacheExpiry;
-    // await DatabaseService.cacheNewsItems(freshNews, ttlMs: ttl);
-
-    return freshNews;
-  } catch (e) {
-    // TODO: Re-implement caching with new database service
-    // On error, try to return cached news
-    // try {
-    //   return await DatabaseService.getCachedNewsItems();
-    // } catch (_) {
-    //   // If cache is also empty, rethrow original error
-    //   rethrow;
-    // }
-
-    // If cache is also empty, rethrow original error
-    rethrow;
-  }
-});
-
-// News detail provider - fetches full article with image and content
-final newsDetailProvider =
-    FutureProvider.family<NewsItem, String>((ref, slug) async {
-  // Keep provider alive for offline caching
-  ref.keepAlive();
-
-  final newsApiService = ref.watch(newsApiServiceProvider);
-
-  try {
-    final detail = await newsApiService.fetchNewsDetail(slug);
-
-    // TODO: Re-implement caching with new database service
-    // Enrich cache with image URL
-    // if (detail.imageUrl != null) {
-    //   await DatabaseService.enrichNewsItemWithImage(slug, detail.imageUrl!);
-    // }
-
-    return detail;
-  } catch (e) {
-    // TODO: Re-implement caching with new database service
-    // If detail fetch fails, try to get from cache
-    // try {
-    //   final cached = await DatabaseService.getCachedNewsItems();
-    //   final item = cached.firstWhere((item) => item.id == slug);
-    //   return item;
-    // } catch (_) {
-    //   rethrow;
-    // }
-
-    rethrow;
-  }
 });
 
 // Favorites providers (local storage, works offline)
