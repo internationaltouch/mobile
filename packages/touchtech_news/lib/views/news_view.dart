@@ -4,21 +4,15 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:touchtech_news/models/news_item.dart';
 import 'package:touchtech_core/touchtech_core.dart';
 import 'package:touchtech_news/providers/news_providers.dart';
-import 'package:touchtech_competitions/views/competitions_view_riverpod.dart';
 
 class NewsView extends ConsumerStatefulWidget {
-  final int initialSelectedIndex;
-  final bool showOnlyNews;
-
-  const NewsView(
-      {super.key, this.initialSelectedIndex = 0, this.showOnlyNews = false});
+  const NewsView({super.key});
 
   @override
   ConsumerState<NewsView> createState() => _NewsViewState();
 }
 
 class _NewsViewState extends ConsumerState<NewsView> {
-  late int _selectedIndex;
   List<NewsItem> _allNewsItems = [];
   late int _visibleItemsCount;
   ScrollController? _scrollController;
@@ -27,7 +21,6 @@ class _NewsViewState extends ConsumerState<NewsView> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialSelectedIndex;
     _visibleItemsCount = ConfigService.config.features.news.initialItemsCount;
   }
 
@@ -64,36 +57,8 @@ class _NewsViewState extends ConsumerState<NewsView> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.showOnlyNews) {
-      // When used within MainNavigationView, only show news content
-      return Scaffold(
-        body: _buildNewsPage(),
-      );
-    }
-
-    // Original behavior for backward compatibility
     return Scaffold(
-      body: _selectedIndex == 0
-          ? _buildNewsPage()
-          : const CompetitionsViewRiverpod(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.newspaper),
-            label: 'News',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.sports),
-            label: 'Competitions',
-          ),
-        ],
-      ),
+      body: _buildNewsPage(),
     );
   }
 

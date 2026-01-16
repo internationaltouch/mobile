@@ -88,7 +88,7 @@ class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
   Widget _getViewForTab(TabConfig tab) {
     switch (tab.id) {
       case 'news':
-        return const NewsView(showOnlyNews: true);
+        return const NewsView();
       case 'clubs':
         return const ClubView();
       case 'events':
