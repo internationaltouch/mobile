@@ -1,4 +1,4 @@
-.PHONY: help test test-packages test-apps lint clean build-fit build-tsl pub-get pub-get-packages pub-get-apps
+.PHONY: help test test-packages test-apps lint clean build-fit build-tsl pub-get pub-get-packages pub-get-apps sync-version
 
 help:
 	@echo "Touch Technology Framework - Available Commands:"
@@ -10,6 +10,7 @@ help:
 	@echo "  make clean         - Clean all build artifacts"
 	@echo "  make build-fit     - Build FIT app (Android APK + iOS IPA)"
 	@echo "  make build-tsl     - Build Touch Superleague app (Android APK + iOS IPA)"
+	@echo "  make sync-version  - Sync version from version.json to all pubspec.yaml files"
 
 pub-get: pub-get-packages pub-get-apps
 
@@ -74,3 +75,6 @@ build-tsl:
 	@echo "🍎 Building iOS IPA..."
 	@cd apps/touch_superleague_uk && flutter build ios --release --no-codesign
 	@echo "✅ TSL app built for Android and iOS!"
+
+sync-version:
+	@dart scripts/sync_versions.dart
