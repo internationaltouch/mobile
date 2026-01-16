@@ -7,8 +7,8 @@ import 'package:touchtech_competitions/models/division.dart';
 import 'package:touchtech_competitions/views/event_detail_view_riverpod.dart';
 import 'package:touchtech_competitions/views/divisions_view_riverpod.dart';
 import 'package:touchtech_competitions/views/fixtures_results_view_riverpod.dart';
-import '../main_navigation_view.dart';
 import 'package:touchtech_core/touchtech_core.dart';
+import 'main_navigation_view.dart';
 
 class FavoritesView extends ConsumerWidget {
   const FavoritesView({super.key});

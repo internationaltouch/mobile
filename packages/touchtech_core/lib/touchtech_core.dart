@@ -20,3 +20,9 @@ export 'utils/image_utils.dart';
 // Widgets
 export 'widgets/connection_status_widget.dart';
 // video_player_dialog not exported - it depends on youtube_player_iframe
+
+// Views
+export 'views/main_navigation_view.dart';
+export 'views/favorites_view.dart';
+export 'views/news_view.dart';
+export 'views/news_detail_view.dart';
