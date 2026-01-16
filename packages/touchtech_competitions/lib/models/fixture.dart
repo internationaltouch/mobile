@@ -1,0 +1,183 @@
+class Fixture {
+  final String id;
+  final String homeTeamId;
+  final String awayTeamId;
+  final String homeTeamName;
+  final String awayTeamName;
+  final String? homeTeamAbbreviation; // Club abbreviation for home team
+  final String? awayTeamAbbreviation; // Club abbreviation for away team
+  final DateTime dateTime;
+  final String field;
+  final String divisionId;
+  final int? homeScore;
+  final int? awayScore;
+  final bool isCompleted;
+  final String? round; // Add round information from API
+  final bool? isBye; // Add bye information from API
+  final List<String> videos; // Add video URLs from API
+  final int? poolId; // Pool ID for pool-based matches
+  final String? poolName; // Pool name from pools lookup
+
+  Fixture({
+    required this.id,
+    required this.homeTeamId,
+    required this.awayTeamId,
+    required this.homeTeamName,
+    required this.awayTeamName,
+    this.homeTeamAbbreviation,
+    this.awayTeamAbbreviation,
+    required this.dateTime,
+    required this.field,
+    required this.divisionId,
+    this.homeScore,
+    this.awayScore,
+    this.isCompleted = false,
+    this.round,
+    this.isBye,
+    this.videos = const [],
+    this.poolId,
+    this.poolName,
+  });
+
+  factory Fixture.fromJson(Map<String, dynamic> json) {
+    // Handle datetime parsing from API
+    DateTime parsedDateTime;
+    if (json['datetime'] != null) {
+      parsedDateTime = DateTime.parse(json['datetime']);
+    } else if (json['date'] != null && json['time'] != null) {
+      parsedDateTime = DateTime.parse('${json['date']}T${json['time']}Z');
+    } else if (json['dateTime'] != null) {
+      parsedDateTime = DateTime.parse(json['dateTime']);
+    } else {
+      parsedDateTime = DateTime.now();
+    }
+
+    final homeAbbreviation = _extractTeamAbbreviation(json, 'home_team');
+    final awayAbbreviation = _extractTeamAbbreviation(json, 'away_team');
+
+    // Extract team names safely
+    String homeTeamName = json['homeTeamName'] ?? '';
+    if (homeTeamName.isEmpty) {
+      if (json['home_team'] is Map) {
+        homeTeamName = json['home_team']?['name'] ?? '';
+      } else {
+        homeTeamName = json['home_team_name'] ?? '';
+      }
+    }
+
+    String awayTeamName = json['awayTeamName'] ?? '';
+    if (awayTeamName.isEmpty) {
+      if (json['away_team'] is Map) {
+        awayTeamName = json['away_team']?['name'] ?? '';
+      } else {
+        awayTeamName = json['away_team_name'] ?? '';
+      }
+    }
+
+    return Fixture(
+      id: json['id']?.toString() ?? '',
+      homeTeamId:
+          json['homeTeamId']?.toString() ?? json['home_team']?.toString() ?? '',
+      awayTeamId:
+          json['awayTeamId']?.toString() ?? json['away_team']?.toString() ?? '',
+      homeTeamName: homeTeamName,
+      awayTeamName: awayTeamName,
+      homeTeamAbbreviation: homeAbbreviation,
+      awayTeamAbbreviation: awayAbbreviation,
+      dateTime: parsedDateTime,
+      field: json['field'] ?? json['play_at']?['title'] ?? '',
+      divisionId: json['divisionId'] ?? '',
+      homeScore: json['homeScore'] ?? json['home_team_score'],
+      awayScore: json['awayScore'] ?? json['away_team_score'],
+      isCompleted: json['isCompleted'] ??
+          (json['home_team_score'] != null && json['away_team_score'] != null),
+      round: json['round'],
+      isBye: json['is_bye'],
+      videos: (json['videos'] as List<dynamic>?)?.cast<String>() ?? [],
+      poolId: json['stage_group'] is int
+          ? json['stage_group'] as int
+          : int.tryParse(json['stage_group']?.toString() ?? ''),
+      poolName: json['pool_name'] as String?,
+    );
+  }
+
+  static String? _extractTeamAbbreviation(
+      Map<String, dynamic> json, String teamKey) {
+    // Try multiple possible data structures for team abbreviation
+
+    // 1. Try from nested team object with club data
+    final teamData = json[teamKey];
+    if (teamData is Map<String, dynamic>) {
+      final club = teamData['club'];
+      if (club is Map<String, dynamic>) {
+        final abbreviation = club['abbreviation'] as String?;
+        if (abbreviation != null && abbreviation.isNotEmpty) {
+          return abbreviation;
+        }
+      }
+    }
+
+    // 2. Try from direct team data if it's a map
+    if (teamData is Map<String, dynamic>) {
+      final abbreviation = teamData['abbreviation'] as String?;
+      if (abbreviation != null && abbreviation.isNotEmpty) {
+        return abbreviation;
+      }
+    }
+
+    // 3. Try alternative key patterns for different API responses
+    final alternativeKeys = [
+      '${teamKey}_abbreviation',
+      '${teamKey}Abbreviation',
+      teamKey.replaceAll('_team', 'TeamAbbreviation'),
+    ];
+
+    for (final key in alternativeKeys) {
+      final abbreviation = json[key] as String?;
+      if (abbreviation != null && abbreviation.isNotEmpty) {
+        return abbreviation;
+      }
+    }
+
+    return null;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'homeTeamId': homeTeamId,
+      'awayTeamId': awayTeamId,
+      'homeTeamName': homeTeamName,
+      'awayTeamName': awayTeamName,
+      'homeTeamAbbreviation': homeTeamAbbreviation,
+      'awayTeamAbbreviation': awayTeamAbbreviation,
+      'dateTime': dateTime.toIso8601String(),
+      'field': field,
+      'divisionId': divisionId,
+      'homeScore': homeScore,
+      'awayScore': awayScore,
+      'isCompleted': isCompleted,
+      'round': round,
+      'isBye': isBye,
+      'videos': videos,
+      'poolId': poolId,
+    };
+  }
+
+  String get resultText {
+    if (isCompleted && homeScore != null && awayScore != null) {
+      return '$homeScore - $awayScore';
+    }
+    return '';
+  }
+
+  /// Check if home team has a flag available
+  bool get homeTeamHasFlag {
+    return homeTeamAbbreviation != null || homeTeamName.isNotEmpty;
+  }
+
+  /// Check if away team has a flag available
+  bool get awayTeamHasFlag {
+    return awayTeamAbbreviation != null || awayTeamName.isNotEmpty;
+  }
+}
