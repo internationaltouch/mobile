@@ -1,0 +1,91 @@
+{
+  "app": {
+    "name": "FIT",
+    "displayName": "FIT",
+    "description": "FIT - International Touch tournaments and events",
+    "identifier": {
+      "android": "org.internationaltouch.mobile",
+      "ios": "org.internationaltouch.mobile"
+    },
+    "version": "1.0.0+6"
+  },
+  "api": {
+    "baseUrl": "https://www.internationaltouch.org/api/v1",
+    "imageBaseUrl": "https://www.internationaltouch.org"
+  },
+  "branding": {
+    "primaryColor": "#003A70",
+    "secondaryColor": "#F6CF3F",
+    "accentColor": "#73A950",
+    "errorColor": "#B12128",
+    "backgroundColor": "#FFFFFF",
+    "textColor": "#222222",
+    "logoVertical": "assets/images/LOGO_FIT-VERT.png",
+    "logoHorizontal": "assets/images/LOGO_FIT-HZ.png",
+    "appIcon": "assets/images/icon.png",
+    "splashScreen": {
+      "backgroundColor": "#FFFFFF",
+      "image": "assets/images/LOGO_FIT-VERT.png",
+      "imageBackgroundColor": "#FFFFFF"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "id": "news",
+        "label": "News",
+        "icon": "newspaper",
+        "enabled": true,
+        "backgroundColor": "#003A70"
+      },
+      {
+        "id": "clubs",
+        "label": "Member Nations",
+        "icon": "public",
+        "enabled": true,
+        "backgroundColor": "#003A70"
+      },
+      {
+        "id": "events",
+        "label": "Events",
+        "icon": "sports",
+        "enabled": true,
+        "backgroundColor": "#003A70",
+        "variant": "standard"
+      },
+      {
+        "id": "my_sport",
+        "label": "My Touch",
+        "icon": "star",
+        "enabled": true,
+        "backgroundColor": "#003A70"
+      }
+    ]
+  },
+  "features": {
+    "news": {
+      "newsApiPath": "news/articles/",
+      "initialItemsCount": 10,
+      "infiniteScrollBatchSize": 5
+    },
+    "flagsModule": "fit",
+    "eventsVariant": "standard",
+    "clubs": {
+      "navigationLabel": "Member Nations",
+      "titleBarText": "Member Nations",
+      "allowedStatuses": ["active"],
+      "excludedSlugs": [],
+      "slugImageMapping": {}
+    },
+    "competitions": {
+      "excludedSlugs": [],
+      "excludedSeasonCombos": [],
+      "excludedDivisionCombos": [],
+      "slugImageMapping": {}
+    }
+  },
+  "assets": {
+    "competitionImages": "assets/images/competitions/",
+    "flagsPath": "lib/config/flags/fit_flags.dart"
+  }
+}

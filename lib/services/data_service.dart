@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:xml/xml.dart';
-import 'package:html/parser.dart' as html_parser;
 import 'dart:async';
 import '../models/event.dart';
 import '../models/season.dart';
@@ -10,10 +8,10 @@ import '../models/team.dart';
 import '../models/fixture.dart';
 import '../models/ladder_entry.dart';
 import '../models/ladder_stage.dart';
-import '../models/news_item.dart';
 import '../config/app_config.dart';
 import 'api_service.dart';
 import 'database_service.dart';
+import 'device_service.dart';
 
 class DataService {
   // Cache for API data
@@ -36,50 +34,6 @@ class DataService {
     _httpClient = null;
   }
 
-  // Helper method to extract Open Graph image from HTML page
-  static Future<String?> _extractOpenGraphImage(String url) async {
-    try {
-      final response = await httpClient.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final html = response.body;
-
-        // Look for og:image meta tag using regex
-        final ogImageMatch = RegExp(
-          r'<meta\s+property="og:image"\s+content="([^"]+)"',
-          caseSensitive: false,
-        ).firstMatch(html);
-
-        if (ogImageMatch != null) {
-          return ogImageMatch.group(1);
-        }
-
-        // Fallback: look for meta name="og:image"
-        final ogImageNameMatch = RegExp(
-          r'<meta\s+name="og:image"\s+content="([^"]+)"',
-          caseSensitive: false,
-        ).firstMatch(html);
-
-        if (ogImageNameMatch != null) {
-          return ogImageNameMatch.group(1);
-        }
-
-        // Additional fallback: try different attribute order
-        final ogImageFlexMatch = RegExp(
-          r'<meta\s+content="([^"]+)"\s+property="og:image"',
-          caseSensitive: false,
-        ).firstMatch(html);
-
-        if (ogImageFlexMatch != null) {
-          return ogImageFlexMatch.group(1);
-        }
-      }
-    } catch (e) {
-      debugPrint('Failed to extract Open Graph image from $url: $e');
-    }
-
-    return null;
-  }
-
   // Test network connectivity
   static Future<bool> testConnectivity() async {
     try {
@@ -91,218 +45,6 @@ class DataService {
       return response.statusCode == 200;
     } catch (e) {
       return false;
-    }
-  }
-
-  // Update a news item's image URL asynchronously
-  static Future<void> updateNewsItemImage(NewsItem newsItem) async {
-    if (newsItem.link == null) return;
-
-    final imageUrl = await _extractOpenGraphImage(newsItem.link!);
-    if (imageUrl != null) {
-      newsItem.imageUrl = imageUrl;
-    }
-  }
-
-  // Fetch news from RSS feed
-  static Future<List<NewsItem>> getNewsItems() async {
-    debugPrint('📰 [RSS] Starting getNewsItems()');
-
-    // Check if cache is valid
-    debugPrint('📰 [RSS] Checking cache validity for news...');
-    if (await DatabaseService.isCacheValid(
-        'news', const Duration(minutes: 30))) {
-      debugPrint('📰 [RSS] Cache is valid, attempting to load from SQLite...');
-      final cachedNews = await DatabaseService.getCachedNewsItems();
-      if (cachedNews.isNotEmpty) {
-        debugPrint(
-            '📰 [RSS] ✅ Loaded ${cachedNews.length} news items from SQLite cache');
-        return cachedNews;
-      } else {
-        debugPrint(
-            '📰 [RSS] ⚠️ Cache was valid but no cached news found in SQLite');
-      }
-    } else {
-      debugPrint(
-          '📰 [RSS] Cache is expired or invalid, will fetch from RSS feed');
-    }
-
-    try {
-      const rssUrl = 'https://www.internationaltouch.org/news/feeds/rss/';
-      debugPrint('📰 [RSS] 🌐 Fetching RSS feed from: $rssUrl');
-
-      // Add timeout and headers for better Android compatibility
-      final response = await httpClient.get(
-        Uri.parse(rssUrl),
-        headers: {
-          'User-Agent': 'FIT-Mobile-App/1.0',
-          'Accept': 'application/rss+xml, application/xml, text/xml',
-        },
-      ).timeout(const Duration(seconds: 30));
-
-      debugPrint('📰 [RSS] 📡 HTTP Response: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        debugPrint(
-            '📰 [RSS] ✅ Successfully received RSS feed data (${response.body.length} bytes)');
-        final document = XmlDocument.parse(response.body);
-        final items = document.findAllElements('item');
-        debugPrint('📰 [RSS] 📄 Found ${items.length} news items in RSS feed');
-        final newsItems = <NewsItem>[];
-
-        for (final item in items) {
-          final title = item.findElements('title').first.innerText;
-          final link = item.findElements('link').first.innerText;
-          final description = item.findElements('description').first.innerText;
-          final pubDateText = item.findElements('pubDate').first.innerText;
-
-          // Extract content:encoded if available
-          String? fullContent;
-          try {
-            // Try to find content:encoded element
-            final contentEncodedElements = item.findAllElements('*').where(
-                (element) =>
-                    element.name.local == 'encoded' &&
-                    (element.name.namespaceUri?.contains('content') == true ||
-                        element.name.prefix == 'content'));
-
-            if (contentEncodedElements.isNotEmpty) {
-              fullContent = contentEncodedElements.first.innerText;
-            } else {
-              // Fallback: try to find content element with type="html"
-              final contentElement = item
-                  .findElements('content')
-                  .where((e) => e.getAttribute('type') == 'html')
-                  .firstOrNull;
-              if (contentElement != null) {
-                fullContent = contentElement.innerText;
-              }
-            }
-          } catch (e) {
-            debugPrint('Failed to extract content:encoded: $e');
-          }
-
-          // Parse RSS date format (RFC 2822: "Wed, 18 Dec 2024 10:30:00 +0000")
-          DateTime publishedAt;
-          try {
-            debugPrint('📰 [RSS] 📅 Original pubDate: $pubDateText');
-
-            // Try different parsing approaches for RSS dates
-            publishedAt = _parseRSSDate(pubDateText);
-            debugPrint('📰 [RSS] ✅ Successfully parsed date: $publishedAt');
-          } catch (e) {
-            debugPrint('📰 [RSS] ❌ Failed to parse date "$pubDateText": $e');
-            debugPrint('📰 [RSS] 🔄 Using current time as fallback');
-            publishedAt = DateTime.now();
-          }
-
-          // Clean HTML from description for summary
-          final cleanDescription = description
-              .replaceAll(RegExp(r'<[^>]*>'), '')
-              .replaceAll(RegExp(r'\s+'), ' ')
-              .trim();
-
-          // Decode HTML entities from full content if available
-          String? decodedContent;
-          if (fullContent != null) {
-            try {
-              final document = html_parser.parse(fullContent);
-              decodedContent =
-                  document.documentElement?.innerHtml ?? fullContent;
-            } catch (e) {
-              decodedContent = fullContent;
-            }
-          }
-
-          // Create news item with placeholder image initially
-          debugPrint(
-              '📰 [RSS] 📝 Processing news item: ${title.length > 50 ? '${title.substring(0, 50)}...' : title}');
-
-          // Generate a more unique ID from the link
-          String itemId;
-          try {
-            // Try to extract a meaningful ID from the URL
-            final uri = Uri.parse(link);
-            final pathSegments =
-                uri.pathSegments.where((s) => s.isNotEmpty).toList();
-
-            if (pathSegments.isNotEmpty) {
-              // Use the last meaningful path segment
-              itemId =
-                  pathSegments.last.replaceAll(RegExp(r'\.(html?|php)$'), '');
-              // If it's too generic, include more path
-              if (itemId.length < 3 ||
-                  ['index', 'news', 'article'].contains(itemId.toLowerCase())) {
-                itemId = pathSegments.length > 1
-                    ? '${pathSegments[pathSegments.length - 2]}_$itemId'
-                    : itemId;
-              }
-            } else {
-              // Fallback: use hash of the full URL
-              itemId = link.hashCode.abs().toString();
-            }
-
-            // Ensure ID is not empty and is reasonable length
-            if (itemId.isEmpty || itemId.length < 2) {
-              itemId = 'news_${DateTime.now().millisecondsSinceEpoch}';
-            }
-
-            debugPrint('📰 [RSS] 🏷️ Generated ID "$itemId" from link: $link');
-          } catch (e) {
-            // Ultimate fallback: use timestamp + title hash
-            itemId =
-                'news_${DateTime.now().millisecondsSinceEpoch}_${title.hashCode.abs()}';
-            debugPrint(
-                '📰 [RSS] ⚠️ Failed to parse URL "$link", using fallback ID: $itemId');
-          }
-
-          final newsItem = NewsItem(
-            id: itemId,
-            title: title,
-            summary: cleanDescription.length > 150
-                ? '${cleanDescription.substring(0, 150)}...'
-                : cleanDescription,
-            imageUrl: AppConfig.getPlaceholderImageUrl(
-              width: 300,
-              height: 200,
-              backgroundColor: '1976D2',
-              textColor: 'FFFFFF',
-              text: 'News',
-            ),
-            publishedAt: publishedAt,
-            content: decodedContent ?? cleanDescription,
-            link: link,
-          );
-
-          newsItems.add(newsItem);
-        }
-
-        debugPrint(
-            '📰 [RSS] 📝 Processed ${newsItems.length} news items, saving to SQLite...');
-        // Cache the news items in database
-        await DatabaseService.cacheNewsItems(newsItems);
-        debugPrint(
-            '📰 [RSS] ✅ Successfully cached ${newsItems.length} news items in SQLite');
-        return newsItems;
-      } else {
-        throw Exception('Failed to load RSS feed: ${response.statusCode}');
-      }
-    } catch (e) {
-      debugPrint('Failed to fetch news from RSS: $e');
-
-      debugPrint('📰 [RSS] ❌ Error fetching RSS feed: $e');
-      // Try to return cached data as fallback
-      debugPrint('📰 [RSS] 🔄 Attempting to load stale cache as fallback...');
-      final cachedNews = await DatabaseService.getCachedNewsItems();
-      if (cachedNews.isNotEmpty) {
-        debugPrint(
-            '📰 [RSS] ⚠️ Using ${cachedNews.length} stale cached news items as fallback');
-        return cachedNews;
-      } else {
-        debugPrint('📰 [RSS] 💥 No cached news available, rethrowing error');
-      }
-
-      rethrow;
     }
   }
 
@@ -344,7 +86,8 @@ class DataService {
       }
 
       // Cache the events first (without seasons) for fast UI
-      await DatabaseService.cacheEvents(events);
+      final ttl = await DeviceService.instance.recommendedCacheExpiry;
+      await DatabaseService.cacheEvents(events, ttlMs: ttl);
       _cachedEvents = events;
 
       // Load seasons in background without blocking UI
@@ -422,7 +165,8 @@ class DataService {
       if (updatedEvents.isNotEmpty) {
         debugPrint(
             '🏆 [Events] 💾 Background: Phase 1 complete - Caching ${updatedEvents.length} events with seasons...');
-        await DatabaseService.cacheEvents(updatedEvents);
+        final ttl = await DeviceService.instance.recommendedCacheExpiry;
+        await DatabaseService.cacheEvents(updatedEvents, ttlMs: ttl);
         _cachedEvents = updatedEvents; // Update in-memory cache
         debugPrint(
             '🏆 [Events] ✅ Background: Phase 1 complete - All seasons cached successfully');
@@ -490,8 +234,10 @@ class DataService {
         }
 
         // Cache divisions for this competition/season
+        final ttl = await DeviceService.instance.recommendedCacheExpiry;
         await DatabaseService.cacheDivisions(
-            competitionSlug, season.slug, divisions);
+            competitionSlug, season.slug, divisions,
+            ttlMs: ttl);
         totalDivisionsCached += divisions.length;
         debugPrint(
             '🏆 [Divisions] ✅ Background: [$completed/${allSeasonData.length}] Cached ${divisions.length} divisions for $competitionTitle/${season.title}');
@@ -734,6 +480,7 @@ class DataService {
             round: match['round'],
             isBye: match['is_bye'],
             videos: (match['videos'] as List<dynamic>?)?.cast<String>() ?? [],
+            poolId: match['stage_group'] as int?,
           );
 
           fixtures.add(fixture);
@@ -741,8 +488,10 @@ class DataService {
       }
 
       // Cache the fixtures in database with new schema
+      final ttl = await DeviceService.instance.recommendedCacheExpiry;
       await DatabaseService.cacheFixtures(
-          eventId, seasonSlug, divisionId, fixtures);
+          eventId, seasonSlug, divisionId, fixtures,
+          ttlMs: ttl);
       _cachedFixtures[divisionId] = fixtures;
       return fixtures;
     } catch (e) {
@@ -843,88 +592,5 @@ class DataService {
   static Future<void> clearDatabaseCache() async {
     await DatabaseService.clearAllCache();
     clearCache(); // Also clear in-memory cache
-  }
-
-  // Helper method to parse various RSS date formats
-  static DateTime _parseRSSDate(String dateText) {
-    // Common RSS date formats:
-    // RFC 2822: "Wed, 18 Dec 2024 10:30:00 +0000"
-    // ISO 8601: "2024-12-18T10:30:00Z"
-    // Alternative: "18 Dec 2024 10:30:00"
-
-    debugPrint('📰 [RSS] 🔍 Attempting to parse: "$dateText"');
-
-    // First try parsing as-is (might be ISO format)
-    try {
-      final parsed = DateTime.parse(dateText);
-      debugPrint('📰 [RSS] ✅ Parsed as ISO format');
-      return parsed;
-    } catch (e) {
-      debugPrint('📰 [RSS] ❌ Not ISO format: $e');
-    }
-
-    // Try RFC 2822 format: remove day name and timezone
-    try {
-      // Remove day name prefix (e.g., "Wed, ")
-      String cleaned = dateText.replaceAll(RegExp(r'^[A-Za-z]{3}, '), '');
-
-      // Remove timezone suffix (e.g., " +0000", " GMT", " UTC")
-      cleaned = cleaned.replaceAll(RegExp(r' [+-]\d{4}$'), '');
-      cleaned = cleaned.replaceAll(RegExp(r' (GMT|UTC)$'), '');
-
-      debugPrint('📰 [RSS] 🧹 Cleaned RFC date: "$cleaned"');
-
-      // Try parsing the cleaned version
-      final parsed = DateTime.parse(cleaned);
-      debugPrint('📰 [RSS] ✅ Parsed as RFC 2822 format');
-      return parsed;
-    } catch (e) {
-      debugPrint('📰 [RSS] ❌ RFC 2822 parsing failed: $e');
-    }
-
-    // Last resort: try to extract date components manually
-    try {
-      // Match pattern like "18 Dec 2024 10:30:00"
-      final datePattern = RegExp(
-          r'(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})');
-      final match = datePattern.firstMatch(dateText);
-
-      if (match != null) {
-        final day = int.parse(match.group(1)!);
-        final monthStr = match.group(2)!;
-        final year = int.parse(match.group(3)!);
-        final hour = int.parse(match.group(4)!);
-        final minute = int.parse(match.group(5)!);
-        final second = int.parse(match.group(6)!);
-
-        // Map month names to numbers
-        final monthMap = {
-          'Jan': 1,
-          'Feb': 2,
-          'Mar': 3,
-          'Apr': 4,
-          'May': 5,
-          'Jun': 6,
-          'Jul': 7,
-          'Aug': 8,
-          'Sep': 9,
-          'Oct': 10,
-          'Nov': 11,
-          'Dec': 12
-        };
-
-        final month = monthMap[monthStr];
-        if (month != null) {
-          final parsed = DateTime(year, month, day, hour, minute, second);
-          debugPrint('📰 [RSS] ✅ Parsed manually: $parsed');
-          return parsed;
-        }
-      }
-    } catch (e) {
-      debugPrint('📰 [RSS] ❌ Manual parsing failed: $e');
-    }
-
-    // If all parsing attempts fail, throw error
-    throw FormatException('Unable to parse RSS date: $dateText');
   }
 }

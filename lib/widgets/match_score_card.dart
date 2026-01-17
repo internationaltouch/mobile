@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/fixture.dart';
 import '../theme/fit_colors.dart';
-import '../services/flag_service.dart';
+import '../services/fit_entity_image_service.dart';
 import 'video_player_dialog.dart';
 
 class MatchScoreCard extends StatelessWidget {
@@ -11,6 +11,9 @@ class MatchScoreCard extends StatelessWidget {
   final String? venue;
   final String? venueLocation;
   final String? divisionName;
+  final String? poolTitle; // Pool title for display
+  final List<String> allPoolTitles; // All pool titles for color indexing
+  final String? highlightedTeamId; // Team to highlight
 
   const MatchScoreCard({
     super.key,
@@ -20,7 +23,14 @@ class MatchScoreCard extends StatelessWidget {
     this.venue,
     this.venueLocation,
     this.divisionName,
+    this.poolTitle,
+    this.allPoolTitles = const [],
+    this.highlightedTeamId,
   });
+
+  bool _isTeamHighlighted(String teamId) {
+    return highlightedTeamId != null && highlightedTeamId == teamId;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +78,16 @@ class MatchScoreCard extends StatelessWidget {
                         height: 28, // Fixed height for up to 2 lines of text
                         child: Text(
                           fixture.homeTeamName,
-                          style:
-                              Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: _isTeamHighlighted(fixture.homeTeamId)
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                              ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.visible,
@@ -242,11 +257,16 @@ class MatchScoreCard extends StatelessWidget {
                         height: 28, // Fixed height for up to 2 lines of text
                         child: Text(
                           fixture.awayTeamName,
-                          style:
-                              Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: _isTeamHighlighted(fixture.awayTeamId)
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                              ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.visible,
@@ -293,22 +313,22 @@ class MatchScoreCard extends StatelessWidget {
               ],
             ],
 
-            // Round information
+            // Round information with optional pool display
             if (fixture.round != null) ...[
               const SizedBox(height: 8),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: FITColors.primaryBlue.withValues(alpha: 0.1),
+                  color: _getRoundBackgroundColor().withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: FITColors.primaryBlue.withValues(alpha: 0.3)),
+                      color: _getRoundBackgroundColor().withValues(alpha: 0.3)),
                 ),
                 child: Text(
-                  fixture.round!,
+                  _formatRoundText(),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: FITColors.primaryBlue,
+                        color: _getRoundBackgroundColor(),
                         fontWeight: FontWeight.w600,
                         fontSize: 11,
                       ),
@@ -344,7 +364,7 @@ class MatchScoreCard extends StatelessWidget {
 
   Widget _buildTeamLogo(String teamName, String? abbreviation) {
     // Try to get flag widget from flag service first
-    final flagWidget = FlagService.getFlagWidget(
+    final flagWidget = FITEntityImageService.getFlagWidget(
       teamName: teamName,
       clubAbbreviation: abbreviation,
       size: 45.0,
@@ -381,6 +401,32 @@ class MatchScoreCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatRoundText() {
+    if (fixture.round == null) return '';
+
+    // If pool title is provided, format as "Round X - Pool Y"
+    if (poolTitle != null && poolTitle!.isNotEmpty) {
+      return '${fixture.round!} - $poolTitle';
+    }
+
+    return fixture.round!;
+  }
+
+  Color _getRoundBackgroundColor() {
+    // If pool title is provided and we have pool titles for indexing, use pool color
+    if (poolTitle != null &&
+        poolTitle!.isNotEmpty &&
+        allPoolTitles.isNotEmpty) {
+      final poolIndex = allPoolTitles.indexOf(poolTitle!);
+      if (poolIndex >= 0) {
+        return FITColors.getPoolColor(poolIndex);
+      }
+    }
+
+    // Default to primary blue
+    return FITColors.primaryBlue;
   }
 
   String _generateFallbackAbbreviation(String teamName) {

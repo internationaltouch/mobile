@@ -1,0 +1,491 @@
+import 'package:flutter/material.dart';
+import 'package:touchtech_competitions/models/fixture.dart';
+import 'package:touchtech_core/touchtech_core.dart';
+
+class MatchScoreCard extends StatelessWidget {
+  final Fixture fixture;
+  final String? homeTeamLocation;
+  final String? awayTeamLocation;
+  final String? venue;
+  final String? venueLocation;
+  final String? divisionName;
+  final String? poolTitle; // Pool title for display
+  final List<String> allPoolTitles; // All pool titles for color indexing
+  final String? highlightedTeamId; // Team to highlight
+
+  const MatchScoreCard({
+    super.key,
+    required this.fixture,
+    this.homeTeamLocation,
+    this.awayTeamLocation,
+    this.venue,
+    this.venueLocation,
+    this.divisionName,
+    this.poolTitle,
+    this.allPoolTitles = const [],
+    this.highlightedTeamId,
+  });
+
+  bool _isTeamHighlighted(String teamId) {
+    return highlightedTeamId != null && highlightedTeamId == teamId;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+      elevation: 2,
+      child: Container(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            // Date section
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                _formatMatchDate(fixture.dateTime),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: FITColors.darkGrey,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 1.2,
+                    ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Main match section
+            Row(
+              children: [
+                // Home team
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      // Team logo/flag
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: _buildTeamLogo(
+                          fixture.homeTeamName,
+                          fixture.homeTeamAbbreviation,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // Team name with fixed height to maintain alignment
+                      SizedBox(
+                        height: 28, // Fixed height for up to 2 lines of text
+                        child: Text(
+                          fixture.homeTeamName,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: _isTeamHighlighted(fixture.homeTeamId)
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                              ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.visible,
+                        ),
+                      ),
+                      // Team location
+                      if (homeTeamLocation != null)
+                        Text(
+                          homeTeamLocation!,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: FITColors.darkGrey,
+                                    fontSize: 11,
+                                  ),
+                          textAlign: TextAlign.center,
+                        ),
+                    ],
+                  ),
+                ),
+
+                // Score section
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (fixture.isCompleted &&
+                          fixture.homeScore != null &&
+                          fixture.awayScore != null) ...[
+                        // Completed match scores with winner emphasis
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Home score
+                            Text(
+                              '${fixture.homeScore}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displayMedium
+                                  ?.copyWith(
+                                    fontWeight:
+                                        fixture.homeScore! > fixture.awayScore!
+                                            ? FontWeight.bold
+                                            : fixture.homeScore! ==
+                                                    fixture.awayScore!
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
+                                    color: FITColors.primaryBlack,
+                                    fontSize: 36,
+                                  ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Full time text between scores
+                            Text(
+                              'FULL\nTIME',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: FITColors.darkGrey,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.8,
+                                    fontSize: 10,
+                                    height: 1.1,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(width: 16),
+                            // Away score
+                            Text(
+                              '${fixture.awayScore}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displayMedium
+                                  ?.copyWith(
+                                    fontWeight:
+                                        fixture.awayScore! > fixture.homeScore!
+                                            ? FontWeight.bold
+                                            : fixture.homeScore! ==
+                                                    fixture.awayScore!
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
+                                    color: FITColors.primaryBlack,
+                                    fontSize: 36,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ] else if (fixture.isBye == true) ...[
+                        // Bye match
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: FITColors.lightGrey,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'BYE',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: FITColors.darkGrey,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ),
+                      ] else ...[
+                        // Scheduled match
+                        Column(
+                          children: [
+                            Text(
+                              _formatMatchTime(fixture.dateTime),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: FITColors.accentYellow
+                                    .withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'SCHEDULED',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: FITColors.primaryBlack,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                // Away team
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      // Team logo/flag
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: _buildTeamLogo(
+                          fixture.awayTeamName,
+                          fixture.awayTeamAbbreviation,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // Team name with fixed height to maintain alignment
+                      SizedBox(
+                        height: 28, // Fixed height for up to 2 lines of text
+                        child: Text(
+                          fixture.awayTeamName,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: _isTeamHighlighted(fixture.awayTeamId)
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                              ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.visible,
+                        ),
+                      ),
+                      // Team location
+                      if (awayTeamLocation != null)
+                        Text(
+                          awayTeamLocation!,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: FITColors.darkGrey,
+                                    fontSize: 11,
+                                  ),
+                          textAlign: TextAlign.center,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // Venue section
+            if (venue != null || fixture.field.isNotEmpty) ...[
+              Text(
+                venue ?? fixture.field,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              if (venueLocation != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  venueLocation!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: FITColors.darkGrey,
+                        fontSize: 11,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ],
+
+            // Round information with optional pool display
+            if (fixture.round != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getRoundBackgroundColor().withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: _getRoundBackgroundColor().withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  _formatRoundText(),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: _getRoundBackgroundColor(),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                      ),
+                ),
+              ),
+            ],
+
+            // Video player section
+            if (fixture.videos.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: () =>
+                      _showVideoDialog(context, fixture.videos.first),
+                  icon: const Icon(Icons.play_arrow, color: FITColors.white),
+                  label: const Text(
+                    'Watch',
+                    style: TextStyle(color: FITColors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FITColors.errorRed,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamLogo(String teamName, String? abbreviation) {
+    // TODO: Add flag widget support via callback parameter
+    // For now, just show abbreviation
+
+    // Fallback to abbreviation text when no flag is available
+    final displayAbbreviation =
+        abbreviation ?? _generateFallbackAbbreviation(teamName);
+
+    return Container(
+      width: 45,
+      height: 45,
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.grey[600]!.withValues(alpha: 0.3)),
+      ),
+      child: Center(
+        child: Text(
+          displayAbbreviation,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: FITColors.primaryBlack,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  String _formatRoundText() {
+    if (fixture.round == null) return '';
+
+    // If pool title is provided, format as "Round X - Pool Y"
+    if (poolTitle != null && poolTitle!.isNotEmpty) {
+      return '${fixture.round!} - $poolTitle';
+    }
+
+    return fixture.round!;
+  }
+
+  Color _getRoundBackgroundColor() {
+    // If pool title is provided and we have pool titles for indexing, use pool color
+    if (poolTitle != null &&
+        poolTitle!.isNotEmpty &&
+        allPoolTitles.isNotEmpty) {
+      final poolIndex = allPoolTitles.indexOf(poolTitle!);
+      if (poolIndex >= 0) {
+        return FITColors.getPoolColor(poolIndex);
+      }
+    }
+
+    // Default to primary blue
+    return FITColors.primaryBlue;
+  }
+
+  String _generateFallbackAbbreviation(String teamName) {
+    // Generate abbreviation as fallback for teams without club abbreviation
+    // Default: use first letters of up to 3 words, max 3 characters
+    final words = teamName.split(' ').where((word) => word.isNotEmpty).toList();
+    if (words.length >= 3) {
+      return words.take(3).map((word) => word[0].toUpperCase()).join();
+    } else if (words.length >= 2) {
+      return words.take(2).map((word) => word[0].toUpperCase()).join();
+    } else if (words.isNotEmpty) {
+      return words.first.length >= 3
+          ? words.first.substring(0, 3).toUpperCase()
+          : words.first.toUpperCase();
+    } else {
+      return 'TEM';
+    }
+  }
+
+  String _formatMatchDate(DateTime dateTime) {
+    // Convert UTC datetime to local timezone
+    final localDateTime = dateTime.toLocal();
+
+    final weekdays = [
+      'MONDAY',
+      'TUESDAY',
+      'WEDNESDAY',
+      'THURSDAY',
+      'FRIDAY',
+      'SATURDAY',
+      'SUNDAY'
+    ];
+    final months = [
+      'JANUARY',
+      'FEBRUARY',
+      'MARCH',
+      'APRIL',
+      'MAY',
+      'JUNE',
+      'JULY',
+      'AUGUST',
+      'SEPTEMBER',
+      'OCTOBER',
+      'NOVEMBER',
+      'DECEMBER'
+    ];
+
+    final weekday = weekdays[localDateTime.weekday - 1];
+    final day = localDateTime.day;
+    final month = months[localDateTime.month - 1];
+
+    return '$weekday ${day}TH $month';
+  }
+
+  String _formatMatchTime(DateTime dateTime) {
+    // Convert UTC datetime to local timezone
+    final localDateTime = dateTime.toLocal();
+
+    final hour = localDateTime.hour.toString().padLeft(2, '0');
+    final minute = localDateTime.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  void _showVideoDialog(BuildContext context, String videoUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => VideoPlayerDialog(
+        videoUrl: videoUrl,
+        homeTeamName: fixture.homeTeamName,
+        awayTeamName: fixture.awayTeamName,
+        divisionName: divisionName ?? 'Tournament',
+      ),
+    );
+  }
+}

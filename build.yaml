@@ -3,3 +3,5 @@ targets:
     builders:
       drift_dev:
         enabled: true
+      mockito:
+        enabled: false

@@ -1,122 +1,161 @@
 import 'package:flutter/material.dart';
-import 'home_view.dart';
-import 'members_view.dart';
-import 'competitions_view.dart';
-import 'my_touch_view.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'club_view.dart';
+import 'competitions_view_riverpod.dart';
+import '../config/config_service.dart';
+import '../widgets/connection_status_widget.dart';
+import '../services/user_preferences_service.dart';
 
-class MainNavigationView extends StatefulWidget {
+class MainNavigationView extends ConsumerStatefulWidget {
   final int initialSelectedIndex;
 
   const MainNavigationView({super.key, this.initialSelectedIndex = 0});
 
   @override
-  State<MainNavigationView> createState() => _MainNavigationViewState();
+  ConsumerState<MainNavigationView> createState() => _MainNavigationViewState();
 }
 
-class _MainNavigationViewState extends State<MainNavigationView> {
+class _MainNavigationViewState extends ConsumerState<MainNavigationView> {
   late int _selectedIndex;
   late List<GlobalKey<NavigatorState>> _navigatorKeys;
   late List<Widget> _pages;
+  late List<TabConfig> _enabledTabs;
 
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialSelectedIndex;
-    _navigatorKeys = [
-      GlobalKey<NavigatorState>(), // News navigator
-      GlobalKey<NavigatorState>(), // Members navigator
-      GlobalKey<NavigatorState>(), // Competitions navigator
-      GlobalKey<NavigatorState>(), // My Touch navigator
-    ];
-    _pages = [
-      _buildNewsNavigator(),
-      _buildMembersNavigator(),
-      _buildCompetitionsNavigator(),
-      _buildMyTouchNavigator(),
-    ];
+    _enabledTabs = ConfigService.config.navigation.enabledTabs;
+    _selectedIndex = widget.initialSelectedIndex.clamp(
+      0,
+      _enabledTabs.length - 1,
+    );
+
+    _navigatorKeys = List.generate(
+      _enabledTabs.length,
+      (index) => GlobalKey<NavigatorState>(),
+    );
+
+    _pages = _enabledTabs.map((tab) => _buildNavigatorForTab(tab)).toList();
+
+    // Load last selected tab from preferences
+    _loadLastSelectedTab();
   }
 
-  Widget _buildNewsNavigator() {
+  Future<void> _loadLastSelectedTab() async {
+    // Priority order:
+    // 1. Explicit initialSelectedIndex parameter (if not 0)
+    // 2. Config initialNavigation.initialTab (if specified)
+    // 3. Saved user preference (if exists)
+    // 4. Default to 0
+
+    if (widget.initialSelectedIndex != 0) {
+      // Already set by parameter, don't override
+      return;
+    }
+
+    // Check config for initial tab preference
+    final initialNav = ConfigService.config.navigation.initialNavigation;
+    if (initialNav?.initialTab != null) {
+      final tabIndex = _enabledTabs.indexWhere(
+        (tab) => tab.id == initialNav!.initialTab,
+      );
+      if (tabIndex != -1 && mounted) {
+        setState(() {
+          _selectedIndex = tabIndex;
+        });
+        return;
+      }
+    }
+
+    // Fall back to saved user preference
+    final lastTab = await UserPreferencesService.getLastMainNavigationTab();
+    if (mounted && lastTab < _enabledTabs.length) {
+      setState(() {
+        _selectedIndex = lastTab;
+      });
+    }
+  }
+
+  Widget _buildNavigatorForTab(TabConfig tab) {
+    final tabIndex = _enabledTabs.indexOf(tab);
     return Navigator(
-      key: _navigatorKeys[0],
+      key: _navigatorKeys[tabIndex],
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
-          builder: (context) => const HomeView(showOnlyNews: true),
+          builder: (context) => _getViewForTab(tab),
           settings: settings,
         );
       },
     );
   }
 
-  Widget _buildMembersNavigator() {
-    return Navigator(
-      key: _navigatorKeys[1],
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute(
-          builder: (context) => const MembersView(),
-          settings: settings,
-        );
-      },
-    );
+  Widget _getViewForTab(TabConfig tab) {
+    switch (tab.id) {
+      case 'news':
+        return const NewsView(showOnlyNews: true);
+      case 'clubs':
+        return const ClubView();
+      case 'events':
+        return _getEventsView(tab);
+      case 'my_sport':
+        return const FavoritesView();
+      default:
+        return const Placeholder();
+    }
   }
 
-  Widget _buildCompetitionsNavigator() {
-    return Navigator(
-      key: _navigatorKeys[2],
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute(
-          builder: (context) => const CompetitionsView(),
-          settings: settings,
-        );
-      },
-    );
-  }
-
-  Widget _buildMyTouchNavigator() {
-    return Navigator(
-      key: _navigatorKeys[3],
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute(
-          builder: (context) => const MyTouchView(),
-          settings: settings,
-        );
-      },
-    );
+  Widget _getEventsView(TabConfig tab) {
+    final variant = tab.variant ?? 'standard';
+    switch (variant) {
+      case 'favorites':
+        return const FavoritesView(); // Use dedicated favorites view
+      case 'standard':
+      default:
+        return const CompetitionsViewRiverpod(); // Use Riverpod version with real caching
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // If only one tab, show it directly without bottom navigation bar
+    if (_enabledTabs.length == 1) {
+      return Scaffold(
+        body: ConnectionStatusWidget(
+          showOfflineMessage: true,
+          child: _pages[0],
+        ),
+      );
+    }
+
+    // Multiple tabs - show with bottom navigation bar
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
+      body: ConnectionStatusWidget(
+        showOfflineMessage: true,
+        child: IndexedStack(index: _selectedIndex, children: _pages),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
+        backgroundColor: ConfigService.config.branding.backgroundColor,
+        selectedItemColor: ConfigService.config.branding.primaryColor,
+        unselectedItemColor: ConfigService.config.branding.textColor.withValues(
+          alpha: 0.6,
+        ),
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
           });
+          // Persist the selected tab
+          UserPreferencesService.setLastMainNavigationTab(index);
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.newspaper),
-            label: 'News',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.public),
-            label: 'Members',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.sports),
-            label: 'Events',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star),
-            label: 'My Touch',
-          ),
-        ],
+        items: _enabledTabs
+            .map(
+              (tab) => BottomNavigationBarItem(
+                icon: Icon(tab.iconData),
+                label: tab.label,
+              ),
+            )
+            .toList(),
       ),
     );
   }
@@ -126,14 +165,16 @@ class _MainNavigationViewState extends State<MainNavigationView> {
     setState(() {
       _selectedIndex = index;
     });
+    // Persist the selected tab
+    UserPreferencesService.setLastMainNavigationTab(index);
   }
 
   // Method to navigate within a specific tab's navigator
   void navigateInTab(int tabIndex, Widget destination) {
     if (tabIndex >= 0 && tabIndex < _navigatorKeys.length) {
       _navigatorKeys[tabIndex].currentState?.push(
-            MaterialPageRoute(builder: (context) => destination),
-          );
+        MaterialPageRoute(builder: (context) => destination),
+      );
     }
   }
 

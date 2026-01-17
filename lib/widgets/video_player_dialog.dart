@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
-import 'package:share_plus/share_plus.dart';
+// import 'package:share_plus/share_plus.dart';  // Temporarily disabled for Android build
 import '../theme/fit_colors.dart';
 
 class VideoPlayerDialog extends StatefulWidget {
@@ -75,7 +75,8 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
         'Watch ${widget.homeTeamName} vs ${widget.awayTeamName} in the ${widget.divisionName} division! ${widget.videoUrl}';
 
     try {
-      await Share.share(shareText);
+      // await Share.share(shareText);  // Temporarily disabled for Android build
+      // TODO: Re-enable share functionality when share_plus is restored
     } catch (e) {
       if (mounted) {
         // Fallback: Show a dialog with the text to copy

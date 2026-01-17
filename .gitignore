@@ -1,6 +1,8 @@
 # Build directories
 build/
 .dart_tool/
+.gradle/
+.kotlin/
 
 # IDE files
 .vscode/
@@ -24,7 +26,10 @@ Thumbs.db
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-pubspec.lock
+
+# Lock files - packages should not lock dependencies, apps should
+packages/**/pubspec.lock
+**/Podfile.lock
 
 # Test coverage
 coverage/
@@ -35,25 +40,26 @@ coverage/
 *.mocks.dart
 
 # Android specific
-android/app/debug
-android/app/profile
-android/app/release
-android/app/.cxx/
-android/.gradle/
-android/captures/
-android/gradlew
-android/gradlew.bat
-android/gradle/wrapper/gradle-wrapper.jar
-android/local.properties
-android/**/GeneratedPluginRegistrant.java
+apps/*/android/app/debug
+apps/*/android/app/profile
+apps/*/android/app/release
+apps/*/android/app/.cxx/
+apps/*/android/captures/
+**/GeneratedPluginRegistrant.java
+**/GeneratedPluginRegistrant.h
+**/GeneratedPluginRegistrant.m
+
+**/android/local.properties
+**/android/key.properties
 
 # iOS specific
-ios/Flutter/flutter_assets/
-ios/Flutter/flutter_export_environment.sh
-ios/Runner.xcarchive
-ios/Runner.xcworkspace/
-ios/Flutter/Generated.xcconfig
-ios/Flutter/app.flx
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Runner.xcarchive
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
 
 # Web specific
 web/

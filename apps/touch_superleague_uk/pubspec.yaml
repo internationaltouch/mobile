@@ -1,0 +1,48 @@
+name: touch_superleague_uk
+description: Touch Superleague UK mobile app
+publish_to: 'none'
+version: 1.0.0+8
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+  flutter: ">=3.13.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  touchtech_core:
+    path: ../../packages/touchtech_core
+  touchtech_news:
+    path: ../../packages/touchtech_news
+  touchtech_competitions:
+    path: ../../packages/touchtech_competitions
+  cupertino_icons: ^1.0.6
+  flutter_riverpod: ^2.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.2
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/config/
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/touch-superleague-logo.png
+  color_dark: "#FFFFFF"
+  image_dark: assets/images/touch-superleague-logo.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/touch-superleague-logo.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/touch-superleague-logo.png"
+  remove_alpha_ios: true
