@@ -48,26 +48,8 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
     final uri = Uri.parse(widget.videoUrl);
 
     if (uri.host.contains('youtube.com')) {
-      // Try query parameter first (e.g., youtube.com/watch?v=VIDEO_ID)
-      if (uri.queryParameters.containsKey('v')) {
-        _videoId = uri.queryParameters['v'];
-      }
-      // Handle /live/, /embed/, /v/ formats (e.g., youtube.com/live/VIDEO_ID)
-      else if (uri.pathSegments.isNotEmpty) {
-        // Path segments like ['live', 'VIDEO_ID'] or ['embed', 'VIDEO_ID']
-        if (uri.pathSegments.length >= 2 &&
-            (uri.pathSegments[0] == 'live' ||
-             uri.pathSegments[0] == 'embed' ||
-             uri.pathSegments[0] == 'v')) {
-          _videoId = uri.pathSegments[1];
-        }
-        // Handle /watch without query params (rare but possible)
-        else if (uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'watch') {
-          _videoId = uri.pathSegments[1];
-        }
-      }
+      _videoId = uri.queryParameters['v'];
     } else if (uri.host.contains('youtu.be')) {
-      // Short URL format (e.g., youtu.be/VIDEO_ID)
       _videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
     }
   }
