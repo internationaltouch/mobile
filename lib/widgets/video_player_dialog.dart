@@ -24,6 +24,8 @@ class VideoPlayerDialog extends StatefulWidget {
 class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
   String? _videoId;
   late YoutubePlayerController _controller;
+  bool _hasError = false;
+  String _errorMessage = '';
 
   @override
   void initState() {
@@ -68,6 +70,29 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
         // Handle fullscreen changes if needed
       },
     );
+
+    // Listen to player events to detect errors
+    _controller.listen((event) {
+      if (event.hasError && mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = _getErrorMessage(event.error.toString());
+        });
+      }
+    });
+  }
+
+  String _getErrorMessage(String error) {
+    // Handle common YouTube player error codes
+    if (error.contains('152') || error.contains('150')) {
+      return 'This video is unavailable or restricted in your region.';
+    } else if (error.contains('101') || error.contains('100')) {
+      return 'This video cannot be played in embedded players.';
+    } else if (error.contains('5')) {
+      return 'Unable to play this video. Please check your connection.';
+    } else {
+      return 'Unable to load this video. It may be unavailable or restricted.';
+    }
   }
 
   void _shareVideo() async {
@@ -182,17 +207,42 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
               ),
             ),
 
-            // YouTube Player
+            // YouTube Player or Error Message
             Container(
               height: 200,
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.black87,
               ),
-              child: YoutubePlayer(
-                controller: _controller,
-                aspectRatio: 16 / 9,
-              ),
+              child: _hasError
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.white70,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _errorMessage,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : YoutubePlayer(
+                      controller: _controller,
+                      aspectRatio: 16 / 9,
+                    ),
             ),
 
             // Share button
