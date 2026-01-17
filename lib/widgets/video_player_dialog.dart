@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:url_launcher/url_launcher.dart';
 // import 'package:share_plus/share_plus.dart';  // Temporarily disabled for Android build
 import '../theme/fit_colors.dart';
 
@@ -103,13 +104,20 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
   String _getErrorMessage(String error) {
     // Handle common YouTube player error codes
     if (error.contains('152') || error.contains('150')) {
-      return 'This video is unavailable or restricted in your region.';
+      return 'This video cannot be played here.\nThe video owner has disabled embedding.';
     } else if (error.contains('101') || error.contains('100')) {
       return 'This video cannot be played in embedded players.';
     } else if (error.contains('5')) {
       return 'Unable to play this video. Please check your connection.';
     } else {
       return 'Unable to load this video. It may be unavailable or restricted.';
+    }
+  }
+
+  Future<void> _openInYouTube() async {
+    final uri = Uri.parse(widget.videoUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -251,6 +259,22 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: _openInYouTube,
+                              icon: const Icon(Icons.open_in_new, color: Colors.white),
+                              label: const Text(
+                                'Open in YouTube',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: FITColors.errorRed,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 10,
+                                ),
                               ),
                             ),
                           ],
